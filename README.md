@@ -330,27 +330,14 @@ rm -rf .takumi/             # プロジェクトの記録も消す
 
 ---
 
-## 🚨 うまくいかない時
+## 🚨 うまくいかないとき
 
-> [!WARNING]
-> **`gh skill install` で「unknown command」**
-> gh が古い。`brew upgrade gh` で v2.90.0 以上にしてください。
-
-> [!WARNING]
-> **入れたのに `/takumi` が出ない**
-> Claude Code を一度閉じて開き直す。それでもダメなら `gh skill list` と `ls ~/.claude/skills/` で確認。
-
-> [!WARNING]
-> **毎回あいまいで聞き返される**
-> 辞書に自分のプロジェクトの言葉が足りてない。`~/.claude/skills/takumi/natural-language.md` に例を足すか、issue で相談してください。
-
-> [!WARNING]
-> **ゲートの mutation_floor が高すぎて通らない**
-> 最初はよくある。タスクに `mutation_tier: low` って書くと閾値が下がります。
-> ```markdown
-> - [ ] 1. **タスク名**
->   - **mutation_tier**: low
-> ```
+| 症状 | どうする |
+|:---|:---|
+| `unknown command` | gh が古い → `brew upgrade gh` で v2.90.0+ に |
+| 入れたのに `/takumi` が出ない | Claude Code 再起動 → ダメなら `gh skill list` で確認 |
+| 毎回あいまいで聞き返される | `~/.claude/skills/takumi/natural-language.md` に言い回しを追加 |
+| `mutation_floor` が通らない | 該当タスクに `mutation_tier: low` を足す |
 
 ---
 
