@@ -1,95 +1,83 @@
 # takumi
 
-自然文の依頼を、仕様定義から実装と検証まで一つの流れに落とす Claude Code skill。
-コマンドを増やさない。先に仕様を固定する。普段は黙っていて、必要なときだけ深く入る。
-変更の痕跡は `.takumi/` に閉じる。
+Claude Code で、1 つのコマンドに全部を任せるためのスキル。
 
 ```
 /takumi 管理画面に CSV エクスポート機能を追加
 ```
 
-## Why
+数問で仕様を固めて、計画を立て、実装・テスト・レビューまで通す。観点を指定した診断 (`/takumi security 見て`) や、リリース前の全域点検 (`/takumi 全般見て`) も同じ `/takumi` で呼び出す。振る舞いを変えたいときは「止めて」「続きから」と言えばいい。
 
-- コマンド分裂をやめる。`/takumi` 1 つで計画・診断・全域点検・再開・停止まで通す。
-- 後付けテストをやめる。AC-ID を先に定義し、mutation score と layout invariant のゲートを通らないと次へ進めない。
-- 常時監視のうるささをやめる。loop は mutation 急落・本番障害・リリースブロッカーのときだけ起動する。
-- デザインは seeded inference に落とす。参考サイト 1-2 個、brand_tone、product_type、target_user の 4 点で token を固定する。
+## 使い方
 
-## Install
+とにかく `/takumi` に自然文を投げる。内部で 6 つのモードに振り分けて、迷うときは 1 回だけ聞き返す。
+
+- 新機能・変更 — `/takumi 商品一覧にソートとフィルターを追加`
+- 観点指定の診断 — `/takumi security 見て`
+- 全域点検 — `/takumi リリース前に全般見て`
+- 状態確認 — `/takumi 今なに動いてる?`
+- 中断からの再開 — `/takumi 続きから`
+- 一時停止 — `/takumi 止めて` / `/takumi auth の loop 止めて`
+
+新機能を追加する流れはだいたいこうなる。最初に数問で前提を固める(対象リソース、認可、想定件数、画面の有無など)。次に AC-ID を列挙して確認を取り、計画を `.takumi/plans/` に書き出す。UI を含むなら sitemap と style-guide と wireframe も生成する。あとは Wave ごとに実装して、mutation score と layout invariant のゲートを通す。通らなければ最大 3 回リトライ、それでもダメなタスクは記録してスキップする。
+
+## インストール
+
+gh CLI v2.90.0+ が要る。
 
 ```bash
-# 必要: gh CLI v2.90.0+
 gh skill install NAM-MAN/takumi
-
-# 内容確認 (入れる前に)
-gh skill preview NAM-MAN/takumi takumi
-
-# アンインストール
-gh skill uninstall takumi
 ```
 
-Claude Code を開いて `/takumi` が補完候補に出れば動いている。
+中身を先に読むなら `gh skill preview NAM-MAN/takumi takumi`、消すなら `gh skill uninstall takumi`。Claude Code を開いて `/takumi` が補完候補に出れば動く。
 
-## One Request
+## 設計
 
-```
-/takumi 管理画面に CSV エクスポート機能を追加
-```
+takumi が避けたかったことは 3 つある。
 
-数問で前提を確定する(対象リソース、列、認可、想定件数、ファイル名など)。
-AC-ID を列挙して確認を取り、計画ファイルを `.takumi/plans/` に書き出す。
-UI を含む project なら sitemap / style-guide / wireframe を `.takumi/design/` に生成する。
-executor が Wave 順に実装し、各 Wave の終わりで mutation floor と layout invariant を評価する。
-ゲート不合格なら自動でリトライ、3 回失敗したタスクは記録してスキップする。
-完了時に `git diff --stat` をまとめて提示する。
+**コマンドの分裂。** `/plan` `/probe` `/sweep` `/exec` を使い分けるのは不自然で、分類は中でやればいい。`/takumi` はそれらを統合した入口で、意図分類は決定木で決める。
 
-## Operational Model
+**後付けテスト。** 実装してから「テストないな」と書き足すのは順番が逆で、仕様を AC-ID で先に固定し、ゲートを通らなければ次の Wave に進ませない。mutation score は 65-80% の幅、layout invariant は 5-7 項目に抑える。
 
-自然文は内部で 6 系統に落とす。曖昧なら 1 回だけ聞き返す。
+**うるさい監視。** 10 分おきにテストを回し続けるループは疲れるし、何も起きていないときに動く意味はない。mutation の急落、本番障害、リリースブロッカーのいずれかがあるときだけ動く。
 
-- `normal` — 新機能・変更。対話 → AC → 計画 → 実装 → ゲート。
-- `probe` — 観点指定の診断。発見者を並列起動、ICE 採点、backlog から修正計画。
-- `sweep` — 全域点検。8 品質次元を並列スキャン、矛盾する指摘を統合パターンで解決。
-- `status` — 進行中の処理、直近のゲート、停止中 override を表示。
-- `continue` — 前回の mode と `active_run_id` を復元。
-- `override` — `.takumi/control/` に pause を書く。loop / sweep / gate を個別に止められる。
+あと、デザインは seeded にしている。参考サイト 1-2 個、ブランドトーン、プロダクトの種類、想定ユーザーの 4 つを渡せば、色と余白と間は決まる。「Notion っぽく」で揺れるのはやめたかった。
 
-## Files
+## プロジェクトに書かれるもの
 
-takumi が書き込むのは `.takumi/` 配下だけ。既存コードは、明示的に実装を依頼したときだけ変わる。
+`.takumi/` 配下だけに書く。既存コードは `/takumi` で実装を頼んだときだけ触る。
 
 ```
 .takumi/
-  plans/                        計画ファイル
+  plans/                        計画
   specs/                        AC-ID
   design/                       sitemap / style-guide / wireframe
   profiles/                     verify / design / refactor の設定
   sprints/                      probe / sweep の実行記録
   telemetry/                    指標
-  control/                      一時 override
-  state.json                    現在の mode と run_id
+  control/                      一時停止
+  state.json                    現在のモードと run id
   discovery-calibration.jsonl   発見者精度の履歴
 ```
 
-`.gitignore` に推奨するのは `sprints/`, `control/`, `telemetry/`。
-残りはチームで共有する価値がある。
+`.gitignore` に推奨するのは `sprints/` `control/` `telemetry/`。残りはチームで共有したほうがいい。
 
-## Limits
+## 制限
 
-- Claude Code が必要。素の Claude API では動かない。
-- 意図分類辞書は日本語に最適化している。英語でも動くが、観点語と診断動詞のマッチ精度は下がる。
-- 軍師ロールに codex CLI (gpt-5.4) を推奨。無ければ opus が代替するが、敵対的レビューは弱くなる。
-- コストは 1 request あたり $0.5-30 の幅。内訳の大部分は codex exec。
-- 自動振り分けは決定木で動く。ずっと間違う場合は `natural-language.md` の辞書を更新する。
+Claude Code が要る。素の API では動かない。
+意図分類は日本語に最適化している。英語でも動くけれど、観点語と診断動詞のマッチは弱い。
+軍師ロール(敵対的レビュー)は codex CLI (gpt-5.4) を使う。無ければ opus が代替するが精度は落ちる。
+コストは 1 request $0.5〜30 の幅で、大半は codex exec。
+振り分けをずっと間違えるときは、`natural-language.md` の辞書を増やす。
 
-## Contributing
+## 貢献
 
-issue / PR 歓迎。優先度が高い寄与:
+以下は特に歓迎。
 
-- `natural-language.md` — 観点語と診断動詞の辞書追加
-- `integration-playbook.md` — 矛盾解決パターンの追加
-- `strict-refactoring/language-relaxations.md` — 言語別の緩和ルール
+- `natural-language.md` — 観点語・診断動詞の追加
+- `integration-playbook.md` — 矛盾解決パターン
+- `strict-refactoring/language-relaxations.md` — 言語別ルール
 
-## License
+## ライセンス
 
 MIT
