@@ -1,8 +1,8 @@
-# /plan の executor (内部責務)
+# /takumi の executor (内部責務)
 
-`/plan` 本体から参照される補助ドキュメント。計画 (`.takumi/plans/*.md`) を Wave 順に自動実行する executor。旧 `/exec` command を `/plan` の内部責務に吸収した形。
+`/takumi` 本体から参照される補助ドキュメント。計画 (`.takumi/plans/*.md`) を Wave 順に自動実行する executor。
 
-人間が直接叩くコマンドではない。`/plan` 内の計画提示 → 確認後に自動的に executor が動く。plan name のタイポ問題も `/plan` が最新計画を知っているため発生しない。
+人間が直接叩くコマンドではない。`/takumi` 内の計画提示 → 確認後に自動的に executor が動く。plan name のタイポ問題も `/takumi` が最新計画を知っているため発生しない。
 
 ## 4 ロール体制
 
@@ -125,7 +125,7 @@ codex exec -m gpt-5.4 -s read-only -C "$(pwd)" \
 
 1. state.json: `"status": "completed"`
 2. 日本語まとめ: 完了タスク数、スキップ、学び、`git diff --stat`
-3. `/plan` が「計画 X が完了しました」とユーザーに報告
+3. `/takumi` が「計画 X が完了しました」とユーザーに報告
 
 ## コンテキスト保護
 
@@ -140,17 +140,17 @@ Agent 内コンテキスト残量 20% を切ったら:
    - 完了 Wave: {N} (タスク {N} 件完了)
    - 残 Wave: {N} (タスク {N} 件)
    ## 直近の学び (learnings.md 最新 5 件)
-   ## 再開: /plan continue
+   ## 再開: /takumi continue
    ```
-3. ユーザー通知: 「Wave {N} まで完了。/plan continue で再開できます」
+3. ユーザー通知: 「Wave {N} まで完了。/takumi continue で再開できます」
 
 ## 関連リソース
 
 | file | 用途 |
 |---|---|
-| `SKILL.md` (同ディレクトリ) | /plan 本体 |
+| `SKILL.md` (同ディレクトリ) | /takumi 本体 |
 | `test-strategy.md` (同ディレクトリ) | verify_profile 選定ロジック |
 | `integrations.md` (同ディレクトリ) | 100 点統合版の接続ガイド |
 | `telemetry-spec.md` (同ディレクトリ) | event emit の spec |
-| `~/.claude/skills/verify/SKILL.md` | verify run / recipe library |
-| `~/.claude/skills/design/SKILL.md` | L7 hard gate の定義 (ui 時) |
+| `~/.claude/skills/takumi/verify/README.md` | verify run / recipe library |
+| `~/.claude/skills/takumi/design/README.md` | L7 hard gate の定義 (ui 時) |

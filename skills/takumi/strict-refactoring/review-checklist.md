@@ -1,6 +1,6 @@
 # /strict-refactoring: Review Checklist
 
-本 skill (`SKILL.md`) から参照される評価 checklist。実装 worker が完了時、または `/probe refactor` / code review 時に適用する。普段 (`/plan` の計画生成時) は読み込まない。
+本 skill (`SKILL.md`) から参照される評価 checklist。実装 worker が完了時、または `/probe refactor` / code review 時に適用する。普段 (`/takumi` の計画生成時) は読み込まない。
 
 profile と strictness に応じて適用する項目が変わる。全項目を一律適用しない。
 
@@ -163,4 +163,4 @@ tier_graduation_proposed:
 | `rules-core.md` (同ディレクトリ) | L1 / L2 ルール詳細 |
 | `rules-ui-state.md` (同ディレクトリ) | L3 / Tier 詳細 |
 | `verify-contracts.md` (同ディレクトリ) | actionPreconditions contract |
-| `~/.claude/skills/plan/telemetry-spec.md` | `refactor_review_completed` event |
+| `~/.claude/skills/takumi/telemetry-spec.md` | `refactor_review_completed` event |

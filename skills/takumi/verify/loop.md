@@ -101,7 +101,7 @@ Agent(
   description: "verify-loop tick",
   subagent_type: "general-purpose",
   prompt: """
-    Read ~/.claude/skills/verify/loop.md fully and execute Phase 1-4.
+    Read ~/.claude/skills/takumi/verify/loop.md fully and execute Phase 1-4.
     Read CLAUDE.md for project context.
     Read .takumi/verify-loop/state.json for current state.
 

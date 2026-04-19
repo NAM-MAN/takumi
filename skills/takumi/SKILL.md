@@ -1,13 +1,67 @@
 ---
-name: plan
-description: "実装計画スキル。小規模は即計画、中規模以上はインタビュー+斥候調査、大規模は 軍師 分析も併用。自己増殖型計画対応。/plan で起動。"
+name: takumi
+description: "takumi の単一入口。計画・観点診断・全域棚卸し・設計・検証・リファクタを自然文で振り分ける。/takumi <自然文> で起動。サブコマンド構文は採用しない。"
 ---
 
-# Plan: 実装計画スキル
+# Plan: takumi の単一入口スキル
 
-ユーザーとの対話（または渡された要件）から高品質な Wave 計画を生成する。
+ユーザーからの自然文を意図分類し、適切な内部モード (normal / probe / sweep / status / continue / override) に振り分ける唯一の skill。
+
+計画は `.takumi/plans/{name}.md` に保存、確認後は executor (`executor.md` の内部責務) が Wave 順に自動実行する。人間が別途 `/exec` を叩く必要はない。
+
+---
+
+## 意図分類ルータ (最優先判定)
+
+入力を以下の 6 モードに分類する。判定は「観点語 + 診断動詞」の組合せを基本条件とする。
+
+| mode | 典型入力 | 内部委譲先 |
+|---|---|---|
+| **normal** | 「X 作って」「X 追加」「X 修正」(feature 実装) | 通常の plan フロー (Step 0-4) |
+| **probe** | 「security 見て」「perf 心配」「a11y 調べて」(観点指定診断) | `probe/README.md` 参照、発見→選別→計画 |
+| **sweep** | 「全般的に棚卸し」「リリース前総点検」「全次元見て」 | `sweep/README.md` 参照、8 次元並列発見 |
+| **status** | 「今なに動いてる?」「状態見せて」 | `.takumi/state.json` を読んで 30 秒で提示 |
+| **continue** | 「続きから」「再開」 | `state.json.mode` と `active_run_id` から復元 |
+| **override** | 「止めて」「sweep 24h 停止」「hard gate を warning に」 | `.takumi/control/` の override ファイル更新 |
+
+### 判定ルール
+
+1. **観点語**(security / perf / a11y / ux / architecture / quality / concurrency 等)が単独 → 曖昧、normal 候補(例: 「security feature 追加」)
+2. **観点語 + 診断動詞**(〜見て / 〜調べて / 〜心配 / 〜が怪しい)→ **probe に倒す**
+3. **全般語**(全般 / 全体 / 総点検 / 棚卸し / リリース前)→ **sweep に倒す**
+4. feature 実装語(追加 / 作って / 実装 / 修正)が主語 → **normal**
+5. 曖昧なら 1 問だけ確認(「security feature を追加ですか、security 診断ですか?」)
+
+語彙表と例文は `natural-language.md`。本 SKILL.md は決定木を保持、辞書は別ファイルで保守。
+
+### probe mode の artifact contract (絶対保全)
+
+probe フロー起動時、以下の成果物が揃わない限り backlog-mode へ進まない:
+
+- `.takumi/sprints/{date}/profile.md` — 製品診断
+- `.takumi/sprints/{date}/discoveries.md` — 発見結果 (MECE schema)
+- `.takumi/sprints/{date}/backlog.md` — triage 済 (ICE + 反論者チェック)
+- `.takumi/sprints/{date}/resume.md` — 中断時の再開情報
+- `.takumi/sprints/{date}/retro-summary.md` — 完了レポート
+- `.takumi/discovery-calibration.jsonl` — 発見者精度 ledger (append-only、継続学習)
+
+### 発見者並列起動 (probe mode)
+
+executor とは別の **discovery orchestrator** が fan-out/fan-in を担う。同期ポイントは 3 つ:
+
+1. `discover all complete` barrier → `discoveries.md` 確定
+2. `triage complete` barrier → `backlog.md` 確定
+3. `backlog accepted` barrier → backlog-mode で plan 生成
+
+発見者定義は `probe/roles/*.md` に分離予定(保守性優先)。`probe/discover.md` は「観点語 → 発見者 ID」のマッピング。
+
+---
+
+# 通常 plan フロー (normal mode)
+
+ユーザーとの対話(または渡された要件)から高品質な Wave 計画を生成する。
 インタビューが必要なら行い、要らなければ即生成。計画は `.takumi/plans/{name}.md` に保存、
-確認後は executor (`executor.md` の内部責務) が Wave 順に自動実行する。人間が別途 `/exec` を叩く必要はない。
+確認後は executor (`executor.md` の内部責務) が Wave 順に自動実行する。
 
 ## 4ロール体制
 
@@ -20,12 +74,23 @@ description: "実装計画スキル。小規模は即計画、中規模以上は
 
 軍師 起動コマンドと注意点は `executor.md` を参照。
 
-## 補助ファイル
+## 補助ファイル (内部モードの詳細)
 
-| ファイル | 用途 |
+| ファイル / ディレクトリ | 用途 |
 |---------|------|
-| `self-multiplying.md` | 自己増殖型計画の詳細（大規模・品質改善系で読む） |
-| `backlog-mode.md` | /probe 連携時のバックログ入力モード |
+| `natural-language.md` | 自然文 → 6 mode 判定辞書 |
+| `self-multiplying.md` | 自己増殖型計画の詳細(大規模・品質改善系) |
+| `backlog-mode.md` | probe / sweep から入った時の backlog → Wave 計画変換 |
+| `probe/` | probe mode 内部 (discover.md / triage.md) |
+| `sweep/` | sweep mode 内部 (quality-model.md / synthesis-playbook.md / reconcile.md) |
+| `design/` | /design 機能 (ui/mixed 時の自動呼出) |
+| `verify/` | L1-L6 recipe library |
+| `verify-loop/` | 期間限定 mutation score 向上 loop |
+| `strict-refactoring/` | refactor_profile_ref の policy |
+| `executor.md` | Wave 自動実行 |
+| `test-strategy.md` | AC-ID → verify_profile 選定 |
+| `telemetry-spec.md` / `telemetry-schema.md` / `telemetry-report.md` | 儀式化 drift 検出 |
+| `integrations.md` | 100 点統合版の接続ガイド |
 
 ## ファイル
 
@@ -56,8 +121,8 @@ description: "実装計画スキル。小規模は即計画、中規模以上は
 
 ```bash
 mkdir -p .takumi/profiles/verify .takumi/profiles/design
-cp ~/.claude/skills/plan/verify-profiles-defaults/*.yaml .takumi/profiles/verify/
-cp ~/.claude/skills/design/profiles-defaults/*.yaml .takumi/profiles/design/  # ui/mixed のみ
+cp ~/.claude/skills/takumi/verify-profiles-defaults/*.yaml .takumi/profiles/verify/
+cp ~/.claude/skills/takumi/design/profiles-defaults/*.yaml .takumi/profiles/design/  # ui/mixed のみ
 ```
 
 project 固有 profile は `.takumi/profiles/` に yaml を追加するだけ (registry 方式)。
@@ -221,7 +286,7 @@ codex exec -m gpt-5.4 -s read-only -C "$(pwd)" \
 ### 提示後のディスパッチ
 
 - `/probe` / `/sweep` から呼ばれた場合 → 確認を求めず即 executor 起動 (`executor.md` 参照)
-- 単独 `/plan` → ユーザーに計画を提示、「この計画で進めて良いですか?」と確認 → yes なら executor 自動起動
+- 単独 `/takumi` → ユーザーに計画を提示、「この計画で進めて良いですか?」と確認 → yes なら executor 自動起動
 - 人間が `/exec` を別途叩く必要なし。タイポ防止のため executor は常に最新 plan を追う
 
 ---
@@ -279,7 +344,7 @@ codex exec -m gpt-5.4 -s read-only -C "$(pwd)" \
 
 ## 自然文インターフェース
 
-人間が覚えるコマンドは `/plan` と `/probe <観点>` の 2 つだけ (軍師 6R 確定)。サブコマンド構文は採用せず、発話は `natural-language.md` の意図認識表で処理する。
+人間が覚えるコマンドは `/takumi` と `/probe <観点>` の 2 つだけ (軍師 6R 確定)。サブコマンド構文は採用せず、発話は `natural-language.md` の意図認識表で処理する。
 
 ## 関連リソース (100 点統合版)
 
@@ -287,12 +352,12 @@ codex exec -m gpt-5.4 -s read-only -C "$(pwd)" \
 |---|---|
 | `integrations.md` (同ディレクトリ) | 新 skill 接続の詳細 |
 | `telemetry-spec.md` (同ディレクトリ) | 儀式化 drift 検知の telemetry spec |
-| `~/.claude/skills/design/SKILL.md` | IA / style-guide / wireframe 生成 (ui/mixed) |
+| `~/.claude/skills/takumi/design/README.md` | IA / style-guide / wireframe 生成 (ui/mixed) |
 | `test-strategy.md` (同ディレクトリ) | AC-ID → verify_profile 選定 (内部補助) |
-| `executor.md` (同ディレクトリ) | 計画の Wave 実行 (内部責務、旧 /exec command) |
-| `~/.claude/skills/verify/SKILL.md` | L1-L6 + recipe library |
-| `~/.claude/skills/strict-refactoring.md` | Command/Pure/ReadModel、Pending Object Pattern 等のリファクタリング指針 (plugin) |
+| `executor.md` (同ディレクトリ) | 計画の Wave 実行 (内部責務) |
+| `~/.claude/skills/takumi/verify/README.md` | L1-L6 + recipe library |
+| `~/.claude/skills/takumi/strict-refactoring/README.md` | Command/Pure/ReadModel、Pending Object Pattern 等のリファクタリング指針 (plugin) |
 | `verify-profiles-defaults/*.yaml` (同ディレクトリ) | 5 archetype defaults |
-| `~/.claude/skills/design/profiles-defaults/*.yaml` | 4 design profile defaults |
+| `~/.claude/skills/takumi/design/profiles-defaults/*.yaml` | 4 design profile defaults |
 | `.takumi/profiles/{verify,design}/*.yaml` | project 側 profile 本体 |
 | `.takumi/telemetry/profile-usage.jsonl` | event log (append-only) |

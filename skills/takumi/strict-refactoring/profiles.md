@@ -1,6 +1,6 @@
 # /strict-refactoring: refactor profile 5 種
 
-本 skill (`SKILL.md`) から参照される profile 定義。`refactor_profile_ref` として task frontmatter に書かれる。`/plan` が layer / code age / project_mode / 言語から自動推定、明示指定も可。
+本 skill (`SKILL.md`) から参照される profile 定義。`refactor_profile_ref` として task frontmatter に書かれる。`/takumi` が layer / code age / project_mode / 言語から自動推定、明示指定も可。
 
 ## 5 profile 一覧
 
@@ -137,7 +137,7 @@
 
 ## profile 選定 decision tree
 
-`/plan` が未指定で呼び出された場合の推定フロー:
+`/takumi` が未指定で呼び出された場合の推定フロー:
 
 ```
 1. 対象 file の言語は?
@@ -177,4 +177,4 @@
 | `rules-core.md` (同ディレクトリ) | L1 / L2 ルール詳細 |
 | `rules-ui-state.md` (同ディレクトリ) | Tier 詳細、ui-pending-object で参照 |
 | `language-relaxations.md` (同ディレクトリ) | lang-relaxed-go-rust で参照 |
-| `~/.claude/skills/plan/SKILL.md` | `/plan` が refactor_profile_ref を自動推定 |
+| `~/.claude/skills/takumi/SKILL.md` | `/takumi` が refactor_profile_ref を自動推定 |

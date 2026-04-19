@@ -196,7 +196,7 @@ function process(order: Order) {
 
 **骨格**: `interface RingiRepository { save(ringi: Ringi): Promise<void> }`
 
-#### 13. concept-first task placement (旧: 概念ベース directory)
+#### 13. concept-first task placement
 
 ディレクトリを見れば「何のシステムか」が分かるようにする。**Screaming Architecture**。
 
@@ -216,7 +216,7 @@ OK (概念ベース):
 
 **禁止**: `common/`, `shared/`, `utils/` (実体が読めない、依存のハブになる)
 
-**/plan との連携**:
+**/takumi との連携**:
 - task の directory 配置を自動判定する時、本ルールに従う
 - 新規 feature は `src/{concept}/` を切る、既存なら尊重
 - `legacy-touchable` profile では既存構造を壊さない

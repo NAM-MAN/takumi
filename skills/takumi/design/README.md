@@ -7,7 +7,7 @@ description: "仕様と画面一覧から IA・style guide・wireframe・interac
 
 仕様 + 画面一覧(AC-ID 群)から、**最初から壊れないデザイン**を出すための統合スキル。
 「作ってから調整」ではなく、**壊れ方と見え方を先に固定**する。生成した成果物は
-project 側の `.takumi/design/` 配下に積み上がり、`/plan` の task frontmatter から
+project 側の `.takumi/design/` 配下に積み上がり、`/takumi` の task frontmatter から
 `design_profile_ref` で参照される。
 
 ---
@@ -41,7 +41,7 @@ project 側の `.takumi/design/` 配下に積み上がり、`/plan` の task fro
 
 ## project_mode 分岐
 
-`/plan` interview で決まる `project_mode` により、本 skill の扱いが変わる:
+`/takumi` interview で決まる `project_mode` により、本 skill の扱いが変わる:
 
 | project_mode | 扱い | 必須フェーズ |
 |---|---|---|
@@ -115,7 +115,7 @@ telemetry に流れる (付帯率の分母から除外)。
 | 3 | コンポーネント基盤 (shadcn/ui + Tailwind + framer-motion + lucide-react 固定) | (install + 選定表) |
 | 4 | マイクロインタラクション標準化 (motion / hover / focus / skeleton / toast) | `.takumi/design/interactions.md` |
 | 5 | OOUI ワイヤーフレーム (ASCII 骨格 + object/action 表、画像なし) | `.takumi/design/wireframes/{screen}.md` |
-| 6 | /plan 連携 (reference-first、task は `design_profile_ref` 名前参照のみ) | `.takumi/profiles/design/{name}.yaml` |
+| 6 | /takumi 連携 (reference-first、task は `design_profile_ref` 名前参照のみ) | `.takumi/profiles/design/{name}.yaml` |
 
 各 Phase の詳細手順・生成 snippet 例は **`phases.md`** を読む。
 
@@ -164,7 +164,7 @@ profile 設計で毎回議論になる数値は、導入時に一度だけ決め
 
 `verify` skill と本 skill は **profile_ref を共有**する。
 
-- `/plan` の task frontmatter に `verify_profile_ref` と `design_profile_ref` が両方載る
+- `/takumi` の task frontmatter に `verify_profile_ref` と `design_profile_ref` が両方載る
 - `/exec` の wave gate は両 profile の gate を**同時に**評価する
 - L7 hard gate は `design_profile_ref` 経由で wave gate に流れ込む (`gate_type: l7_hard`)
 - telemetry の `layout_checked` event が soft/hard violation を両方記録
@@ -209,8 +209,8 @@ wave 1 gate:
 ### 成果物の配置
 
 - **project 側**の `.takumi/design/` 配下に全て書く
-- 本 skill 配下 (`~/.claude/skills/design/`) に project 固有の成果物を置かない
-- `/plan` と `/verify` が参照できる相対パス (`.takumi/design/...`) で統一
+- 本 skill 配下 (`~/.claude/skills/takumi/design/`) に project 固有の成果物を置かない
+- `/takumi` と `/verify` が参照できる相対パス (`.takumi/design/...`) で統一
 
 ### ツール禁止事項
 
@@ -228,7 +228,7 @@ wave 1 gate:
 | `/design style` | Phase 2 のみ (style-guide 更新 / profile 切替) |
 | `/design wireframe {screen}` | Phase 5 のみ、指定画面だけ生成 |
 | `/design profile {name}` | 既存 profile の inspect / 改版 |
-| 自動: `/plan` が project_mode=ui を検出 | 本 skill を mandatory で起動 |
+| 自動: `/takumi` が project_mode=ui を検出 | 本 skill を mandatory で起動 |
 
 ---
 
@@ -239,9 +239,9 @@ wave 1 gate:
 | `phases.md` (同ディレクトリ) | Phase 1-6 の詳細手順と生成 snippet |
 | `l7-invariant.md` (同ディレクトリ) | L7 hard/soft/lint の検出・昇格・PBT テンプレ |
 | `profiles-defaults/*.yaml` (同ディレクトリ) | 4 design profile defaults (dashboard-dense / list-standard / form-heavy / landing) |
-| `~/.claude/skills/plan/SKILL.md` | /plan 連携 (Step 0d で呼出) |
-| `~/.claude/skills/verify/SKILL.md` | verify との profile_ref 共有 |
-| `~/.claude/skills/plan/telemetry-spec.md` | `layout_checked` event の emit |
+| `~/.claude/skills/takumi/SKILL.md` | /takumi 連携 (Step 0d で呼出) |
+| `~/.claude/skills/takumi/verify/README.md` | verify との profile_ref 共有 |
+| `~/.claude/skills/takumi/telemetry-spec.md` | `layout_checked` event の emit |
 
 ---
 
@@ -249,8 +249,8 @@ wave 1 gate:
 
 - [ ] `.takumi/design/` を `.gitignore` から除外 (成果物なので追跡する)
 - [ ] `.takumi/profiles/design/` を作成、最低 1 profile を配置
-- [ ] `/plan` interview に `project_mode` の質問を追加
-- [ ] `/plan` task frontmatter に `design_profile_ref` を追加
+- [ ] `/takumi` interview に `project_mode` の質問を追加
+- [ ] `/takumi` task frontmatter に `design_profile_ref` を追加
 - [ ] `/exec` wave gate に L7 hard / soft の評価ステップを追加
 - [ ] telemetry-spec.md の `layout_checked` event を emit するよう `/design` を実装
 - [ ] shadcn/ui + Tailwind + framer-motion + lucide-react を install

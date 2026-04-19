@@ -23,7 +23,7 @@
 }
 ```
 
-- `interview_duration_sec`: /plan interview 開始〜task 確定までの所要時間
+- `interview_duration_sec`: /takumi interview 開始〜task 確定までの所要時間
 - `design_profile_ref: null`: UI を含まない task は null で良い
 
 ---
@@ -197,4 +197,4 @@ gate の通過/失敗とは別に、**測定事実そのもの**を記録する
 |---------|------|
 | `telemetry-spec.md` | 出力先 / emit タイミング / escalation / FAQ(エントリポイント) |
 | `telemetry-report.md` | 週次レポート雛形 / 可視化 query(この schema を前提に集計) |
-| `SKILL.md` | /plan skill 本体 |
+| `SKILL.md` | /takumi skill 本体 |

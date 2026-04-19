@@ -336,9 +336,9 @@ primary_action: list / filter
 
 ---
 
-## Phase 6: /plan 連携
+## Phase 6: /takumi 連携
 
-design 成果物は **reference-first** で `/plan` の task frontmatter に載せる。
+design 成果物は **reference-first** で `/takumi` の task frontmatter に載せる。
 profile 本体は `.takumi/profiles/design/{name}.yaml` に置き、task からは**名前参照のみ**。
 
 ### `.takumi/profiles/design/dashboard-dense.yaml` の例
@@ -398,5 +398,5 @@ design_profile_ref: dashboard-dense
 | `SKILL.md` (同ディレクトリ) | 本体 entry point |
 | `l7-invariant.md` (同ディレクトリ) | L7 Layout Invariant 3 層の詳細 |
 | `profiles-defaults/*.yaml` (同ディレクトリ) | 4 design profile defaults |
-| `~/.claude/skills/plan/SKILL.md` | /plan 連携 |
-| `~/.claude/skills/verify/SKILL.md` | verify との接続 (L7 gate) |
+| `~/.claude/skills/takumi/SKILL.md` | /takumi 連携 |
+| `~/.claude/skills/takumi/verify/README.md` | verify との接続 (L7 gate) |

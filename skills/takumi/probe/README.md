@@ -66,7 +66,7 @@ Agent(
   description: "probe <観点> run",
   subagent_type: "general-purpose",
   prompt: """
-    Read ~/.claude/skills/probe/SKILL.md fully and execute
+    Read ~/.claude/skills/takumi/probe/README.md fully and execute
     Phase 0a（初期化）から Phase 5（完了処理）まで全部。
     Also read CLAUDE.md for project context.
 
@@ -162,7 +162,7 @@ Agent が返した JSON を読み、ユーザーに 2-3 行で要約して終了
 
 修正対象がテスト追加 / property 強化 / mutation score 向上を伴う場合は、
 **verify skill を内部呼び出し** する。verify の戦略選択フロー
-(`~/.claude/skills/verify/SKILL.md`) で適切な層 (L1-L6) を選んで適用する。
+(`~/.claude/skills/takumi/verify/README.md`) で適切な層 (L1-L6) を選んで適用する。
 職人 タスクとして「verify L1 を src/lib/utils.ts に適用」のように具体化。
 
 exec が自動点検・定期点検を組み込んでいるため、
@@ -183,7 +183,7 @@ Wave実行 → 自動点検（発見統合）→ Wave実行 → 自動点検 →
 1. `.takumi/sprints/` から最新の日付ディレクトリを探す
 2. `resume.md` があれば読み込む
 3. resume.md の内容に基づき、中断した Phase から再開:
-   - 計画途中 → `/plan` を再実行
+   - 計画途中 → `/takumi` を再実行
    - 実行途中 → `/exec` を再開（最初の `- [ ]` から）
    - 点検途中 → 点検を再実行してから実行再開
 4. `resume.md` がなければ `.takumi/state.json` から状態を復元

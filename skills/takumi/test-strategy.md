@@ -1,6 +1,6 @@
-# /plan の test strategy (内部補助)
+# /takumi の test strategy (内部補助)
 
-`/plan` 本体から参照される補助ドキュメント。各 task の `verify_profile_ref` を AC-ID から選定する狭い責務ロジック。旧 `/test-strategy-oracle` skill を `/plan` 内部に吸収した形。
+`/takumi` 本体から参照される補助ドキュメント。各 task の `verify_profile_ref` を AC-ID から選定する狭い責務ロジック。
 
 ## 責務
 
@@ -100,7 +100,7 @@ B で複数 hit した場合:
 
 ---
 
-## 起動例(/plan 内部呼出)
+## 起動例(/takumi 内部呼出)
 
 ```yaml
 # 入力 (AC-AUTH-002、遷移条件)
@@ -130,9 +130,9 @@ layers: ["L1", "L4"]  # L4 必須
 
 ---
 
-## /plan との連携
+## /takumi との連携
 
-/plan は task 作成時に各 AC に対して内部呼出する(コマンドではなく関数呼出のイメージ):
+/takumi は task 作成時に各 AC に対して内部呼出する(コマンドではなく関数呼出のイメージ):
 
 ```
 for ac in task.ac_ids:
@@ -174,9 +174,9 @@ for ac in task.ac_ids:
 
 | file | 用途 |
 |---|---|
-| `SKILL.md` (同ディレクトリ) | /plan 本体 |
+| `SKILL.md` (同ディレクトリ) | /takumi 本体 |
 | `verify-profiles-defaults/*.yaml` (同ディレクトリ) | 5 archetype の default template (bootstrap 時 project にコピー) |
-| `~/.claude/skills/verify/SKILL.md` | L1-L6 定義・recipe library |
-| `~/.claude/skills/design/SKILL.md` | 同じ profile registry 方式、design_profile 側 |
+| `~/.claude/skills/takumi/verify/README.md` | L1-L6 定義・recipe library |
+| `~/.claude/skills/takumi/design/README.md` | 同じ profile registry 方式、design_profile 側 |
 | `.takumi/profiles/verify/{name}.yaml` | project 側の profile 本体 |
 | `.takumi/verify/testing-matrix.md` | 導出ルール表 (月次保守) |

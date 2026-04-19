@@ -7,7 +7,7 @@
 - **Tier A-D** は React/Next.js の UI state modeling 成熟度 (production 側の設計進化)
 - **verify archetype** (state-transition / boundary / property / model / metamorphic) はテスト生成の方法論
 
-意味空間が違うので 1 対 1 対応ではない。ただし両者を繋げる薄いマッピングを持つと、`/plan` が自動判定できる。
+意味空間が違うので 1 対 1 対応ではない。ただし両者を繋げる薄いマッピングを持つと、`/takumi` が自動判定できる。
 
 ---
 
@@ -20,7 +20,7 @@
 | **C** (State Machine) | model | differential | XState machine を契約として、旧実装との差分検証 |
 | **D** (Event Sourcing) | model | metamorphic | event invariants + 同義書き換え不変性 |
 
-`/plan` はこの表を使って `verify_profile_ref` を自動補完する:
+`/takumi` はこの表を使って `verify_profile_ref` を自動補完する:
 - `ui_state_model_tier: "B"` の task → `verify_profile_ref: "state-transition"` (+ `model` を fallback layer)
 
 ## Tier B の核心 contract: `actionPreconditions` 共有
@@ -200,7 +200,7 @@ Tier A-D は React/Next.js 特化なので、他言語では**直接 verify arch
 | `SKILL.md` (同ディレクトリ) | 本 skill entry point |
 | `rules-ui-state.md` (同ディレクトリ) | Tier A-D の設計詳細 |
 | `profiles.md` (同ディレクトリ) | refactor_profile 選定、ui-pending-object で参照 |
-| `~/.claude/skills/verify/SKILL.md` | L1-L6、recipe library |
-| `~/.claude/skills/verify/model-based.md` | fc.commands / @xstate/test 詳細 |
-| `~/.claude/skills/plan/test-strategy.md` | AC-ID → verify_profile_ref 選定 |
-| `~/.claude/skills/plan/telemetry-spec.md` | `verify_contract_satisfied` event |
+| `~/.claude/skills/takumi/verify/README.md` | L1-L6、recipe library |
+| `~/.claude/skills/takumi/verify/model-based.md` | fc.commands / @xstate/test 詳細 |
+| `~/.claude/skills/takumi/test-strategy.md` | AC-ID → verify_profile_ref 選定 |
+| `~/.claude/skills/takumi/telemetry-spec.md` | `verify_contract_satisfied` event |

@@ -72,9 +72,9 @@
 
 ### 1. task 作成時間 (分)
 
-**定義**: `/plan` interview 開始〜task 確定 (plan.md に書き込み完了) までの所要時間。
+**定義**: `/takumi` interview 開始〜task 確定 (plan.md に書き込み完了) までの所要時間。
 
-**emit タイミング**: `/plan` が task 完成時、`task_created` event に `authoring_sec` field として含む。
+**emit タイミング**: `/takumi` が task 完成時、`task_created` event に `authoring_sec` field として含む。
 
 **閾値**:
 - 通常: 5-10 分 / task
@@ -173,5 +173,5 @@ log-based metrics として:
 |---|---|
 | `telemetry-spec.md` (同ディレクトリ) | 本体 entry point |
 | `telemetry-schema.md` (同ディレクトリ) | 7 種 event の完全 JSON schema |
-| `SKILL.md` (同ディレクトリ) | `/plan` 本体 |
+| `SKILL.md` (同ディレクトリ) | `/takumi` 本体 |
 | `integrations.md` (同ディレクトリ) | 100 点統合版の新 skill 連携 |

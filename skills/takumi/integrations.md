@@ -1,10 +1,10 @@
-# /plan の 100 点統合版 接続ガイド
+# /takumi の 100 点統合版 接続ガイド
 
-`/plan` 本体(`SKILL.md`)から参照される補助ドキュメント。新規 skill (`/test-strategy-oracle` / `/design`) と telemetry との接続を記述する。
+`/takumi` 本体(`SKILL.md`)から参照される補助ドキュメント。新規 skill (`/test-strategy-oracle` / `/design`) と telemetry との接続を記述する。
 
 ## /test-strategy-oracle 連携
 
-各 task の `verify_profile_ref` は `/test-strategy-oracle` で決定する。/plan は task 生成時に以下の擬似呼出を行う:
+各 task の `verify_profile_ref` は `/test-strategy-oracle` で決定する。/takumi は task 生成時に以下の擬似呼出を行う:
 
 ```
 for ac in task.ac_ids:
@@ -54,7 +54,7 @@ task 作成時に `.takumi/telemetry/profile-usage.jsonl` に `task_created` eve
 }
 ```
 
-詳細 schema は `~/.claude/skills/plan/telemetry-spec.md` と補助の `telemetry-schema.md`。
+詳細 schema は `~/.claude/skills/takumi/telemetry-spec.md` と補助の `telemetry-schema.md`。
 週次レポートで「profile 起因 gate failure 率 < 10% が 4 週」を検出したら儀式化 drift 警告。
 
 ## 採用前に決める閾値 (軍師 指定)
@@ -71,12 +71,12 @@ task 作成時に `.takumi/telemetry/profile-usage.jsonl` に `task_created` eve
 
 | skill / file | 用途 |
 |---|---|
-| `~/.claude/skills/plan/SKILL.md` | 本体 (entry point) |
-| `~/.claude/skills/design/SKILL.md` | IA / style-guide / wireframe 生成 (ui/mixed) |
+| `~/.claude/skills/takumi/SKILL.md` | 本体 (entry point) |
+| `~/.claude/skills/takumi/design/README.md` | IA / style-guide / wireframe 生成 (ui/mixed) |
 | `~/.claude/skills/test-strategy-oracle/SKILL.md` | AC-ID → verify_profile 選定 |
-| `~/.claude/skills/plan/telemetry-spec.md` | 儀式化 drift 検知の telemetry spec |
-| `~/.claude/skills/verify/SKILL.md` | L1-L6 + recipe library |
+| `~/.claude/skills/takumi/telemetry-spec.md` | 儀式化 drift 検知の telemetry spec |
+| `~/.claude/skills/takumi/verify/README.md` | L1-L6 + recipe library |
 | `~/.claude/skills/test-strategy-oracle/profiles-defaults/*.yaml` | 5 archetype defaults |
-| `~/.claude/skills/design/profiles-defaults/*.yaml` | 4 design profile defaults |
+| `~/.claude/skills/takumi/design/profiles-defaults/*.yaml` | 4 design profile defaults |
 | `.takumi/profiles/{verify,design}/*.yaml` | project 側 profile 本体 |
 | `.takumi/telemetry/profile-usage.jsonl` | event log (append-only) |

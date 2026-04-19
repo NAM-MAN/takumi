@@ -253,7 +253,7 @@ tier_graduation_proposed:
 
 ### 4. verify 側の差分テスト並走 (L3 Differential)
 
-旧 Pending Object と新 State Machine の出力が一致するか 1 スプリント確認してから旧版削除。
+既存 Pending Object と新 State Machine の出力が一致するか 1 スプリント確認してから旧版削除。
 verify skill の `differential.md` (in-repo 2-export パターン) を参照。
 
 ---
@@ -290,4 +290,4 @@ UI state modeling は React/Next.js 特化。他言語では:
 | `verify-contracts.md` (同ディレクトリ) | Tier → verify archetype 対応、actionPreconditions contract 詳細 |
 | `profiles.md` (同ディレクトリ) | ui-pending-object profile 詳細 |
 | `review-checklist.md` (同ディレクトリ) | Tier B/C/D の contract 評価 |
-| `~/.claude/skills/verify/model-based.md` | fc.commands / @xstate/test 詳細 |
+| `~/.claude/skills/takumi/verify/model-based.md` | fc.commands / @xstate/test 詳細 |

@@ -54,7 +54,7 @@ Agent(
   description: "sweep execution",
   subagent_type: "general-purpose",
   prompt: """
-    Read ~/.claude/skills/sweep/SKILL.md fully and execute
+    Read ~/.claude/skills/takumi/sweep/README.md fully and execute
     Phase 0c through Phase 5. Also read CLAUDE.md for project context.
 
     ## I/O 契約（厳守）
@@ -200,13 +200,13 @@ resolved-backlog.md に対して triage と同じ手順を実行:
 
 ## Phase 4 — Plan + Execute
 
-1. `/plan` パターン（バックログ入力モード）で Wave 計画を生成
+1. `/takumi` パターン（バックログ入力モード）で Wave 計画を生成
    - Synthesis案は依存する2課題をセットで同一Waveに配置
    - 自己増殖型で計画
 2. `/exec` パターンで実行
 
 修正対象がテスト追加 / property 強化 / mutation score 向上を伴う場合は、
-**verify skill を内部呼び出し** する (`~/.claude/skills/verify/SKILL.md`)。
+**verify skill を内部呼び出し** する (`~/.claude/skills/takumi/verify/README.md`)。
 職人 タスクとして「verify L1 を utils に適用」のように具体化して Wave に組み込む。
 
 ---
