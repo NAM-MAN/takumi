@@ -1,272 +1,270 @@
 # takumi (匠)
 
-**Claude Code で開発の全工程を `/takumi` 1 つのコマンドに集約する skill。**
-「次何を作るか?」を伝えるだけで、仕様の深掘り・デザイン生成・実装・テスト・コードレビューまで走ります。
+Claude Code の skill。`/takumi` ひとつで、やりたいことをそのまま伝えるだけで済む。「note にお気に入り機能つけて」と言えば、中身の詰め方からデザイン・実装・テスト・レビューまで勝手に走ってくれる。
 
 ---
 
-## 5 分で試す
+## 5 分でためす
 
 ```bash
-# 1. インストール (gh CLI v2.90.0+ が必要)
+# gh CLI v2.90.0+ が必要
 gh skill install NAM-MAN/takumi
 
-# 2. Claude Code を開いて、自分のプロジェクトで実行
-/takumi note に お気に入り機能を追加して
+# Claude Code で実行
+/takumi note にお気に入り機能つけて
 ```
 
-対話で数問 → 仕様確定 → 計画 → 実装 → テスト → gate 通過、が自動で走ります。
+何問か聞かれて答えるだけで、仕様が決まって、計画立てて、実装して、テストして、最後まで走る。
 
 ---
 
-## こんなとき使う(ユースケース)
+## こんなときに使う
 
-| やりたいこと | 伝え方 |
+| やりたいこと | こう書くだけ |
 |---|---|
-| 新機能を追加したい | `/takumi note の一括リネーム機能を追加して` |
-| 既存画面を改修 | `/takumi dashboard の並び順を drag&drop にして` |
-| セキュリティが心配 | `/takumi security 見て` |
-| パフォーマンスが気になる | `/takumi perf 調べて` |
-| リリース前の総点検 | `/takumi リリース前に全般見て` |
-| コードを綺麗にしたい | `/takumi auth 周りをリファクタして` |
-| テストの鋭さを上げたい | `/takumi 認証モジュールのテスト強化して` |
-| 中断した作業を再開 | `/takumi 続きから` |
-| 今動いてるものを止めたい | `/takumi 止めて` |
+| 新しい機能作りたい | `/takumi <機能> 追加して` |
+| 画面の挙動変えたい | `/takumi dashboard の並び順を drag&drop にして` |
+| セキュリティ大丈夫か見たい | `/takumi security 見て` |
+| 重くない?遅くない?調べたい | `/takumi perf 調べて` |
+| リリース前にざっと総点検 | `/takumi リリース前に全般見て` |
+| コードちょっと汚いなおしたい | `/takumi auth 周りをリファクタして` |
+| テスト弱いから強くしたい | `/takumi 認証のテスト強くして` |
+| 前回の続きから再開 | `/takumi 続きから` |
+| ちょっと止めて | `/takumi 止めて` |
 
-**コマンドを覚える必要はありません。自然文で `/takumi` に伝えるだけ**。takumi が意図を読んで適切な内部処理に振り分けます。
+コマンドを覚えなくていい。`/takumi` の後に好きに書けば、中で判断して振り分けてくれる。
 
 ---
 
-## 思想(4 つ)
+## 考え方(4 つだけ)
 
-### 1. 作ってから疑うのではなく、最初から正しく
+### 1. 作ってから疑うのをやめる
 
-テストは実装後に後追いで書くものではありません。takumi は仕様を AC-ID (Acceptance Criterion) に原子分割し、各 AC に最適なテスト戦略(Property-Based / Model-Based / Differential 等)を自動選定。wave gate で mutation score や layout invariant を満たさないと次へ進めません。**「直してから疑う」→「壊れ方を先に固定してから実装」** に思想を変えます。
+ふつうはコードを書いてから「テストないな」と追加する流れだが、takumi は逆。まず「何が壊れちゃいけないか」を AC-ID で決めて、テストの型を自動で選んで、そのゲートを通らないと次に進めない。後追いで疲れるより、先に決めておく方が結局ラク。
 
-### 2. 人間が覚えるコマンドは 1 つだけ
+### 2. 覚えるコマンドは `/takumi` ひとつ
 
-`/plan` `/probe` `/sweep` `/exec` を覚えなくていい。`/takumi <自然文>` だけで済みます。意図分類は内部で決定木が処理、曖昧な時は 1 問だけ確認します。サブコマンド構文(`/takumi override ...` 等)は採用せず、全て自然文。
+`/plan` `/probe` `/sweep` みたいにバラバラ覚えなくていい。中で「これは新機能追加っぽい」「これは診断っぽい」と振り分ける。わかんない時は 1 回だけ聞き返してくる。
 
-### 3. 自動化は event 駆動、常時巡回しない
+### 3. ループを常時回さない
 
-`verify-loop` を 10 分おきに回し続けるような疲労労働はしません。mutation score が急落した、本番障害が起きた、リリースブロッカーが出た、といった event が起きた時だけ loop は動きます。普段は静か。
+10 分おきにテストを回し続けて疲れるやつ、やめた。何か起きたとき(テストスコア急落、本番でエラー、リリース直前)だけ動く。ふだんは静か。
 
-### 4. デザインは seeded inference で「一撃必中」
+### 4. デザインは最初から固める
 
-「Notion っぽく」を繰り返してデザイン調整する疲労も解消。`ref_archetypes` (1-2 個) + `brand_tone` + `product_type` + `target_user` の 4 項目で seeded 設計を実行。同じ入力なら同じ style-guide が出る(drift 不能)。画面ごとの sitemap / wireframe / interactions も自動生成。
+「Notion っぽく」って何回も言い直すのやめたい。最初に `ref_archetypes`(参考にしたいサイト 1-2 個)と `brand_tone`(堅めとかポップとか)と `product_type`(SaaS ダッシュボードとか)と `target_user`(誰が使うか)を伝えると、色とか余白とか全部決めてくれる。同じ入力なら同じ結果、ブレない。
 
 ---
 
 ## インストール
 
-### 必要なもの
+### いるもの
 
 - [Claude Code](https://docs.anthropic.com/claude-code)
 - [gh CLI v2.90.0+](https://github.com/cli/cli)
-- (推奨) [codex CLI](https://github.com/openai/codex) — gpt-5.4 による敵対的レビューに使用
+- (おすすめ) [codex CLI](https://github.com/openai/codex) — きびしめのレビュー担当(「軍師」ロール)が動く
 
-### 手順
+### コマンド
 
 ```bash
-# install 前に内容確認(セキュリティ上の推奨)
+# 中身をさきに見てから入れる(セキュリティ的におすすめ)
 gh skill preview NAM-MAN/takumi takumi
 
-# install (skill 名省略可能)
+# 入れる
 gh skill install NAM-MAN/takumi
 
-# バージョン固定したい場合
-gh skill install NAM-MAN/takumi takumi --pin v0.2.3
+# バージョン固定
+gh skill install NAM-MAN/takumi takumi --pin v0.2.4
 
-# 更新 / 削除
+# 更新 / 消す
 gh skill update takumi
 gh skill uninstall takumi
 ```
 
-インストール後、Claude Code を開いて `/takumi` が候補に出れば OK。
+Claude Code を開いて `/takumi` が候補に出れば OK。
 
 ---
 
-## 使い方(6 mode、自動で振り分く)
+## 中で何が起きてるか(6 つのモード)
 
-自然文で伝えると、内部で以下 6 mode のいずれかに振り分けられます。
+`/takumi` に自然文を投げると、中で次のどれかに振り分けられる。気にしなくていいけど、気になる人向けに。
 
-### normal — 新機能や変更
+### normal — 新しいものを作る/変える
 
 ```
-/takumi note に お気に入り機能を追加
+/takumi note にお気に入り機能追加
 ```
-対話で要件を深掘り → AC-ID 自動起草 → デザイン生成(UI 時) → 計画 → 実装 → テスト → gate。
+何問か対話して仕様を固める → AC-ID 自動で作る → (UI なら)デザイン生成 → 計画 → 実装 → テスト → チェック。
 
-### probe — 観点指定の診断 + 修正
+### probe — 気になるところを掘る
 
 ```
 /takumi security 見て
 /takumi perf と a11y 調べて
 ```
-発見者 (haiku Agent) を観点ごとに並列起動 → ICE 採点 → 修正計画 → 実行。
+観点ごとに調査役(haiku)を並列で走らせて、問題を ICE 採点して、直す計画まで作る。
 
-### sweep — 全域棚卸し
+### sweep — ぜんぶ見直す
 
 ```
 /takumi リリース前に総点検
 ```
-8 品質次元(機能正確性 / UX / Missing / Performance / Security / Accessibility / Architecture / DX)を並列スキャン → 矛盾する発見を「統合パターン」で同時解決 → backlog 生成。
+8 つの品質軸を全部並列でスキャン。矛盾する指摘もあるので、両立できる解(統合パターン)を探して backlog にする。
 
-### status — 今なにが動いているか
+### status — 今なに動いてるか知りたい
 
 ```
 /takumi 今なに動いてる?
 ```
-自動処理・gate 判定・停止中の override を 30 秒で提示。
+動いてる処理・チェック結果・止まってる override を 30 秒で教える。
 
-### continue — 中断からの再開
+### continue — 中断から戻る
 
 ```
 /takumi 続きから
 ```
-前回の `mode` と `active_run_id` から復元。
+前回どこで止まったか覚えてるので、そこから再開。
 
-### override — 緊急停止
+### override — 止めたい
 
 ```
 /takumi 止めて
 /takumi auth の loop 止めて
 /takumi hard gate を warning に
 ```
-`.takumi/control/` に一時 override を記録。自動処理を止める。
+`.takumi/control/` に止めたい内容を書いて、自動処理を一時的にオフにする。
 
 ---
 
-## プロジェクトに何が書かれるか
+## プロジェクトに何が書かれる?
 
-takumi はプロジェクトルートの `.takumi/` ディレクトリ配下だけに書き込みます(既存コードには `/takumi` を明示的に呼んで実装する時だけ変更)。
+プロジェクトのルートに `.takumi/` というディレクトリが作られる。そこにしか書かない。既存のコードは、あなたが `/takumi` で実装を頼んだ時だけ変わる。
 
 ```
 .takumi/
-├── plans/{name}.md              # Wave 計画
-├── specs/{feature}.md           # AC-ID (Acceptance Criterion)
-├── design/                      # sitemap / style-guide / wireframes (ui)
-├── profiles/                    # verify / design / refactor profile
-├── sprints/{date}/              # probe / sweep の証跡
-├── discovery-calibration.jsonl  # 発見者精度 ledger
-├── telemetry/                   # 指標計測
-├── control/                     # 一時 override
-└── state.json                   # 実行状態
+├── plans/{name}.md              # 計画ファイル
+├── specs/{feature}.md           # AC-ID(何が守られるべきか)
+├── design/                      # sitemap / style-guide / wireframe
+├── profiles/                    # verify / design / refactor の設定
+├── sprints/{日付}/               # probe / sweep の記録
+├── discovery-calibration.jsonl  # 調査役の精度の履歴
+├── telemetry/                   # 指標の記録
+├── control/                     # 止めてる内容
+└── state.json                   # 今の状態
 ```
 
-Git 管理には以下を推奨:
+`.gitignore` に入れておくとよさそうなもの:
 
 ```
-# .gitignore
 .takumi/sprints/
 .takumi/control/
 .takumi/telemetry/
 ```
 
-残り(`plans/`, `specs/`, `design/`, `profiles/`, `state.json`)はチームで共有する価値があるので追跡します。
+他(`plans/`, `specs/`, `design/`, `profiles/`, `state.json`)はチームで共有したいので追跡するのがおすすめ。
 
 ---
 
-## 4 ロール体制
+## 中で働いてる 4 人
 
-takumi の内部で 4 つの AI ロールが役割分担します。
+takumi の中で AI が役割分担してる。
 
-| ロール | モデル | 担当 |
+| 名前 | モデル | やってること |
 |---|---|---|
-| 棟梁 (touryou) | opus | 全体統括・ユーザー対話・計画作成 |
-| 軍師 (gunshi) | gpt-5.4 (codex exec) | 深い判断・敵対的レビュー |
-| 職人 (shokunin) | sonnet (Agent) | 実装 |
-| 斥候 (sekkou) | haiku (Agent) | 調査 |
+| 棟梁 (とうりょう) | opus | 全体まとめ・あなたと対話・計画づくり |
+| 軍師 (ぐんし) | gpt-5.4 (codex exec) | きびしめの最終チェック |
+| 職人 (しょくにん) | sonnet (Agent) | 実装する人 |
+| 斥候 (せっこう) | haiku (Agent) | 調べる人 |
 
-codex CLI がないと軍師ロールはスキップされ、棟梁(opus)が代替レビューします(品質はやや落ちる)。
+codex CLI がないと軍師はお休み。棟梁が代わりに見るけど、精度はちょっと落ちる。
 
 ---
 
-## 初めての人がよく思う疑問
+## はじめての人がよく思うこと
 
-### Q1. インストールしたら勝手に何か始まる?
+### Q1. 入れたら勝手に何か動き出す?
 
-いいえ。`/takumi` を明示的に呼ぶまで takumi は完全に静かです。自動 event 駆動(mutation drop 等での loop 起動)も、初回の `/takumi` 実行で state が作られてからでないと動きません。
+動かない。`/takumi` を自分で呼ぶまで何もしない。「ループが自動で起動」みたいなのも、初めて `/takumi` を使って状態ができてから、条件がそろった時だけ。
 
-### Q2. 既存プロジェクトに入れて壊れない?
+### Q2. 既存のプロジェクトに入れて壊れない?
 
-takumi は `.takumi/` 配下にしか書きません。既存コードを変更するのは「`/takumi 新機能追加` のように明示的に実装を依頼した時だけ」です。試すなら新規ブランチ推奨。
+`.takumi/` の下にしか書き込まない。既存のコードを触るのは、あなたが `/takumi 〜追加して` と実装を頼んだときだけ。心配なら新しいブランチで試してほしい。
 
-### Q3. 試しに使ってみて合わなかったら消せる?
+### Q3. 合わなかったら消せる?
 
-はい。
+消せる。
 
 ```bash
-gh skill uninstall takumi      # skill 削除
-rm -rf .takumi/                # プロジェクト状態の削除
+gh skill uninstall takumi   # スキル消す
+rm -rf .takumi/             # プロジェクトの記録を消す
 ```
 
-これで完全に戻ります。Git 管理外です。
+これで元通り。Git には関係しない。
 
-### Q4. 対話が日本語なのは何で? 英語でも使える?
+### Q4. 英語でも使える?
 
-takumi の対話は日本語で設計されています(意図分類辞書も日本語中心)。英語でも `/takumi add archive feature to notes` のように動きますが、一部の観点語(「心配」「調べて」等)は日本語の方が判定精度が高いです。貢献歓迎(辞書の PR)。
+動くけど、日本語のほうが判定が強い。「心配」「調べて」みたいな日本語の言い方を軸に作ってある。英語の例文を増やしたい人は PR 歓迎。
 
-### Q5. コストはどれくらい?
+### Q5. お金どれくらいかかる?
 
-1 回の `/takumi` 実行あたり、おおよそ:
-- 小規模 feature (1-2 ファイル): $0.5-2
-- 中規模 (4-10 ファイル、Wave 3 以内): $2-10
-- probe (観点指定診断): $3-8
-- sweep (8 次元全域): $10-30
+1 回あたりの目安:
+- ちっちゃい機能(1-2 ファイル): $0.5-2
+- 中くらい(4-10 ファイル): $2-10
+- probe(観点診断): $3-8
+- sweep(全域点検): $10-30
 
-モデル内訳: opus (対話) + codex/gpt-5.4 (敵対的レビュー、最も高い) + sonnet (実装) + haiku (調査)。軍師(codex)を省けば約半額。
+いちばん高いのは軍師(codex/gpt-5.4)。使わなければ半額くらい。
 
-### Q6. Claude Code がない環境でも動く?
+### Q6. Claude Code ないと動く?
 
-動きません。takumi は Claude Code の skill として作られています。
+動かない。これは Claude Code の skill。
 
-### Q7. 最初は何から試すべき?
+### Q7. 最初何から試したらいい?
 
-**小さな新機能追加**を 1 つ試すのが一番早いです:
+**ちっちゃい機能をひとつ追加**するのが一番はやい。
 
 ```
 /takumi このプロジェクトに <簡単な機能> を追加して
 ```
 
-1 回成功すれば「対話 → AC → 計画 → 実装」の流れが体感で分かります。最初から probe や sweep をやると情報量が多くて圧倒されがちです。
+1 回うまくいけば「対話 → 仕様 → 計画 → 実装」の流れが体でわかる。いきなり probe や sweep をやると情報多すぎて疲れる。
 
-### Q8. `takumi takumi` と 2 回書くのはなぜ?
+### Q8. `takumi takumi` って 2 回書くのなんで?
 
-`gh skill install OWNER/REPO SKILL` という gh CLI の文法です。たまたま repo 名と skill 名が同じ `takumi` だから 2 回出るだけ。`gh skill install NAM-MAN/takumi` と省略形も使えます。
+`gh skill install リポジトリ スキル名` という gh CLI の書き方。たまたまリポジトリ名もスキル名も `takumi` だから 2 回出るだけ。省略形 `gh skill install NAM-MAN/takumi` でもいい。
 
-### Q9. 自動振り分けがいつも正しいの?
+### Q9. いつも正しく振り分けてくれる?
 
-100% ではありません。曖昧な時は **1 問だけ確認**します(「security feature を追加しますか、security 診断しますか?」)。恒常的な誤分類は telemetry で計測、辞書(`natural-language.md`)を運用で拡充します。
+100% じゃない。あいまいな時は「これは A ですか B ですか?」と 1 回だけ聞き返す。ずっと間違う場合は、`natural-language.md` の辞書を増やせば直る。
 
-### Q10. 他の Claude Code skill と競合しない?
+### Q10. 他の Claude Code スキルと喧嘩しない?
 
-しません。takumi は内部に全機能を持ち、他の skill を呼びません。既存の `/review` や `/security-review` などはそのまま動きます。
+しない。takumi は中で全部やるから、他のスキルを呼ばない。`/review` とか `/security-review` とかもそのまま使える。
 
 ---
 
-## トラブルシューティング
+## うまくいかない時
 
 ### `gh skill install` で「unknown command」
 
-gh v2.89 以前です。`brew upgrade gh` で v2.90.0+ に更新してください。
+gh が古い。`brew upgrade gh` で v2.90.0 以上にして。
 
-### install しても `/takumi` が候補に出ない
+### 入れたのに `/takumi` が出ない
 
-Claude Code を再起動。まだ出ない場合:
+Claude Code を一度閉じて開き直す。それでもダメなら:
 
 ```bash
-gh skill list         # install 済みの確認
-ls ~/.claude/skills/  # symlink が貼られているか確認
+gh skill list
+ls ~/.claude/skills/
 ```
 
-### 振り分けが毎回曖昧で聞き返される
+### 毎回あいまいで聞き返される
 
-`natural-language.md` の辞書が project 固有語彙をカバーしていない可能性。`~/.claude/skills/takumi/natural-language.md` に直接例文を追加するか、issue を作ってください。
+辞書に自分のプロジェクトの言葉が足りてない。`~/.claude/skills/takumi/natural-language.md` に例を足すか、issue で相談して。
 
-### wave gate でずっと mutation_floor を満たせない
+### ゲートの mutation_floor が高すぎて通らない
 
-初期導入時によくあります。task 単位の `mutation_tier` を `low` に明示指定すれば floor が下がります:
+最初はよくある。タスクに `mutation_tier: low` って書くと閾値が下がる:
 
 ```markdown
 - [ ] 1. **タスク名**
@@ -275,53 +273,52 @@ ls ~/.claude/skills/  # symlink が貼られているか確認
 
 ---
 
-## 既存プロジェクトからの移行
+## 昔の `.sisyphus/` から乗り換え
 
-旧 `.sisyphus/` を使っていた場合:
+もし前に `.sisyphus/` を使ってたら:
 
 ```bash
-cd path/to/existing/project
+cd 自分のプロジェクト
 mv .sisyphus .takumi
 ```
 
-中身のファイル構造は 1 対 1 対応なので、リネームだけで動きます。
+中身はそのまま。リネームだけで動く。
 
 ---
 
-## 詳細ドキュメント
+## もっと詳しく
 
-- **skill 本体**: `~/.claude/skills/takumi/SKILL.md`(install 後)
-- **意図分類辞書**: `takumi/natural-language.md`
-- **6 mode の内部**: `takumi/probe/`, `takumi/sweep/`, `takumi/design/` 等のサブディレクトリ
-- **検証戦略 (L1-L6)**: `takumi/verify/`
-- **リファクタ policy (5 profile)**: `takumi/strict-refactoring/`
-- **儀式化 drift 検出**: `takumi/telemetry-spec.md`
-
----
-
-## 設計経緯
-
-本 skill は 7 ラウンドの Oracle (gpt-5.4) 敵対的レビューを経て設計されました。主要議題:
-
-1. 9 フェーズ案の穴潰し
-2. scope reduction (SQLite → YAML、supervisor 軽量化)
-3. loop 設計 (event-driven + priority 2 段)
-4. first-time-right (後追い loop 疲労の解消)
-5. 最終統合版 (条件付き採用)
-6. 最小コマンド (2 個 → 1 個に絞り込み)
-7. strict-refactoring policy (profile registry、Tier A-D、actionPreconditions contract)
-
-興味のある方は git log を追うとそれぞれの判断が追えます。
+- 本体: `~/.claude/skills/takumi/SKILL.md`(入れた後に見れる)
+- 辞書: `takumi/natural-language.md`
+- 6 mode の中身: `takumi/probe/`, `takumi/sweep/`, `takumi/design/` など
+- テスト戦略 (L1-L6): `takumi/verify/`
+- リファクタのルール (5 profile): `takumi/strict-refactoring/`
 
 ---
 
-## 貢献
+## できるまで
+
+takumi は Oracle (gpt-5.4) と 7 回やり合って作った。
+
+1. 9 フェーズ案に穴がないか叩く
+2. SQLite を YAML に落として軽くする
+3. ループ設計を 2 段にする
+4. 「作ってから疑う」をやめる
+5. 「採用していい条件」を決める
+6. コマンドを 2 つから 1 つに絞る
+7. リファクタのルールを 5 profile に整理
+
+気になる人は git log を追うと議論の流れが見える。
+
+---
+
+## 手伝ってほしいこと
 
 issue / PR 歓迎:
 
-- 新しい観点語 / 診断動詞の追加 (`natural-language.md`)
-- 言語別緩和ルール (`language-relaxations.md`)
-- 統合パターン追加 (`integration-playbook.md`)
+- 辞書に新しい言い回し追加(`natural-language.md`)
+- 言語別のゆるめルール(`language-relaxations.md`)
+- 統合パターンの追加(`integration-playbook.md`)
 
 ---
 
