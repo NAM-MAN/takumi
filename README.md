@@ -106,7 +106,7 @@ gh skill update takumi
 
 **内部動作**:
 1. 8 品質次元(機能正確性 / UX / Missing / Performance / Security / Accessibility / Architecture / DX)を並列スキャン
-2. 矛盾する発見を Synthesis パターンで統合解決
+2. 矛盾する発見を 統合パターンで解決
 3. 統合 backlog → Wave 計画 → 自動実行
 
 ### 4. status — 今なにが動いているか
@@ -191,7 +191,7 @@ takumi の意図分類は決定木で動く:
 - **意図分類ルータ**: normal / probe / sweep / status / continue / override の 6 mode
 - **計画生成**: 対話 → AC-ID 自動起草 → Wave 計画 → 自動実行
 - **観点診断** (内部 probe mode): 発見者並列 → ICE triage → 修正計画
-- **全域棚卸し** (内部 sweep mode): 8 次元並列発見 → Synthesis 矛盾統合 → backlog
+- **全域棚卸し** (内部 sweep mode): 8 次元並列発見 → 矛盾統合 → backlog
 - **設計生成** (design): project_mode=ui/mixed で seeded design inference (IA / style-guide / wireframe)
 - **検証戦略** (verify): L1 PBT / L2 Component / L3 Model-based+Diff / L4 Mutation / L5 Smoke / L6 AI Review
 - **検証ループ** (verify-loop): mutation score 向上の期間限定 loop
@@ -293,7 +293,7 @@ issue / PR 歓迎。特に:
 
 - 新しい観点語 / 診断動詞の追加 (natural-language.md の辞書)
 - 言語別緩和ルールの追加 (language-relaxations.md)
-- Synthesis パターン追加 (synthesis-playbook.md)
+- 統合パターン追加 (integration-playbook.md)
 
 ## ライセンス
 

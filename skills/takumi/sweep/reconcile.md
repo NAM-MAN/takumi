@@ -1,6 +1,6 @@
 # Reconciliation（sweep skill 内部参照、Phase 2 詳細）
 
-Phase 2 の全ステップの詳細手順。`synthesis-playbook.md` と併用。
+Phase 2 の全ステップの詳細手順。`integration-playbook.md` と併用。
 
 ## Step 2a — Merge + Dedup
 
@@ -23,20 +23,20 @@ Phase 2 の全ステップの詳細手順。`synthesis-playbook.md` と併用。
 
 矛盾ペアを `.takumi/sprints/{日付}/conflicts.md` に書き出す。
 
-## Step 2c — Synthesis（核心）
+## Step 2c — 統合（核心）
 
-同ディレクトリの `synthesis-playbook.md` を読み、パターンを取得。
+同ディレクトリの `integration-playbook.md` を読み、パターンを取得。
 
 各矛盾ペアに対して:
 
 1. **意図抽出**: 両方の「手段」ではなく「目的」を特定
 2. **Playbook照合**: 矛盾タイプで一致パターンを探す
-3. **Synthesis生成**: パターン適用 or 新案創造
+3. **統合生成**: パターン適用 or 新案創造
 
-出力フォーマット（各 Synthesis）:
+出力フォーマット（各 統合）:
 
 ```markdown
-### SYNTHESIS-NNN: {タイトル}
+### INTEGRATION-NNN: {タイトル}
 **矛盾**: {D?} [B-NNN] vs {D?} [B-NNN]
 **意図A**: {目的}
 **意図B**: {目的}
@@ -49,17 +49,17 @@ Phase 2 の全ステップの詳細手順。`synthesis-playbook.md` と併用。
 
 ## Step 2d — 軍師 検証
 
-全 Synthesis をバッチで 軍師 (gpt-5.4) に送り検証:
+全 統合 をバッチで 軍師 (gpt-5.4) に送り検証:
 
 ```bash
 codex exec -m gpt-5.4 -s read-only -C "$(pwd)" \
-  "以下のSynthesis提案を検証せよ。各提案について:
-1. 真のSynthesisか？（両次元を100%満たすか、片方が犠牲になっていないか）
+  "以下の統合提案を検証せよ。各提案について:
+1. 真の統合か？（両次元を100%満たすか、片方が犠牲になっていないか）
 2. 実装可能か？
 3. 第3の次元を犠牲にしていないか？
-4. より良いSynthesisはないか？
+4. より良い統合はないか？
 
-判定: ✅真のSynthesis | ⚠️偽のSynthesis（理由）| 💡改善案あり
+判定: ✅真の統合 | ⚠️偽の統合（理由）| 💡改善案あり
 
 $(cat .takumi/sprints/{日付}/syntheses.md)" 2>&1 | tail -200
 ```
@@ -78,6 +78,6 @@ $(cat .takumi/sprints/{日付}/syntheses.md)" 2>&1 | tail -200
 
 ## Step 2f — Playbook 進化
 
-新規 Synthesis パターンが生まれた場合:
-- 同ディレクトリの `synthesis-playbook.md` にパターンを追記
+新規 統合パターンが生まれた場合:
+- 同ディレクトリの `integration-playbook.md` にパターンを追記
 - 矛盾タイプ・適用条件・充足証明を記録

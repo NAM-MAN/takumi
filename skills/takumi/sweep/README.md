@@ -1,12 +1,12 @@
 ---
 name: sweep
-description: "全品質次元を自動スキャンし、矛盾をSynthesisで統合解決するメタオーケストレーター。/sweep で実行。観点の指定不要。"
+description: "全品質次元を自動スキャンし、矛盾を統合で統合解決するメタオーケストレーター。/sweep で実行。観点の指定不要。"
 ---
 
 # Sweep: 全品質次元の自動スキャン・修正オーケストレーター
 
 N個の品質次元ごとに独立した発見を並列実行し、
-矛盾する課題をSynthesisで同時解決してから統合バックログを生成する。
+矛盾する課題を統合で同時解決してから統合バックログを生成する。
 観点の指定は不要。全次元を自動でカバーする。
 
 ## 支援ファイル（このディレクトリ内、必要時にReadで読む）
@@ -14,7 +14,7 @@ N個の品質次元ごとに独立した発見を並列実行し、
 | ファイル | 用途 | 読むタイミング |
 |---------|------|--------------|
 | `quality-model.md` | MECE次元定義・優先順位・深度ルール | Phase 0 |
-| `synthesis-playbook.md` | 矛盾解決パターン集 | Phase 2c |
+| `integration-playbook.md` | 矛盾解決パターン集 | Phase 2c |
 
 - `/probe` の内部参照ファイル（triage.md）のICE採点・反論者チェックを踏襲する
 - プロジェクト固有状態は `.takumi/` に保存する
@@ -177,10 +177,10 @@ Sweep 初期化完了:
 
 1. **Step 2a — Merge + Dedup**: 全次元を1ファイルに統合、重複集約
 2. **Step 2b — Conflict Detection**: 同一ファイル/コンポーネントに対する逆方向提案を検出、`conflicts.md` に出力
-3. **Step 2c — Synthesis**: `synthesis-playbook.md` を参照し、矛盾を両立する解決案を生成
-4. **Step 2d — 軍師 検証**: 全 Synthesis を codex exec で検証（真の Synthesis か / 第3次元を犠牲にしていないか）
+3. **Step 2c — 統合**: `integration-playbook.md` を参照し、矛盾を両立する解決案を生成
+4. **Step 2d — 軍師 検証**: 全 統合 を codex exec で検証（真の 統合 か / 第3次元を犠牲にしていないか）
 5. **Step 2e — Coherence Verification**: 解決済みペアの相互整合性
-6. **Step 2f — Playbook 進化**: 新パターンを `synthesis-playbook.md` に追記
+6. **Step 2f — Playbook 進化**: 新パターンを `integration-playbook.md` に追記
 
 出力: `.takumi/sprints/{日付}/resolved-backlog.md`
 
@@ -191,9 +191,9 @@ Sweep 初期化完了:
 resolved-backlog.md に対して triage と同じ手順を実行:
 
 1. **MECE分類**: Bug/UX/Missing/Performance/Security/Accessibility/Architecture/DX
-2. **ICE採点**: Impact × Confidence × Ease（Synthesis案はConfidence+1加点）
+2. **ICE採点**: Impact × Confidence × Ease（統合案はConfidence+1加点）
 3. **反論者チェック**: 軍師 に上位20件を送り ✅/⚠️/❌ 判定
-4. **スイープ選出**: 8-15件（Synthesis案は2課題分としてカウント）
+4. **スイープ選出**: 8-15件（統合案は2課題分としてカウント）
 5. 出力: `.takumi/sprints/{日付}/backlog.md`
 
 ---
@@ -201,7 +201,7 @@ resolved-backlog.md に対して triage と同じ手順を実行:
 ## Phase 4 — Plan + Execute
 
 1. `/takumi` パターン（バックログ入力モード）で Wave 計画を生成
-   - Synthesis案は依存する2課題をセットで同一Waveに配置
+   - 統合案は依存する2課題をセットで同一Waveに配置
    - 自己増殖型で計画
 2. `/exec` パターンで実行
 
@@ -214,21 +214,21 @@ resolved-backlog.md に対して triage と同じ手順を実行:
 ## Phase 5 — 完了処理
 
 1. `.takumi/quality-state.md` を更新（各次元の卒業状態・精度）
-2. Synthesis Playbook に新パターンがあれば追記済みか確認
+2. 統合パターン集 に新パターンがあれば追記済みか確認
 3. 完了レポート:
 
 ```markdown
 # Sweep 完了: {日付}
 
 ## カバレッジ
-| 次元 | 深度 | 発見数 | 採用数 | Synthesis |
+| 次元 | 深度 | 発見数 | 採用数 | 統合 |
 |------|------|--------|--------|-----------|
 | D1   | DEEP | {N}    | {N}    | {N}件     |
 | ...  |      |        |        |           |
 
-## Synthesis成果
+## 統合成果
 - 矛盾検出: {N}ペア
-- Synthesis成功: {N}件（{2N}課題を{N}変更で解決）
+- 統合成功: {N}件（{2N}課題を{N}変更で解決）
 - Playbook新規登録: {N}パターン
 
 ## 次回への引継ぎ
@@ -251,6 +251,6 @@ resolved-backlog.md に対して triage と同じ手順を実行:
 ## 制約
 
 - Phase 1 の次元Discovery は必ず並列実行（逐次禁止）
-- Synthesis は必ず軍師検証を通す（自己検証禁止）
+- 統合 は必ず軍師検証を通す（自己検証禁止）
 - Playbook更新はsweep完了時のみ（実行中は読み取り専用）
 - 各Phaseの区切りで進捗を報告するが、確認は求めず即座に次Phaseへ進む（ユーザーが「止めて」と言わない限り止まらない）

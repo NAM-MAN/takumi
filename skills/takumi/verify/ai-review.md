@@ -163,7 +163,7 @@ OpenAI API key が無く Anthropic API key だけある場合の fallback:
 - **verify L6** (本ファイル) = CI / pre-push の AI ゲート (軍師 一発呼出)
 - 組み込み `/review` = 対話的レビュー (ローカル、Claude)
 - 組み込み `/security-review` = 対話的セキュリティレビュー (ローカル、Claude)
-- **sweep Phase 2e** = 軍師 Synthesis 検証 (verify とは別目的)
+- **sweep Phase 2e** = 軍師による統合検証 (verify とは別目的)
 
 → verify L6 は **CI / pre-push ゲート専用、軍師 一発呼出**。
 対話的レビューは組み込みコマンド (Claude 系) に任せる。

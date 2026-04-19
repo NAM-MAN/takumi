@@ -84,7 +84,7 @@ E は DOM と非同期があり最難関 → 最後に回す (strict-refactoring
 
 ## Phase 0: ガード (loop 呼び出し時に必ず実行)
 
-### 0a. boulder 競合回避
+### 0a. 実行状態 (state.json) 競合回避
 ```
 .takumi/state.json.status === "in_progress" AND active_plan !== "verify-loop"
  → 「他のスキルが実行中。スキップ」と報告して即終了

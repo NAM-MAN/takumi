@@ -16,7 +16,7 @@ type Tier = "A" | "B" | "C" | "D"
 type Metrics = { slug: string; tier: Tier; generated_format: string; evidence: any }
 
 const PROJECT_ROOT = process.cwd()
-const MACHINES_DIR = path.join(PROJECT_ROOT, ".sisyphus", "machines")
+const MACHINES_DIR = path.join(PROJECT_ROOT, ".takumi", "machines")
 const ROUTES_FILE = path.join(MACHINES_DIR, "routes.json")
 const SKILL_PROMPTS_DIR = path.join(
   process.env.HOME || "",

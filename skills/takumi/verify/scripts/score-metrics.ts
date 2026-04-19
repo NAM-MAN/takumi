@@ -43,7 +43,7 @@ type Metrics = {
 }
 
 const PROJECT_ROOT = process.cwd()
-const MACHINES_DIR = path.join(PROJECT_ROOT, ".sisyphus", "machines")
+const MACHINES_DIR = path.join(PROJECT_ROOT, ".takumi", "machines")
 const ROUTES_FILE = path.join(MACHINES_DIR, "routes.json")
 
 function stripComments(source: string): string {

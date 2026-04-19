@@ -28,7 +28,7 @@ const projectArg = process.argv.indexOf("--project")
 const PROJECT_ROOT = projectArg > -1 ? process.argv[projectArg + 1] : process.cwd()
 const APP_DIR = path.join(PROJECT_ROOT, "app")
 const SRC_APP_DIR = path.join(PROJECT_ROOT, "src", "app")
-const OUTPUT_FILE = path.join(PROJECT_ROOT, ".sisyphus", "machines", "routes.json")
+const OUTPUT_FILE = path.join(PROJECT_ROOT, ".takumi", "machines", "routes.json")
 
 function findAppDir(): string | null {
   if (fs.existsSync(APP_DIR) && fs.statSync(APP_DIR).isDirectory()) return APP_DIR
