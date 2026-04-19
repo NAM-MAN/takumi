@@ -1,6 +1,7 @@
 ---
 name: takumi
 description: "takumi の単一入口。計画・観点診断・全域棚卸し・設計・検証・リファクタを自然文で振り分ける。/takumi <自然文> で起動。サブコマンド構文は採用しない。"
+license: MIT
 ---
 
 # Plan: takumi の単一入口スキル
