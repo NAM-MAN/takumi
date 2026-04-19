@@ -1,0 +1,19 @@
+name: "model"
+description: "複雑な状態機械の担保。fc.commands + XState model-based test + mutation で多状態の整合性を守る。"
+goal: "複雑状態機械"
+oracle: "model+fc.commands"
+layers: ["L3", "L4"]
+mutation_floor: 70
+budget_sec: 120
+fallback_layer: "L5-smoke"
+applies_to:
+  ac_class: "model"
+  layer: ["domain", "ui"]
+recipes:
+  - "model-based-fc-commands"
+  - "xstate-test"
+examples:
+  - ac_id: "AC-CART-009"
+    ac_text: "カート操作 (add/remove/update) の整合性を保つ。合計金額は常に正。"
+  - ac_id: "AC-WORKFLOW-014"
+    ac_text: "承認ワークフロー (draft/review/approved/rejected) は各ステップ順序制約を満たす。"

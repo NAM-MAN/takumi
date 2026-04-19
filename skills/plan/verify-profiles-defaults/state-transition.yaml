@@ -1,0 +1,20 @@
+name: "state-transition"
+description: "遷移安全性の担保。model-based + invariant PBT + mutation で状態遷移を守る。"
+goal: "state transition safety"
+oracle: "model+invariant"
+layers: ["L2", "L4"]
+mutation_floor: 72
+budget_sec: 90
+fallback_layer: "L5-smoke"
+applies_to:
+  ac_class: "state-transition"
+  layer: ["domain", "ui"]
+recipes:
+  - "model-based-fc-commands"
+  - "invariant-pbt"
+  - "xstate-test"
+examples:
+  - ac_id: "AC-AUTH-002"
+    ac_text: "遷移は未認証→認証済のみ。逆方向遷移は拒否。"
+  - ac_id: "AC-ORDER-007"
+    ac_text: "注文は draft→submitted→approved の順序でのみ進行する。"

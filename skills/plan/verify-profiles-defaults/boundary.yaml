@@ -1,0 +1,19 @@
+name: "boundary"
+description: "境界条件の担保。boundary test + property + mutation で上限下限を守る。"
+goal: "境界条件"
+oracle: "boundary+property"
+layers: ["L1", "L4"]
+mutation_floor: 75
+budget_sec: 60
+fallback_layer: "L3-diff"
+applies_to:
+  ac_class: "boundary"
+  layer: ["domain", "api"]
+recipes:
+  - "boundary-pbt"
+  - "fast-check-property"
+examples:
+  - ac_id: "AC-PAY-004"
+    ac_text: "金額は 0 超かつ上限未満。端数は切り捨て。"
+  - ac_id: "AC-LIMIT-012"
+    ac_text: "ファイルサイズは 0 以上 10MB 以下。超過時はエラー。"

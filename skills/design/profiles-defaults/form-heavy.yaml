@@ -1,0 +1,39 @@
+name: "form-heavy"
+description: "長いフォーム中心の画面。section 分割、validation 強、stepper あり。"
+layout:
+  container: "max-w-[720px] mx-auto"
+  sidebar: null
+  content_padding: "px-6 py-8"
+  grid_unit: 4
+typography:
+  scale_emphasis: "content"
+  table_density: "comfortable"
+interactions:
+  row_hover: false
+  row_focus_ring: true
+  skeleton_loader: false
+  optimistic_update: false
+primary_patterns:
+  - "stepper"
+  - "field-section"
+  - "inline-validation"
+  - "summary-panel"
+required_components:
+  - "Form"
+  - "Stepper"
+  - "FieldSection"
+  - "ValidationSummary"
+layout_invariants:
+  hard:
+    - "container は max-w-[720px] mx-auto"
+    - "field label と input の関連 (aria-labelledby) 必須"
+    - "error message は field 直下、aria-live polite"
+  soft:
+    - "field 間 spacing は gap-4 / gap-6"
+    - "section 見出しは sticky 禁止"
+    - "submit button は form 末尾に配置"
+ref_archetypes_fit:
+  - "Stripe Dashboard"
+  - "freee"
+  - "Cybozu"
+  - "SmartHR"

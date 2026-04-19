@@ -1,0 +1,114 @@
+Tier D 画面 (state 21+ / canvas / real-time / collab) に Event Sourcing + Invariant Testing を生成する。
+
+## 入力
+Slug: {{slug}}  Tier: {{tier}}
+Source:
+```
+{{source}}
+```
+Evidence: {{evidence}}
+Intent (あれば): {{intent}}
+
+## 思想
+
+state enumerate は不可能。任意の event 列に対する **不変条件** を assert。
+
+## 生成
+
+### 1. Event 型定義と applyEvent
+
+```ts
+// src/features/<feature>/events.ts (本番コードからの抽出 or 新規)
+
+export type Event =
+  | { type: "INSERT"; id: string; ...payload }
+  | { type: "DELETE"; id: string }
+  | { type: "MOVE"; id: string; delta: {...} }
+  | { type: "RESIZE"; id: string; size: {...} }
+
+export type EventState = { ... }
+
+// 【必須 export】 pure 関数として export (test が再利用)
+export function applyEvent(state: EventState, event: Event): EventState {
+  switch (event.type) { /* ... */ }
+}
+```
+
+### 2. Event arbitrary
+
+```ts
+// src/features/<feature>/__tests__/event-arbs.ts
+import fc from "fast-check"
+
+export const eventArb: fc.Arbitrary<Event> = fc.oneof(
+  fc.record({ type: fc.constant("INSERT" as const), id: fc.uuid(), ... }),
+  fc.record({ type: fc.constant("DELETE" as const), id: fc.uuid() }),
+  // ...
+)
+```
+
+### 3. 不変条件テスト
+
+```ts
+// src/features/<feature>/__tests__/<feature>.events.test.ts
+import fc from "fast-check"
+import { applyEvent, initialState, type Event } from "../events"
+import { eventArb } from "./event-arbs"
+
+test("canvas: invariants hold for any event sequence", () => {
+  fc.assert(fc.property(fc.array(eventArb, { maxLength: 200 }), (events) => {
+    const state = events.reduce(applyEvent, initialState)
+
+    // 不変条件を列挙 (ドメインに応じて):
+    expect(state.items.every((x) => x.x >= 0 && x.y >= 0)).toBe(true)  // 座標範囲
+    expect(new Set(state.items.map((i) => i.id)).size).toBe(state.items.length)  // uniqueness
+
+    const deletedIds = events.filter((e) => e.type === "DELETE").map((e) => e.id)
+    expect(state.items.every((i) => !deletedIds.includes(i.id))).toBe(true)  // 削除整合性
+
+    // determinism
+    expect(events.reduce(applyEvent, initialState)).toEqual(state)
+  }), { numRuns: 500 })
+})
+
+// CRDT / collab の場合は追加で:
+// - 順序独立性: event 並び替えても正規化後は同じ
+// - 合流可換性: 2 ユーザーの event を異なる順で merge しても同じ結果
+```
+
+## 必須
+
+- applyEvent は **pure 関数として export** (副作用なし、test が直接呼ぶ)
+- initialState も export
+- 不変条件を **3-5 個** 列挙 (range / uniqueness / determinism / ...)
+- numRuns は 500 (Tier B/C より多く)
+- maxLength は 200 (shrinking のためにあえて長め)
+
+## 禁止
+
+- applyEvent 内で Math.random / Date.now 等の impure 要素 (seed を引数で受け取る)
+- localStorage / DOM 操作を applyEvent に入れる
+
+## 不変条件の見つけ方のヒント
+
+- 範囲: 座標・数量の min/max
+- 整合性: 削除された id が参照されない
+- uniqueness: 主キーの重複なし
+- 単調性: カウンタは増加のみ
+- 復元可能性: event replay で同じ state
+- 保存則: INSERT と DELETE の数が items の変化量と一致
+
+## 出力形式
+```json
+{
+  "tier_confirmed": "D",
+  "production_changes": [
+    { "path": "src/features/.../events.ts", "action": "create|update", "content": "..." }
+  ],
+  "arbitrary_file": { "path": "...", "content": "..." },
+  "test_file_path": "src/features/.../__tests__/<feature>.events.test.ts",
+  "test_content": "...",
+  "invariants": ["range", "uniqueness", "determinism", ...],
+  "notes": "..."
+}
+```

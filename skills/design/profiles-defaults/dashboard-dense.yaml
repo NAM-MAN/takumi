@@ -1,0 +1,39 @@
+name: "dashboard-dense"
+description: "データ密度高めの管理画面ダッシュボード。sidebar 固定、table/kpi 主体。"
+layout:
+  container: "max-w-[1280px] mx-auto"
+  sidebar: "w-60 fixed"
+  content_padding: "px-6 py-4"
+  grid_unit: 4
+typography:
+  scale_emphasis: "data"
+  table_density: "compact"
+interactions:
+  row_hover: true
+  row_focus_ring: true
+  skeleton_loader: true
+  optimistic_update: true
+primary_patterns:
+  - "sidebar-nav"
+  - "data-table"
+  - "tabs"
+  - "kpi-cards"
+required_components:
+  - "DataTable"
+  - "Sidebar"
+  - "Tabs"
+  - "KpiCard"
+layout_invariants:
+  hard:
+    - "container は max-w-[1280px] mx-auto"
+    - "sidebar は w-60 fixed、overflow-y-auto"
+    - "data row は clickable で focus-visible ring あり"
+  soft:
+    - "spacing は 4px grid に従う"
+    - "data row height は 32/40/48 のいずれか"
+    - "KPI card padding は p-4 / p-6"
+ref_archetypes_fit:
+  - "freee"
+  - "SmartHR"
+  - "kintone"
+  - "Money Forward"

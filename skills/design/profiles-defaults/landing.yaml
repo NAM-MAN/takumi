@@ -1,0 +1,41 @@
+name: "landing"
+description: "LP・マーケティング画面。縦スクロール、hero + features + pricing、motion 豊富。"
+layout:
+  container: "w-full"
+  sidebar: null
+  content_padding: "px-6 md:px-12 py-16"
+  grid_unit: 4
+typography:
+  scale_emphasis: "display"
+  table_density: "comfortable"
+interactions:
+  row_hover: true
+  row_focus_ring: true
+  skeleton_loader: false
+  optimistic_update: false
+primary_patterns:
+  - "hero"
+  - "feature-grid"
+  - "pricing"
+  - "cta"
+  - "footer"
+required_components:
+  - "Hero"
+  - "FeatureGrid"
+  - "Pricing"
+  - "CTA"
+  - "Footer"
+layout_invariants:
+  hard:
+    - "hero は above-the-fold で完結、CTA 必須"
+    - "pricing card は 3 列以内、mobile で 1 列"
+    - "footer は全ページ共通 navigation を含む"
+  soft:
+    - "section 間 spacing は py-16 / py-24"
+    - "feature は 3x2 または 2x3 グリッド"
+    - "motion は scroll-triggered fade-up を標準"
+ref_archetypes_fit:
+  - "Stripe"
+  - "Linear"
+  - "Vercel"
+  - "Notion"

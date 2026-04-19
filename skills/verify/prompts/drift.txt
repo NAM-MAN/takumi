@@ -1,0 +1,99 @@
+Stage 5: 3 view (AST / Runtime / Spec) を突き合わせて drift を検出する。
+
+## 入力
+
+Slug: {{slug}}  Tier: {{tier}}
+
+AST view (Stage 2 の evidence から抽出した遷移):
+```
+{{ast_transitions}}
+```
+
+Runtime view (OpenTelemetry trace / E2E / canary から抽出した観測遷移):
+```
+{{runtime_transitions}}
+```
+
+Spec view (intent.md、optional):
+```
+{{spec}}
+```
+
+## 突き合わせロジック
+
+```
+AST ∩ Runtime   → 確信できる遷移 (OK、何もしない)
+AST \ Runtime   → dead code 候補 (警告、削除提案)
+Runtime \ AST   → AI 見落とし or 動的 path (要調査)
+Spec \ AST      → 未実装 (実装提案)
+AST \ Spec      → 意図外の遷移 (バグ候補 or intent.md 追加)
+Runtime \ Spec  → 想定外の動作 (緊急度高、調査)
+```
+
+## 判定基準
+
+- **dead_code 候補**: AST にあるが Runtime 1 ヶ月間 0 回 → 削除推奨
+- **missed_by_ai**: Runtime にあるが AST 抽出失敗 → AI の AST walker 改善が必要
+- **unimplemented**: Spec にあるが AST に無い → 実装タスク化
+- **unexpected**: AST/Runtime にあるが Spec に無い → バグ or intent 漏れ
+
+## 警告レベル
+
+- **CRITICAL**: Runtime に意図外の遷移があり、state が不整合になる可能性
+- **HIGH**: 未実装 spec、dead code 多数
+- **MEDIUM**: AI 見落とし (AST 改善)
+- **LOW**: 軽微な差分
+
+## 出力形式
+
+`.takumi/machines/<slug>/drift.json`:
+
+```json
+{
+  "slug": "<slug>",
+  "analyzed_at": "2026-04-18T...",
+  "summary": {
+    "ok_transitions_count": 12,
+    "issues_count": { "critical": 0, "high": 2, "medium": 3, "low": 1 }
+  },
+  "ok_transitions": [
+    { "from": "idle", "event": "FETCH", "to": "loading", "ast": true, "runtime": true, "spec": true }
+  ],
+  "dead_code_candidates": [
+    { "from": "error", "event": "RESET", "to": "idle", "severity": "low",
+      "reason": "Runtime 30 days 0 hits", "suggestion": "Remove if genuinely unused" }
+  ],
+  "missed_by_ai": [
+    { "from": "loading", "event": "CANCEL", "to": "idle", "severity": "medium",
+      "reason": "Runtime 5 hits but AST not detected",
+      "suggestion": "Check abort() handler in component" }
+  ],
+  "unimplemented_from_spec": [
+    { "from": "approved", "event": "REJECT", "to": "review", "severity": "high",
+      "reason": "intent.md specifies this but AST has no such transition",
+      "suggestion": "Add handler in reducer" }
+  ],
+  "unexpected_in_ast": [
+    { "from": "draft", "event": "SAVE", "to": "saved", "severity": "high",
+      "reason": "Bypasses review step, not in intent",
+      "suggestion": "Add guard in precondition OR document in intent.md" }
+  ],
+  "recommendations": [
+    "Run /probe for 'dead_code_candidates' cleanup",
+    "Add missing transition from 'approved → review' in reducer",
+    "Review 'draft → saved' bypass: intentional?"
+  ]
+}
+```
+
+## 追加: Runtime trace の解釈ヒント
+
+- `useStateTrace` ログから遷移ペアを抽出 (前後値の diff)
+- E2E テスト実行時の trace と本番 canary sample を両方使う (分布が違う)
+- アクセス頻度が低い遷移は "dead" 判定を厳しく (3 ヶ月 0 回 → 真に dead)
+
+## 制約
+
+- drift.json は **警告のみ**、自動修正しない
+- HIGH/CRITICAL があれば probe の discover に入れられるよう format を揃える
+- ok_transitions が 0 なら AST 抽出 or Runtime 収集が機能していない (先に修正)

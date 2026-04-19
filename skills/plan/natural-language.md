@@ -1,0 +1,66 @@
+# /plan 自然文インターフェース (軍師 6R 確定)
+
+`/plan` 本体から参照される補助ドキュメント。人間が覚えるべきコマンドは **`/plan` と `/probe <観点>` の 2 つだけ**という設計思想のため、サブコマンド構文は採用せず、意図は自然日本語で `/plan` に伝える。
+
+## 原則
+
+- サブコマンド構文 (`/plan override`, `/plan status` 等) は**採用しない**
+- 意図は自然日本語で `/plan` に伝え、内部で意図認識して適切な動作を取る
+- override は自然文で伝え、`.takumi/control/` のファイルに反映される
+- override がファイル直編集しかない設計だと緊急時に使われず、自動化全体が信用を失う (軍師 警告)
+
+## 人間が言う言葉 → /plan の内部動作
+
+| 言葉 | 内部動作 |
+|---|---|
+| 「<機能> 作って」「<機能> 追加して」 | 通常フロー (対話→AC→/design→計画→executor) |
+| 「今なに動いてる?」「状態見せて」 | 自動処理・gate 判定・停止中 override を 30 秒で提示 |
+| 「うるさいから止めて」「一旦停止」 | `.takumi/control/pause.yaml` に 24h pause を記録 |
+| 「もう 1 回動かして」「再開」 | pause 解除 |
+| 「<観点> 心配」「<観点> 見て」 | `/probe <観点>` を提案、承認後起動 |
+| 「リリース前にちゃんと見て」 | `/sweep` を前倒し起動 |
+| 「リファクタして」「設計見直して」 | `strict-refactoring` skill (plugin) に委譲 |
+| 「この計画続きから」「再開」 | `.takumi/state.json` を読んで paused 状態から再開 |
+| 「今の計画捨てて」「やり直し」 | state.json を reset、新規 /plan フロー開始 |
+
+## 自動判定で動くもの (人間は意識しない)
+
+| 自動処理 | 発火条件 |
+|---|---|
+| loop (旧 verify-loop) | mutation drop ≥ 2pt / Sev2 障害 / リリースブロッカー |
+| sweep | 月次自動 or event 駆動 |
+| verify run | CI / pre-push で自動 |
+| executor | /plan 計画確定後に自動起動 |
+| /design | project_mode=ui/mixed で Step 0d として自動呼出 |
+| test strategy | task 作成時に `plan/test-strategy.md` を内部呼出 |
+
+## 緊急時の override
+
+サブコマンドではなく自然文で伝える:
+
+| 発話 | 動作 |
+|---|---|
+| 「auth の loop 止めて」 | `.takumi/control/` に `pause_loop module=auth` |
+| 「sweep 24 時間止めて」 | `pause_sweep 24h` |
+| 「hard gate 一時的に warning に」 | `soft_downgrade 2h` |
+| 「override 一旦全部解除」 | `.takumi/control/` の全 pause ファイルを削除 |
+
+`/plan` が意図を認識して `.takumi/control/` の override ファイルを作成・削除する。人間は直接ファイル編集しない。
+
+## 意図認識の曖昧さ対策
+
+`/plan` が発話の意図を即断できない場合の挙動:
+
+1. **曖昧** → 「A の意味ですか? それとも B ?」と 1 問だけ確認
+2. **新機能追加なのか、状態確認なのか判断がつかない** → 「新機能を追加しますか、それとも現状を確認しますか?」
+3. **override 対象モジュールが曖昧** → `/plan status` 相当を先に提示して「どのモジュールですか?」
+
+**確認を 2 回以上重ねない**。1 問で解決しなければ最も可能性の高い解釈で進め、違ったら後で修正する。
+
+## 関連リソース
+
+| file | 用途 |
+|---|---|
+| `SKILL.md` (同ディレクトリ) | /plan 本体 |
+| `integrations.md` (同ディレクトリ) | 新 skill との接続詳細 |
+| `telemetry-spec.md` (同ディレクトリ) | override / status の event 記録 |
