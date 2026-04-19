@@ -8,7 +8,7 @@
 </p>
 
 > **Claude Code のスキル。`/takumi` 1 つに、やりたいことをそのまま伝えるだけ。**
-> 「note にお気に入り機能つけて」と言えば、中身の詰め方・デザイン・実装・テスト・レビューまで全部走ってくれる。
+> 「ログイン画面にパスワードリセット機能を追加して」と言えば、中身の詰め方・デザイン・実装・テスト・レビューまで全部走ってくれる。
 
 ---
 
@@ -22,7 +22,7 @@ gh skill install NAM-MAN/takumi
 Claude Code を開いて、自分のプロジェクトで:
 
 ```
-/takumi note にお気に入り機能つけて
+/takumi ログイン画面にパスワードリセット機能を追加して
 ```
 
 何問か聞かれて答えるだけで、仕様が決まって、計画立てて、実装して、テストして、最後まで走る。
@@ -34,7 +34,7 @@ Claude Code を開いて、自分のプロジェクトで:
 | やりたいこと | こう書くだけ |
 |:---|:---|
 | 🆕 新しい機能作りたい | `/takumi <機能> 追加して` |
-| 🔄 画面の挙動変えたい | `/takumi dashboard の並び順を drag&drop にして` |
+| 🔄 画面の挙動変えたい | `/takumi 商品一覧にソートとフィルター機能を追加して` |
 | 🔐 セキュリティ大丈夫か見たい | `/takumi security 見て` |
 | ⚡ 重くない?遅くない? | `/takumi perf 調べて` |
 | 📝 リリース前の総点検 | `/takumi リリース前に全般見て` |
@@ -105,7 +105,7 @@ gh skill preview NAM-MAN/takumi takumi
 gh skill install NAM-MAN/takumi
 
 # 🔒 バージョン固定
-gh skill install NAM-MAN/takumi takumi --pin v0.2.5
+gh skill install NAM-MAN/takumi takumi --pin v0.2.9
 
 # 🔄 更新 / 🗑 消す
 gh skill update takumi
@@ -125,7 +125,7 @@ gh skill uninstall takumi
 <summary>📝 <b>normal</b> — 新しいものを作る/変える</summary>
 
 ```
-/takumi note にお気に入り機能追加
+/takumi 管理画面に CSV エクスポート機能を追加
 ```
 
 何問か対話して仕様を固める → AC-ID 自動生成 → (UI なら)デザイン生成 → 計画 → 実装 → テスト → チェック。
