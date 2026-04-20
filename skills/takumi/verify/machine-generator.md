@@ -177,7 +177,7 @@ Stage 2 で前回 metrics.json との比較で昇格を検知:
 3. Phase 4 職人 が:
    a. strict-refactoring skill を読み、Pending Object → State Machine 移行
    b. verify が新形式 test を追加生成
-   c. 既存 fc.commands test は oracle として保持
+   c. 既存 fc.commands test は差分比較の基準として保持
 4. differential 並走 (L3) → 1 スプリント後に旧版削除
 ```
 

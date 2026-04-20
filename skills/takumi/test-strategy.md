@@ -48,7 +48,7 @@ reason: "遷移安全性は model-based + PBT + mutation で担保、E2E は fal
 | boundary | 境界条件 | boundary+property | L1, L4 | 75 | 60 | L3-diff |
 | property | 不変条件 | property | L1, L4 | 80 | 45 | - |
 | model | 複雑状態機械 | model+fc.commands | L3, L4 | 70 | 120 | L5-smoke |
-| metamorphic | オラクル不在 (画像/ML/LLM) | metamorphic+differential | L1, L3 | 65 | 90 | - |
+| metamorphic | 正解が直接書けない (画像/ML/LLM) | metamorphic+differential | L1, L3 | 65 | 90 | - |
 
 ### 補正ルール
 
@@ -76,7 +76,7 @@ plan author は可能な限り ac_class を明示する運用を推奨。
 | boundary | 境界 / 最大 / 最小 / 上限 / 下限 / 0 超 / 以上 / 以下 / 閾値 / boundary / limit |
 | property | 不変 / 常に / どんな入力でも / 冪等 / 可換 / 結合 / invariant / property / forall |
 | model | 複雑 / 状態機械 / カート / 注文 / ワークフロー / ステップ / state machine / workflow |
-| metamorphic | 画像 / ML / LLM / 分類 / 変換 / 回転しても / 同一クラス / オラクル不在 / metamorphic |
+| metamorphic | 画像 / ML / LLM / 分類 / 変換 / 回転しても / 同一クラス / 正解が書けない / オラクル不在 / metamorphic |
 
 優先順: state-transition > model > boundary > property > metamorphic。
 複数ヒット時は優先順で 1 つに収束。

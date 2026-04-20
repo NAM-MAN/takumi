@@ -13,7 +13,7 @@ example test の入力空間を AI が網羅する仕組み。
 出力の正解が書ける?
 ├─ Yes → [1] Invariant でまず守る
 │
-└─ No (オラクル問題) → 何と比較できる?
+└─ No (正解を直接書けない) → 何と比較できる?
     ├─ 同じ入力で再実行                  → [2] Determinism / Idempotence
     ├─ 入力を変換した別実行              → [3] Metamorphic (含 Algebraic)
     ├─ 逆関数がある                      → [4] Roundtrip / Inverse
@@ -77,7 +77,7 @@ fc.property(fc.string(), (s) => {
 ## [3] Metamorphic Relations (同関数・別入力)
 
 定義: 入力を変換 `t` で関連付けた 2 実行を比較。`f(t(x))` と `t'(f(x))` の関係。
-**output の正解を知らなくていい** のがオラクル問題対策の主力。
+**output の正解を知らなくていい** のが「正解を直接書けない問題」(英語で *oracle problem*) 対策の主力。
 
 ### 3a. 一般 Metamorphic
 
@@ -150,7 +150,7 @@ fc.property(fc.string(), keyArb, (msg, key) => {
 
 ```ts
 fc.property(beatArrayArb, (beats) => {
-  expect(layoutV2(beats)).toEqual(layoutV1(beats))  // 旧版 oracle
+  expect(layoutV2(beats)).toEqual(layoutV1(beats))  // 旧版を正解として比較
 })
 ```
 

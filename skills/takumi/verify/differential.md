@@ -36,7 +36,7 @@ export function exportPsd(layout) {
 ```
 src/features/export/
 ├── psd-exporter.ts          ← 本番
-└── psd-exporter.legacy.ts   ← oracle
+└── psd-exporter.legacy.ts   ← 旧実装 (差分比較の基準)
 ```
 
 | 観点 | 評価 |
@@ -61,7 +61,7 @@ export function exportPsd(layout: Layout): Buffer {
  * 本番コードからの import 禁止 (eslint-plugin-deprecation で警告)。
  */
 export function exportPsdLegacy(layout: Layout): Buffer {
-  // 旧実装 (oracle)
+  // 旧実装 (差分比較の基準として残置)
 }
 ```
 

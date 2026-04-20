@@ -131,7 +131,7 @@ export const checkoutMachine = createMachine({
 ```
 
 → production の checkout は **XState を知らない**。useState / Zustand など何でも OK。
-machine は @xstate/test が本物の画面を叩いて検証する oracle。
+machine は @xstate/test が本物の画面を叩くときの **期待挙動の台本**(英語で *oracle*)。
 
 ---
 
@@ -166,7 +166,7 @@ CRDT/collab は追加で順序独立性・合流可換性も assert。
 ### 安全装置 (differential 並走)
 
 ```
-1. 既存本番 + test を残す (oracle)
+1. 既存本番 + test を残す (新版との差分比較の基準にする)
 2. 新版本番 + 新形式 test を追加
 3. 同入力で両版の最終状態が一致を 1 スプリント確認 (L3 Differential)
 4. 差分ゼロ → 旧版削除

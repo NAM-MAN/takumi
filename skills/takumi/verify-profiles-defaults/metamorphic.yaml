@@ -1,6 +1,6 @@
 name: "metamorphic"
-description: "オラクル不在 (画像/ML/LLM) での担保。metamorphic + differential で不変関係を検証する。"
-goal: "オラクル不在"
+description: "正解が直接書けない領域 (画像/ML/LLM) での担保。metamorphic + differential で入出力の関係性を検証する。"
+goal: "正解が直接書けない (旧称: オラクル不在)"
 oracle: "metamorphic+differential"
 layers: ["L1", "L3"]
 mutation_floor: 65
