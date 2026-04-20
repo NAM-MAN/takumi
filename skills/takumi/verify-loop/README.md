@@ -184,7 +184,7 @@ pnpm stryker run --incremental --mutate <file>
 
 ```mermaid
 flowchart TD
-    Start([/verify-loop 起動])
+    Start(["/verify-loop 起動"])
     Start --> Check0a{.takumi/state.json<br/>status === 'in_progress' かつ<br/>active_plan !== 'verify-loop'?}
     Check0a -->|Yes| Exit0a[即終了<br/>他スキル実行中]
     Check0a -->|No| Check0b{.takumi/verify-loop/<br/>state.json 存在?}
