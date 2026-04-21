@@ -79,7 +79,7 @@ Runtime \ Spec  → 想定外の動作 (緊急度高、調査)
       "suggestion": "Add guard in precondition OR document in intent.md" }
   ],
   "recommendations": [
-    "Run /probe for 'dead_code_candidates' cleanup",
+    "Ask /takumi for 'dead_code_candidates' cleanup (auto-routes to probe mode)",
     "Add missing transition from 'approved → review' in reducer",
     "Review 'draft → saved' bypass: intentional?"
   ]

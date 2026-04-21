@@ -8,7 +8,7 @@ license: MIT
 
 ユーザーからの自然文を意図分類し、適切な内部モード (normal / probe / sweep / status / continue / override) に振り分ける唯一の skill。
 
-計画は `.takumi/plans/{name}.md` に保存、確認後は executor (`executor.md` の内部責務) が Wave 順に自動実行する。人間が別途 `/exec` を叩く必要はない。
+計画は `.takumi/plans/{name}.md` に保存、確認後は executor (`executor.md` の内部責務) が Wave 順に自動実行する。executor は takumi の内部ロールであり、人間が直接叩く別コマンドは存在しない。
 
 ---
 
@@ -84,7 +84,7 @@ executor とは別の **discovery orchestrator** が fan-out/fan-in を担う。
 | `backlog-mode.md` | probe / sweep から入った時の backlog → Wave 計画変換 |
 | `probe/` | probe mode 内部 (discover.md / triage.md) |
 | `sweep/` | sweep mode 内部 (quality-model.md / integration-playbook.md / reconcile.md) |
-| `design/` | /design 機能 (ui/mixed 時の自動呼出) |
+| `design/` | design mode (ui/mixed 時の自動呼出、takumi 内部) |
 | `verify/` | L1-L6 recipe library |
 | `verify-loop/` | 期間限定 mutation score 向上 loop |
 | `strict-refactoring/` | refactor_profile_ref の policy |
@@ -112,19 +112,33 @@ executor とは別の **discovery orchestrator** が fan-out/fan-in を担う。
 
 `CLAUDE.md` または `.takumi/project.yaml` から `project_mode` (ui / mixed / backend) を取得。未設定なら対話で確認。
 
-- `ui` → `/design` mandatory、全 UI task に `design_profile_ref`
+- `ui` → design mode mandatory、全 UI task に `design_profile_ref`
 - `mixed` → UI を含む task のみ `design_profile_ref`
 - `backend` → design 不要
 
-### 0b. profiles 整備 (初回のみ)
+### 0a-2. project 言語 × L4 Mutation tier 判定
 
-`.takumi/profiles/{verify,design}/` が無ければ defaults を bootstrap:
+`package.json` / `Cargo.toml` / `go.mod` / `pyproject.toml` / `*.csproj` / `pom.xml` / `build.sbt` から project 言語を検出し、L4 Mutation の tier を決定する。詳細は `verify/mutation.md` の「言語別 tier 表」。
 
-```bash
-mkdir -p .takumi/profiles/verify .takumi/profiles/design
-cp ~/.claude/skills/takumi/verify-profiles-defaults/*.yaml .takumi/profiles/verify/
-cp ~/.claude/skills/takumi/design/profiles-defaults/*.yaml .takumi/profiles/design/  # ui/mixed のみ
-```
+| tier | 言語 | ツール | 扱い |
+|---|---|---|---|
+| **primary** | JS/TS | Stryker-JS | L4 を hard gate、mutation_floor は task 65-70% / epic 80% |
+| **primary** | Java/Kotlin | **PIT (PITest)** | L4 を hard gate、bytecode mutation で Stryker より高速 |
+| **primary** | C# | Stryker.NET | L4 を hard gate、Stryker 系列 |
+| **primary** | Rust | cargo-mutants | L4 を hard gate **ただし `--in-diff` 強制**、フル run 禁止 (profile に `mutation_mode: incremental_only` を既定) |
+| **primary** | Scala | Stryker4s | L4 を hard gate |
+| **advisory** | Python | mutmut / cosmic-ray | L4 は telemetry 参考値のみ。**主守りは L1 PBT + L6 AI Review** (operator coverage が Stryker レベルに到達していないため) |
+| **advisory** | Go | gremlins | L4 は telemetry 参考値のみ。主守りは L1 PBT + L6 AI Review |
+| **skip** | 上記以外 | なし | L4 完全 skip、L1 PBT + L6 AI Review で守る |
+
+profile `.takumi/profiles/verify/{name}.yaml` に `mutation_tool` (ツール名) と `l4_role: primary | advisory | skip` を記録。advisory の言語では mutation_floor を gate から外す。
+
+> [!IMPORTANT]
+> Python / Go を advisory にしているのは「ツールが未熟」ではなく「**mutation operator の覆盖範囲が Stryker レベルに到達していない**」という品質判定。ツールの star 数や開発状況ではなく、生成されるミュータントの質で判定している (PIT は 1.9k star で Stryker-JS の 2.8k より少ないが、primary 扱い)。
+
+### 0b. profiles 整備と .gitignore bootstrap (初回のみ)
+
+`.takumi/profiles/{verify,design}/` が無ければ defaults を bootstrap、同時に `.gitignore` に `.takumi/` と verify-loop の ephemeral artifact を登録する。手順の詳細 (bash snippet / .gitignore 追加行 / 言語別 artifact) は `step0-bootstrap.md` を参照。
 
 project 固有 profile は `.takumi/profiles/` に yaml を追加するだけ (registry 方式)。
 
@@ -140,9 +154,9 @@ project 固有 profile は `.takumi/profiles/` に yaml を追加するだけ (r
 
 AC-ID は全フェーズの共通通貨 (drift 防止の根幹)。
 
-### 0d. /design 呼出 (ui / mixed のみ)
+### 0d. design mode (ui / mixed のみ)
 
-UI を含む場合、**plan 本体より先に** `/design` で IA / style-guide / interactions / wireframe を生成。必須入力 4 項目 (`product_type` / `target_user` / `brand_tone` / `ref_archetypes 1-2`) を対話で確定させる。
+UI を含む場合、**plan 本体より先に** design mode で IA / style-guide / interactions / wireframe を生成 (`design/README.md` に委譲)。必須入力 4 項目 (`product_type` / `target_user` / `brand_tone` / `ref_archetypes 1-2`) を対話で確定させる。
 出力は `.takumi/design/` 配下。plan は後段で各 UI task に `design_profile_ref` を埋める。
 
 ---
@@ -217,78 +231,33 @@ codex exec -m gpt-5.4 -s read-only -C "$(pwd)" \
 
 ## Step 4 — 計画生成
 
-`.takumi/plans/{name}.md` に書き出す:
-
-```markdown
-# {タイトル}
-
-## 概要
-> **やること**: 一行説明
-> **成果物**: 箇条書き
-> **規模**: 小 | 中 | 大
-> **Wave数**: N（自己増殖型は "N+（自己増殖型）"）
-
-## 自己増殖メカニズム（自己増殖型のみ）
-（self-multiplying.md のテンプレートを埋め込む）
-
-## 背景
-### リクエスト
-### 調査結果 (斥候 / 軍師)
-
-## スコープ
-### 完了条件
-### やらないこと
-
-## TODOs
-
-### Wave 1: {基盤}
-
-- [ ] 1. **タスク名**
-  - **ac_ids**: [AC-AUTH-002, AC-AUTH-003]
-  - **verify_profile_ref** / **design_profile_ref** / **mutation_tier**: state-transition / dashboard-dense / standard
-  - **refactor_profile_ref** / **strictness** / **ui_state_model_tier**: ui-pending-object / L1+L2+L3 / B  # 詳細は各 skill 参照
-  - **何を**: ファイルパス、行番号、変更内容
-  - **なぜ**: 動機
-  - **ロール**: 職人 | 軍師 | 斥候
-  - **やらない**: ガードレール
-  - **検証**: 具体的な確認手順 + mutation_floor 通過 + L7 hard gate 通過 + strict-refactoring checklist 通過
-
-### Wave 2: {本体}
-
-- [ ] 2. ...
-
-### 最終検証
-
-- [ ] F1. 全検証項目の再確認
-- [ ] F2. ビルド通過
-- [ ] F3. テスト通過
-- [ ] F4. 軍師 最終レビュー
-  - `codex exec -m gpt-5.4 -s read-only -C "$(pwd)" "git diff main...HEAD の全変更を敵対的にレビューせよ。境界条件・障害パス・競合状態・セキュリティを重点的に" 2>&1 | tail -100`
-```
-
-### ルール
-
-1. 全タスクにファイルパス参照
-2. 全タスクに具体的な検証項目
-3. 全タスクにロール指定 (職人 / 軍師 / 斥候)
-4. Wave N+1 は Wave N に依存
-
-### 軍師 計画レビュー（自動・生成直後）
-
-計画ファイル生成直後、軍師 に自動でレビューを依頼:
-```bash
-codex exec -m gpt-5.4 -s read-only -C "$(pwd)" \
-  ".takumi/plans/{name}.md を読み、前提の誤り・スコープの漏れ・Wave依存の矛盾・リスクを指摘せよ" 2>&1 | tail -100
-```
-
-- 指摘あり → 計画ファイルに反映してから提示
-- 指摘なし → そのまま提示
+`.takumi/plans/{name}.md` に書き出す。テンプレート骨格・記載ルール・軍師 計画レビューの手順は `plan-template.md` を参照。
 
 ### 提示後のディスパッチ
 
-- `/probe` / `/sweep` から呼ばれた場合 → 確認を求めず即 executor 起動 (`executor.md` 参照)
-- 単独 `/takumi` → ユーザーに計画を提示、「この計画で進めて良いですか?」と確認 → yes なら executor 自動起動
-- 人間が `/exec` を別途叩く必要なし。タイポ防止のため executor は常に最新 plan を追う
+- probe mode / sweep mode 経由の場合 → 確認を求めず即 executor 起動 (`executor.md` 参照)
+- 直接 `/takumi` で normal mode に入った場合 → ユーザーに計画を提示、「この計画で進めて良いですか?」と確認 → yes なら executor 自動起動
+- executor は takumi の内部ロール。人間が叩く別コマンドは存在しない。タイポ防止のため executor は常に最新 plan を追う
+
+### in-conversation plan の許容条件 (plan ファイル省略の例外)
+
+**デフォルトは `.takumi/plans/{name}.md` を必ず生成する**。以下 5 条件を **すべて満たした場合のみ**、plan ファイルを書かず TaskCreate + 会話内の合意で直接実装に入る "in-conversation plan" を許容する:
+
+1. 対象が skill / ドキュメント / config ファイルの編集のみ (プロダクションコード・build・DB・CI 設定への影響がゼロ)
+2. 会話内で Wave 構造がすでに棟梁とユーザーで合意済み (「この方針で進めて良いですか?」に yes が返っている)
+3. 規模が「小」〜「中」相当で、見込み作業時間が 30 分以内
+4. ユーザーが「計画 → 実装に進む」を明示承認している (yes / OK / 進めて 等の明確な応答)
+5. 全 Wave を TaskCreate で追跡可能 (3-15 タスク規模に収まる)
+
+5 条件のうち 1 つでも欠けたら plan ファイルを生成する。以下は in-conversation plan を**許容しない**代表例:
+
+- 初回依頼で Wave 構造未合意 (直近の会話が長くても「合意」がなければ NG)
+- プロダクションコードやビルド設定に触れる作業
+- 1 時間以上の見込み作業
+- 大規模リファクタ、品質改善ループ、複数リポジトリ横断の変更
+
+> [!IMPORTANT]
+> 棟梁 (Opus) が判断に迷ったら plan ファイルを書く側に倒す。plan ファイルの作成は `.takumi/plans/` が `.gitignore` 済みなのでコストゼロ。逆に in-conversation plan で進めて後から「履歴が残っていない」事態になる方が害が大きい。
 
 ---
 
@@ -304,12 +273,12 @@ codex exec -m gpt-5.4 -s read-only -C "$(pwd)" \
 
 ---
 
-## Step 6 — バックログ入力モード（/probe 連携）
+## Step 6 — バックログ入力モード (probe mode 連携)
 
-`/probe` から呼ばれた場合、または backlog.md が指定された場合はインタビュー省略。
+probe mode から backlog.md が渡された場合、または backlog.md が既に存在する場合はインタビュー省略。
 詳細は **`backlog-mode.md`** を読む:
 
-- backlog.md の各課題（証拠 file:line, MECE 分類, ICE スコア）を Wave タスクに変換
+- backlog.md の各課題 (証拠 file:line, MECE 分類, ICE スコア) を Wave タスクに変換
 - 分類に応じて 職人/斥候/軍師 を自動割り当て
 - 常に自己増殖型で生成
 - 出力: `.takumi/plans/probe-{日付}.md`
@@ -336,7 +305,7 @@ codex exec -m gpt-5.4 -s read-only -C "$(pwd)" \
 詳細は **`integrations.md`** を読む。新規 skill との接続、reference-first 運用、telemetry 連携、採用閾値を記述。
 
 - `plan/test-strategy.md` 連携 (AC-ID → verify_profile_ref 選定、内部補助)
-- `/design` 連携 (ui/mixed のみ、design_profile_ref)
+- design mode 連携 (ui/mixed のみ、design_profile_ref)
 - reference-first による frontmatter 肥大化防止 (task 平均 20 行以下、override 30% 超で defaults 再設計)
 - telemetry 連携 (儀式化 drift 検出、`.takumi/telemetry/profile-usage.jsonl`)
 - 軍師 指定の 5 閾値 (mutation_floor / layout_strictness / auto_ref_site / design_drift / loop min-max)
@@ -345,19 +314,24 @@ codex exec -m gpt-5.4 -s read-only -C "$(pwd)" \
 
 ## 自然文インターフェース
 
-人間が覚えるコマンドは `/takumi` と `/probe <観点>` の 2 つだけ (軍師 6R 確定)。サブコマンド構文は採用せず、発話は `natural-language.md` の意図認識表で処理する。
+**人間が覚えるコマンドは `/takumi` の 1 つだけ**。観点診断・棚卸し・状態確認・再開・停止・リファクタ・検証・設計のいずれも `/takumi` に日本語で伝えれば、意図分類ルータが 6 モード (normal / probe / sweep / status / continue / override) に振り分ける。サブコマンド構文 (`/takumi status` 等) も対外コマンド (`/probe` 等) も採用しない。発話辞書は `natural-language.md`。
 
 ## 関連リソース (100 点統合版)
 
 | skill / file | 用途 |
 |---|---|
 | `integrations.md` (同ディレクトリ) | 新 skill 接続の詳細 |
+| `plan-template.md` (同ディレクトリ) | Step 4 の計画ファイルテンプレートとレビュー手順 |
+| `step0-bootstrap.md` (同ディレクトリ) | Step 0b の bootstrap 手順 (profiles copy + .gitignore 行) |
 | `telemetry-spec.md` (同ディレクトリ) | 儀式化 drift 検知の telemetry spec |
-| `~/.claude/skills/takumi/design/README.md` | IA / style-guide / wireframe 生成 (ui/mixed) |
+| `~/.claude/skills/takumi/design/README.md` | IA / style-guide / wireframe 生成 (ui/mixed、takumi 内部モード) |
 | `test-strategy.md` (同ディレクトリ) | AC-ID → verify_profile 選定 (内部補助) |
 | `executor.md` (同ディレクトリ) | 計画の Wave 実行 (内部責務) |
-| `~/.claude/skills/takumi/verify/README.md` | L1-L6 + recipe library |
-| `~/.claude/skills/takumi/strict-refactoring/README.md` | Command/Pure/ReadModel、Pending Object Pattern 等のリファクタリング指針 (plugin) |
+| `~/.claude/skills/takumi/verify/README.md` | L1-L6 (LP) |
+| `~/.claude/skills/takumi/verify/runtime.md` | L1-L6 の AI runtime spec (recipe library 本体) |
+| `~/.claude/skills/takumi/verify/mutation.md` | 言語別 L4 tier 表 (Stryker / PIT / cargo-mutants / 等)、primary vs advisory |
+| `~/.claude/skills/takumi/verify/spec-tests.md` | Unified Spec Test — 1 unit = 1 test file、it 名は仕様文 (命名規約は strict-refactoring Rule 14 を継承) |
+| `~/.claude/skills/takumi/strict-refactoring/README.md` | リファクタリング指針 (plugin, LP)。詳細は guide.md / rules-required.md / rules-heuristics.md / rules-ui-state.md |
 | `verify-profiles-defaults/*.yaml` (同ディレクトリ) | 5 archetype defaults |
 | `~/.claude/skills/takumi/design/profiles-defaults/*.yaml` | 4 design profile defaults |
 | `.takumi/profiles/{verify,design}/*.yaml` | project 側 profile 本体 |

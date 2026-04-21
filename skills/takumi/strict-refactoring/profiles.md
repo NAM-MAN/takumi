@@ -174,7 +174,9 @@
 | file | 用途 |
 |---|---|
 | `SKILL.md` (同ディレクトリ) | 本 skill entry point |
-| `rules-core.md` (同ディレクトリ) | L1 / L2 ルール詳細 |
+| `rules-core.md` (同ディレクトリ) | L1 / L2 / L3 の目次 |
+| `rules-required.md` (同ディレクトリ) | L1 required invariants 5 個 |
+| `rules-heuristics.md` (同ディレクトリ) | L2 default heuristics 10 個 |
 | `rules-ui-state.md` (同ディレクトリ) | Tier 詳細、ui-pending-object で参照 |
 | `language-relaxations.md` (同ディレクトリ) | lang-relaxed-go-rust で参照 |
 | `~/.claude/skills/takumi/SKILL.md` | `/takumi` が refactor_profile_ref を自動推定 |

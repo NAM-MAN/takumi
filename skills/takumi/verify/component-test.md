@@ -3,6 +3,9 @@
 React Testing Library + fast-check で **画面コンポーネントの小さな state** を叩く。
 **Tier A 画面 (60-70%) はこれだけで守る**。state machine 不要。
 
+> [!IMPORTANT]
+> **USS 原則 (`spec-tests.md`)**: 1 component = 1 test file (`{Component}.test.tsx`)。`.property.test.tsx` / `.pbt.test.tsx` 等の分割は禁止。`it` 名は `{Subject} は {input} に対して {output} を返すべき` / `{User} が {action} すると {observable} が表示されるべき` の骨格で書く (strict-refactoring Rule 14 継承、verify 6 原則の第 6)。
+
 ---
 
 ## 位置づけ
@@ -48,22 +51,24 @@ import { render, screen } from "@testing-library/react"
 import fc from "fast-check"
 import { UserBadge } from "../UserBadge"
 
-test("UserBadge renders any valid user shape", () => {
-  const userArb = fc.record({
-    id: fc.uuid(),
-    name: fc.string({ minLength: 1, maxLength: 50 }),
-    role: fc.constantFrom("viewer", "editor", "admin"),
-    avatar: fc.option(fc.webUrl()),
-  })
+describe('UserBadge', () => {
+  it('UserBadge は任意の user オブジェクトに対して name を画面に表示するべき', () => {
+    const userArb = fc.record({
+      id: fc.uuid(),
+      name: fc.string({ minLength: 1, maxLength: 50 }),
+      role: fc.constantFrom("viewer", "editor", "admin"),
+      avatar: fc.option(fc.webUrl()),
+    })
 
-  fc.assert(fc.property(userArb, (user) => {
-    const { unmount } = render(<UserBadge user={user} />)
-    expect(screen.getByText(user.name)).toBeInTheDocument()
-    if (user.role === "admin") {
-      expect(screen.getByLabelText(/admin/i)).toBeInTheDocument()
-    }
-    unmount()
-  }), { numRuns: 100 })
+    fc.assert(fc.property(userArb, (user) => {
+      const { unmount } = render(<UserBadge user={user} />)
+      expect(screen.getByText(user.name)).toBeInTheDocument()
+      if (user.role === "admin") {
+        expect(screen.getByLabelText(/admin/i)).toBeInTheDocument()
+      }
+      unmount()
+    }), { numRuns: 100 })
+  })
 })
 ```
 
@@ -72,18 +77,20 @@ Props のあらゆる組合せで **render が落ちない** + **表示が仕様
 ### パターン 2: Interaction の可換性 / 冪等性
 
 ```ts
-test("toggle is idempotent on double-click", () => {
-  fc.assert(fc.property(fc.array(fc.boolean(), { maxLength: 20 }), (clicks) => {
-    const spy = vi.fn()
-    const { unmount } = render(<SettingsToggle onChange={spy} />)
-    const box = screen.getByRole("checkbox")
+describe('SettingsToggle', () => {
+  it('SettingsToggle は任意回クリックされた後も偶数回なら OFF・奇数回なら ON の状態を返すべき', () => {
+    fc.assert(fc.property(fc.array(fc.boolean(), { maxLength: 20 }), (clicks) => {
+      const spy = vi.fn()
+      const { unmount } = render(<SettingsToggle onChange={spy} />)
+      const box = screen.getByRole("checkbox")
 
-    for (const _ of clicks) fireEvent.click(box)
+      for (const _ of clicks) fireEvent.click(box)
 
-    expect(spy).toHaveBeenCalledTimes(clicks.length)
-    expect(box.checked).toBe(clicks.length % 2 === 1)
-    unmount()
-  }))
+      expect(spy).toHaveBeenCalledTimes(clicks.length)
+      expect(box.checked).toBe(clicks.length % 2 === 1)
+      unmount()
+    }))
+  })
 })
 ```
 
@@ -92,18 +99,20 @@ test("toggle is idempotent on double-click", () => {
 ### パターン 3: 条件分岐の全パス網羅
 
 ```ts
-test("FormError shows correct message for all error types", () => {
-  const errorArb = fc.constantFrom(
-    "required", "too_short", "too_long", "invalid_email", "duplicate"
-  )
+describe('FormError', () => {
+  it('FormError は全ての error 種別に対して空でないメッセージを返すべき', () => {
+    const errorArb = fc.constantFrom(
+      "required", "too_short", "too_long", "invalid_email", "duplicate"
+    )
 
-  fc.assert(fc.property(errorArb, (err) => {
-    const { unmount } = render(<FormError type={err} />)
-    const el = screen.getByRole("alert")
-    expect(el).toBeInTheDocument()
-    expect(el.textContent).not.toBe("")  // 必ず何らかの文言
-    unmount()
-  }))
+    fc.assert(fc.property(errorArb, (err) => {
+      const { unmount } = render(<FormError type={err} />)
+      const el = screen.getByRole("alert")
+      expect(el).toBeInTheDocument()
+      expect(el.textContent).not.toBe("")
+      unmount()
+    }))
+  })
 })
 ```
 
@@ -112,21 +121,22 @@ test("FormError shows correct message for all error types", () => {
 ### パターン 4: 不正 Props の rejection
 
 ```ts
-test("Pagination rejects invalid page numbers", () => {
-  const invalidArb = fc.oneof(
-    fc.integer({ max: -1 }),    // 負
-    fc.float().filter((n) => !Number.isInteger(n)),  // 非整数
-    fc.constant(NaN),
-  )
+describe('Pagination', () => {
+  it('Pagination は不正なページ番号に対してページ 1 を表示するべき', () => {
+    const invalidArb = fc.oneof(
+      fc.integer({ max: -1 }),
+      fc.float().filter((n) => !Number.isInteger(n)),
+      fc.constant(NaN),
+    )
 
-  fc.assert(fc.property(invalidArb, (page) => {
-    const spy = vi.spyOn(console, "error").mockImplementation(() => {})
-    const { unmount } = render(<Pagination page={page as any} total={100} />)
-    // フォールバック: ページ 1 として扱う
-    expect(screen.getByText(/page 1/i)).toBeInTheDocument()
-    unmount()
-    spy.mockRestore()
-  }))
+    fc.assert(fc.property(invalidArb, (page) => {
+      const spy = vi.spyOn(console, "error").mockImplementation(() => {})
+      const { unmount } = render(<Pagination page={page as any} total={100} />)
+      expect(screen.getByText(/page 1/i)).toBeInTheDocument()
+      unmount()
+      spy.mockRestore()
+    }))
+  })
 })
 ```
 
@@ -140,13 +150,14 @@ test("Pagination rejects invalid page numbers", () => {
 // Server Component はそのまま render 不可。vitest で直接呼ぶ
 import { UserProfile } from "../UserProfile"
 
-test("UserProfile returns valid JSX for any user id", async () => {
-  fc.assert(fc.asyncProperty(fc.uuid(), async (id) => {
-    const element = await UserProfile({ id })
-    // JSX 要素として valid か構造検証
-    expect(element).toBeTruthy()
-    expect(element.type || element.props).toBeDefined()
-  }))
+describe('UserProfile (Server Component)', () => {
+  it('UserProfile は任意の user id に対して valid な JSX 要素を返すべき', async () => {
+    await fc.assert(fc.asyncProperty(fc.uuid(), async (id) => {
+      const element = await UserProfile({ id })
+      expect(element).toBeTruthy()
+      expect(element.type || element.props).toBeDefined()
+    }))
+  })
 })
 ```
 
@@ -155,11 +166,13 @@ test("UserProfile returns valid JSX for any user id", async () => {
 ```ts
 import { updateUser } from "../actions"
 
-test("updateUser handles all valid form shapes", async () => {
-  fc.assert(fc.asyncProperty(formDataArb, async (formData) => {
-    const result = await updateUser(null, formData)
-    expect(result).toHaveProperty("success")
-  }))
+describe('updateUser (Server Action)', () => {
+  it('updateUser は valid な formData に対して success プロパティを持つ結果を返すべき', async () => {
+    await fc.assert(fc.asyncProperty(formDataArb, async (formData) => {
+      const result = await updateUser(null, formData)
+      expect(result).toHaveProperty("success")
+    }))
+  })
 })
 ```
 

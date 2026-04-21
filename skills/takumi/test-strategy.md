@@ -1,4 +1,4 @@
-# /takumi の test strategy (内部補助)
+# takumi の test strategy (内部補助)
 
 `/takumi` 本体から参照される補助ドキュメント。各 task の `verify_profile_ref` を AC-ID から選定する狭い責務ロジック。
 
@@ -6,7 +6,7 @@
 
 AC-ID と ac_text から **verify_profile の選定 1 つ** (`goal / oracle / layers / mutation_floor / budget_sec / fallback_layer`) を返す。選定理由 (`reason`) を日本語で添える。これだけ。
 
-verify_profile 本体の生成は `.takumi/profiles/verify/*.yaml` 側 (profile registry)。test コード生成は `/verify`。
+verify_profile 本体の生成は `.takumi/profiles/verify/*.yaml` 側 (profile registry)。test コード生成は takumi の verify 運用 (職人 Agent が `verify/spec-tests.md` の USS 原則に従って既存 `*.test.ts` に `it('…べき')` を追加する)。
 
 ---
 
@@ -177,6 +177,6 @@ for ac in task.ac_ids:
 | `SKILL.md` (同ディレクトリ) | /takumi 本体 |
 | `verify-profiles-defaults/*.yaml` (同ディレクトリ) | 5 archetype の default template (bootstrap 時 project にコピー) |
 | `~/.claude/skills/takumi/verify/README.md` | L1-L6 定義・recipe library |
-| `~/.claude/skills/takumi/design/README.md` | 同じ profile registry 方式、design_profile 側 |
+| `~/.claude/skills/takumi/design/README.md` | takumi の design mode。同じ profile registry 方式、design_profile 側 |
 | `.takumi/profiles/verify/{name}.yaml` | project 側の profile 本体 |
 | `.takumi/verify/testing-matrix.md` | 導出ルール表 (月次保守) |

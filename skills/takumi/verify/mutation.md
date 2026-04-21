@@ -5,6 +5,43 @@
 
 ---
 
+## 対応言語と tier (判定の原則)
+
+L4 Mutation は言語によって使えるツールと operator の質が異なる。**ツールが「枯れているか」ではなく、生成されるミュータントの質 (operator coverage)** で tier を決める:
+
+| tier | 言語 | ツール | operator 覆盖 | 本番影響 | 速度 | 役割 |
+|---|---|---|---|---|---|---|
+| **primary** | JS/TS | Stryker-JS | 基準 | ゼロ (AST 変換、dev time) | incremental 完備 | **L4 hard gate** |
+| **primary** | Java/Kotlin | **PIT (PITest)** | Stryker 同等以上 (学術的に精緻) | ゼロ (bytecode mutation) | **Stryker より速い** (再コンパイル不要) | **L4 hard gate** |
+| **primary** | C# | Stryker.NET | Stryker 系列、同 philosophy | ゼロ | incremental (`--since`) 可 | **L4 hard gate** |
+| **primary** | Rust | cargo-mutants | Stryker より薄いが実用十分 (arith/bool/match/return) | ゼロ | **`--in-diff` 必須**、フル run は遅い | **L4 hard gate (incremental only)** |
+| **primary** | Scala | Stryker4s | Stryker 系列 | ゼロ | Scala 再コンパイルが足を引っ張るが incremental 可 | L4 hard gate |
+| **advisory** | Python | mutmut / cosmic-ray | operator set が薄い (算術・比較・論理のみ、array/string/obj mutator 欠落) | ゼロ | subprocess overhead で遅い | telemetry 参考値、hard gate 不可 |
+| **advisory** | Go | gremlins | operator set 薄い (条件・算術・±1 のみ) | ゼロ | Go コンパイル速で実行自体は OK | telemetry 参考値、hard gate 不可 |
+| **skip** | その他 | — | — | — | — | L4 完全 skip |
+
+### 判定原則
+
+- **本番コードへの影響はどのツールもゼロ** (すべて dev-time のソース or bytecode mutation)
+- **primary tier の条件**: Stryker 同等の operator 覆盖 + 実用可能な速度 (incremental を含む)
+- **advisory tier の理由**: ツールが未成熟なのではなく、operator 覆盖が Stryker レベルに届かず、mutation score を **真の品質指標として hard gate に使うには不十分**
+- advisory 言語では **L1 PBT + L6 AI Review を主守り** とし、L4 は telemetry で trend を記録するだけ
+
+### profile への記録
+
+`.takumi/profiles/verify/{name}.yaml` に以下を記録:
+
+```yaml
+mutation_tool: "stryker-js"     # pit / stryker-net / cargo-mutants / stryker4s / mutmut / gremlins / none
+l4_role: "primary"              # primary | advisory | skip
+mutation_mode: "default"        # incremental_only (Rust 必須) | default
+mutation_floor:
+  task: 0.65                    # primary のみ。advisory / skip では null
+  epic: 0.80
+```
+
+---
+
 ## なぜ必要か
 
 Coverage 80% でも、`expect` の無いテストでも到達する。
@@ -73,12 +110,20 @@ export default {
 }
 ```
 
-`.gitignore` に追加:
+`.gitignore` に追加 (takumi の Step 0b bootstrap で自動追加される):
 
 ```
 .stryker-tmp/
 reports/mutation/
+reports/stryker/
+
+# verify-loop が tick 毎に生成する tick config (ephemeral、追跡禁止)
+stryker.tick*.config.mjs
+vitest.stryker-*.config.ts
 ```
+
+> [!CAUTION]
+> `/loop 10m /verify-loop` を回す運用では、tick 毎に `stryker.tick{N}.config.mjs` / `vitest.stryker-tick{N}.config.ts` が量産される。これらは **ephemeral** (1 tick 使い捨て) であり、**リポジトリに commit しない**。10+ 個の tick config が git 管理下に残ると構造的な debt になる (実際に発生した事例あり)。書き出し先は `tmp/stryker-ticks/` または `.stryker-tmp/` を推奨。
 
 ---
 

@@ -1,6 +1,6 @@
-# /strict-refactoring: Review Checklist
+# strict-refactoring: Review Checklist
 
-本 skill (`SKILL.md`) から参照される評価 checklist。実装 worker が完了時、または `/probe refactor` / code review 時に適用する。普段 (`/takumi` の計画生成時) は読み込まない。
+本 skill (`SKILL.md`) から参照される評価 checklist。実装 worker が完了時、または takumi の probe mode (refactor 観点) / code review 時に適用する。普段 (`/takumi` の計画生成時) は読み込まない。
 
 profile と strictness に応じて適用する項目が変わる。全項目を一律適用しない。
 
@@ -133,7 +133,7 @@ tier_graduation_proposed:
 
 ## Advisory 項目 (違反しても block しない)
 
-以下は参考情報。`/probe refactor` で定期的に棚卸:
+以下は参考情報。takumi の probe mode (refactor 観点) で定期的に棚卸:
 
 - Early Return 徹底 (else が連続するコード)
 - 関数の行数 (50 行超)
@@ -150,7 +150,7 @@ tier_graduation_proposed:
 1. **全項目を一律適用しない**: profile 列に従う
 2. **contract 違反は 0 にする**: 特に actionPreconditions export
 3. **soft warning が蓄積したら見直す**: 5 件超で profile 再選定
-4. **advisory は棚卸候補**: 月次 /probe refactor で整理
+4. **advisory は棚卸候補**: 月次の probe mode (refactor 観点) で整理
 
 ---
 
@@ -160,7 +160,9 @@ tier_graduation_proposed:
 |---|---|
 | `SKILL.md` (同ディレクトリ) | 本 skill entry point |
 | `profiles.md` (同ディレクトリ) | profile 選定ロジック |
-| `rules-core.md` (同ディレクトリ) | L1 / L2 ルール詳細 |
+| `rules-core.md` (同ディレクトリ) | L1 / L2 / L3 の目次 |
+| `rules-required.md` (同ディレクトリ) | L1 required invariants 5 個 |
+| `rules-heuristics.md` (同ディレクトリ) | L2 default heuristics 10 個 |
 | `rules-ui-state.md` (同ディレクトリ) | L3 / Tier 詳細 |
 | `verify-contracts.md` (同ディレクトリ) | actionPreconditions contract |
 | `~/.claude/skills/takumi/telemetry-spec.md` | `refactor_review_completed` event |

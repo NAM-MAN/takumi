@@ -232,8 +232,8 @@ Verify Layer 生成 (今回の probe サイクル):
 
 ## 運用ライフサイクル
 
-### 新機能実装 (probe 経由)
-1. `/probe <feature>` 起動
+### 新機能実装 (takumi の probe mode 経由)
+1. `/takumi <feature> 見て` で probe mode に遷移
 2. 職人 が page / component 実装 (strict-refactoring パターン推奨)
 3. commit
 4. pre-commit で verify machines generate --incremental

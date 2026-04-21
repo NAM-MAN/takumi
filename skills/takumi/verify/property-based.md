@@ -3,6 +3,11 @@
 `fast-check` でランダム入力を生成し、不変条件 (property) を検証する。
 example test の入力空間を AI が網羅する仕組み。
 
+> [!IMPORTANT]
+> **PBT はファイル分割の軸にしない**。`*.pbt.test.ts` を新規作成することを**禁止**する (USS 原則、`spec-tests.md` 参照)。
+> `fc.assert(fc.property(...))` は既存 `{module}.test.ts` の **`it('{Subject} は {input} に対して {output} を返すべき', () => { ... })` body 内部**に置く。
+> 機構名は test 名に漏らさない (`PBT:`, `P1`, `property:` 等は禁止)。
+
 ---
 
 ## 6 流派の決定木
@@ -29,17 +34,24 @@ example test の入力空間を AI が網羅する仕組み。
 
 ```ts
 import fc from "fast-check"
+import { describe, it, expect } from "vitest"
 
-// Invariant: 出力自体の性質
-fc.property(fc.array(fc.integer()), (arr) => {
-  const sorted = sort(arr)
-  expect(isSorted(sorted)).toBe(true)
-  expect(sorted.length).toBe(arr.length)
+describe('sort', () => {
+  it('sort は任意の配列に対して昇順に並んだ同じ長さの配列を返すべき', () => {
+    fc.assert(fc.property(fc.array(fc.integer()), (arr) => {
+      const sorted = sort(arr)
+      expect(isSorted(sorted)).toBe(true)
+      expect(sorted.length).toBe(arr.length)
+    }))
+  })
 })
 
-// Postcondition: input/output 関係
-fc.property(fc.integer(), (n) => {
-  expect(abs(n)).toBeGreaterThanOrEqual(0)
+describe('abs', () => {
+  it('abs は任意の整数に対して 0 以上の値を返すべき', () => {
+    fc.assert(fc.property(fc.integer(), (n) => {
+      expect(abs(n)).toBeGreaterThanOrEqual(0)
+    }))
+  })
 })
 ```
 
@@ -53,19 +65,28 @@ fc.property(fc.integer(), (n) => {
 定義: 同じ関数を **同じ入力 (or 反復)** で複数回呼んで、結果の関係を見る。
 
 ```ts
-// Determinism: 2 回呼んでも同じ
-fc.property(promptArb, (p) => {
-  expect(generate(p, 42)).toEqual(generate(p, 42))
+describe('generate', () => {
+  it('generate は同じ prompt と seed に対して同じ出力を返すべき', () => {
+    fc.assert(fc.property(promptArb, (p) => {
+      expect(generate(p, 42)).toEqual(generate(p, 42))
+    }))
+  })
 })
 
-// Idempotence: 2 回適用しても結果が変わらない
-fc.property(fc.array(fc.integer()), (arr) => {
-  expect(sort(sort(arr))).toEqual(sort(arr))
+describe('sort', () => {
+  it('sort はソート済み配列に対して元の配列と同じ結果を返すべき', () => {
+    fc.assert(fc.property(fc.array(fc.integer()), (arr) => {
+      expect(sort(sort(arr))).toEqual(sort(arr))
+    }))
+  })
 })
 
-// Involution: 2 回適用すると元に戻る
-fc.property(fc.string(), (s) => {
-  expect(reverse(reverse(s))).toEqual(s)
+describe('reverse', () => {
+  it('reverse は任意の文字列に対して 2 回適用すると元の文字列を返すべき', () => {
+    fc.assert(fc.property(fc.string(), (s) => {
+      expect(reverse(reverse(s))).toEqual(s)
+    }))
+  })
 })
 ```
 
@@ -82,33 +103,44 @@ fc.property(fc.string(), (s) => {
 ### 3a. 一般 Metamorphic
 
 ```ts
-// 入力を変換 → 出力もこう変換されるはず
-fc.property(imageArb, (img) => {
-  expect(bwConvert(rotate90(img))).toEqual(rotate90(bwConvert(img)))
+describe('bwConvert', () => {
+  it('bwConvert は 90 度回転した画像に対して bwConvert 後に 90 度回転した画像と同じ結果を返すべき', () => {
+    fc.assert(fc.property(imageArb, (img) => {
+      expect(bwConvert(rotate90(img))).toEqual(rotate90(bwConvert(img)))
+    }))
+  })
 })
 
-// 単調性: 入力を増やすと出力も増えるはず
-fc.property(fc.integer({ min: 0 }), (n) => {
-  expect(complexity(n + 1)).toBeGreaterThanOrEqual(complexity(n))
+describe('complexity', () => {
+  it('complexity は入力 n+1 に対して n のときの値以上の値を返すべき', () => {
+    fc.assert(fc.property(fc.integer({ min: 0 }), (n) => {
+      expect(complexity(n + 1)).toBeGreaterThanOrEqual(complexity(n))
+    }))
+  })
 })
 ```
 
 ### 3b. Algebraic Laws (Metamorphic の特殊形)
 
 ```ts
-// 可換: a + b === b + a
-fc.property(fc.integer(), fc.integer(), (a, b) => {
-  expect(add(a, b)).toBe(add(b, a))
-})
+describe('add', () => {
+  it('add は a と b の順序を入れ替えた入力に対して同じ値を返すべき', () => {
+    fc.assert(fc.property(fc.integer(), fc.integer(), (a, b) => {
+      expect(add(a, b)).toBe(add(b, a))
+    }))
+  })
 
-// 結合: (a + b) + c === a + (b + c)
-fc.property(fc.integer(), fc.integer(), fc.integer(), (a, b, c) => {
-  expect(add(add(a, b), c)).toBe(add(a, add(b, c)))
-})
+  it('add は 3 項の足し合わせ順序に依らず同じ値を返すべき', () => {
+    fc.assert(fc.property(fc.integer(), fc.integer(), fc.integer(), (a, b, c) => {
+      expect(add(add(a, b), c)).toBe(add(a, add(b, c)))
+    }))
+  })
 
-// 単位元
-fc.property(fc.integer(), (a) => {
-  expect(add(a, 0)).toBe(a)
+  it('add は 0 を加えた入力に対して元の値を返すべき', () => {
+    fc.assert(fc.property(fc.integer(), (a) => {
+      expect(add(a, 0)).toBe(a)
+    }))
+  })
 })
 ```
 
@@ -122,19 +154,28 @@ fc.property(fc.integer(), (a) => {
 定義: `f` と逆関数 `g` の合成が **恒等関数** になる。
 
 ```ts
-// JSON シリアライズ/デシリアライズ
-fc.property(jsonValueArb, (v) => {
-  expect(JSON.parse(JSON.stringify(v))).toEqual(v)
+describe('JSON.parse / JSON.stringify', () => {
+  it('JSON は任意の値に対して stringify と parse を経由しても同じ値を返すべき', () => {
+    fc.assert(fc.property(jsonValueArb, (v) => {
+      expect(JSON.parse(JSON.stringify(v))).toEqual(v)
+    }))
+  })
 })
 
-// パーサー/プリンター
-fc.property(astArb, (ast) => {
-  expect(parse(print(ast))).toEqual(ast)
+describe('parse / print', () => {
+  it('parse は print した AST に対して元の AST を返すべき', () => {
+    fc.assert(fc.property(astArb, (ast) => {
+      expect(parse(print(ast))).toEqual(ast)
+    }))
+  })
 })
 
-// 暗号化/復号
-fc.property(fc.string(), keyArb, (msg, key) => {
-  expect(decrypt(encrypt(msg, key), key)).toEqual(msg)
+describe('encrypt / decrypt', () => {
+  it('decrypt は encrypt した平文に対して元の平文を返すべき', () => {
+    fc.assert(fc.property(fc.string(), keyArb, (msg, key) => {
+      expect(decrypt(encrypt(msg, key), key)).toEqual(msg)
+    }))
+  })
 })
 ```
 
@@ -149,8 +190,12 @@ fc.property(fc.string(), keyArb, (msg, key) => {
 別実装と比較する流派。詳細は `differential.md`。要点:
 
 ```ts
-fc.property(beatArrayArb, (beats) => {
-  expect(layoutV2(beats)).toEqual(layoutV1(beats))  // 旧版を正解として比較
+describe('layoutV2', () => {
+  it('layoutV2 は任意の beats 配列に対して layoutV1 と同じレイアウトを返すべき', () => {
+    fc.assert(fc.property(beatArrayArb, (beats) => {
+      expect(layoutV2(beats)).toEqual(layoutV1(beats))
+    }))
+  })
 })
 ```
 
@@ -194,7 +239,11 @@ export const layoutArb = fc.record({
 ```ts
 import { beatArrayArb } from "@/test/pbt-utils"
 
-fc.property(beatArrayArb, (beats) => { /* ... */ })
+describe('layout', () => {
+  it('layout は任意の beats 配列に対して合計パネル数を保持したレイアウトを返すべき', () => {
+    fc.assert(fc.property(beatArrayArb, (beats) => { /* ... */ }))
+  })
+})
 ```
 
 ---
@@ -210,7 +259,9 @@ fc.property(beatArrayArb, (beats) => { /* ... */ })
 | nightly | 5000 | 週次 CI で深く叩く |
 
 ```ts
-fc.assert(fc.property(...), { numRuns: 500 })
+it('Money は任意の input に対して 2 回の round-trip で等価な値を返すべき', () => {
+  fc.assert(fc.property(moneyArb, (m) => roundTrip(m) === m), { numRuns: 500 })
+})
 ```
 
 ---
@@ -235,3 +286,5 @@ Got error: AssertionError: expected NaN to equal NaN
 - ドメイン arbitrary を必ず `pbt-utils.ts` に集約 (重複定義禁止)
 - `fc.constant()` だけの property は example test と等価 → property にする意味なし
 - numRuns を上げすぎると CI が遅くなる → 通常 100 / 重要 500 を目安に
+- **新規 `*.pbt.test.ts` の作成禁止** (USS 原則、`spec-tests.md`)。`fc.assert` は `*.test.ts` の `it('…べき')` body 内部に置く
+- **test 名に機構名を出さない** (`PBT:`, `P1`, `property:` 等は禁止。strict-refactoring Rule 14 に従う)

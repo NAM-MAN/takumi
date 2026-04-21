@@ -44,16 +44,16 @@ append-only を徹底する理由: `git blame` 的に「いつ / 誰が / 何を
 
 | Emitter | タイミング | event |
 |---------|-----------|-------|
-| `/takumi` | task 作成確定時 | `task_created` |
-| `/takumi` | profile override 時 | `profile_overridden` |
-| `/exec` | wave gate 通過時 | `gate_passed` |
-| `/exec` | wave gate 失敗時 | `gate_failed` |
-| `/verify` | mutation score 測定時 | `mutation_measured` |
-| `/design` | L7 Layout Invariant チェック時 | `layout_checked` |
+| takumi (normal mode) | task 作成確定時 | `task_created` |
+| takumi (normal mode) | profile override 時 | `profile_overridden` |
+| executor | wave gate 通過時 | `gate_passed` |
+| executor | wave gate 失敗時 | `gate_failed` |
+| verify 運用 | mutation score 測定時 | `mutation_measured` |
+| design mode | L7 Layout Invariant チェック時 | `layout_checked` |
 | 人間 | gate failure を誤検知と判断した時 | `gate_false_positive_flagged` |
 
-各コマンドは終了直前に telemetry を flush する。途中クラッシュで event が
-欠落するのは許容(完全性より可用性を優先)。
+各 emitter は終了直前に telemetry を flush する。途中クラッシュで event が
+欠落するのは許容(完全性より可用性を優先)。上記 emitter はすべて takumi の内部モード / 内部ロールであり、人間が直接叩く別コマンドではない。
 
 ---
 
@@ -105,7 +105,7 @@ W=2 (soft warning) ──── 直近 merge PR にコメント、計画の defa
      │
      │ 次週も < 10%
      ▼
-W=3 (hard warning) ──── Slack/通知、/sweep の次回実行時に telemetry 観点を差し込む
+W=3 (hard warning) ──── Slack/通知、次回 sweep mode 実行時に telemetry 観点を差し込む
      │
      │ 次週も < 10%  ← 軍師 警告ライン
      ▼
@@ -152,9 +152,9 @@ codex exec -m gpt-5.4 -s read-only -C "$(pwd)" \
 
 - [ ] `.takumi/telemetry/` ディレクトリを `.gitignore` に追加(個別判断)
 - [ ] `/takumi` に `task_created` emit を追加
-- [ ] `/exec` に `gate_passed` / `gate_failed` emit を追加
-- [ ] `/verify` に `mutation_measured` emit を追加
-- [ ] `/design` に `layout_checked` emit を追加
+- [ ] executor に `gate_passed` / `gate_failed` emit を追加
+- [ ] verify 運用に `mutation_measured` emit を追加
+- [ ] design mode に `layout_checked` emit を追加
 - [ ] 週次レポート生成スクリプトを配置
 - [ ] escalation フローの通知先設定(Slack webhook 等)
 - [ ] 運用開始 4 週後に 軍師 で初回 drift チェック

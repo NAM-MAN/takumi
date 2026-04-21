@@ -1,6 +1,6 @@
-# /design L7 Layout Invariant 詳細 (3 層)
+# design mode L7 Layout Invariant 詳細 (3 層)
 
-本体(`SKILL.md`)から参照される補助ドキュメント。画面生成後の検証は 3 層に分ける。
+takumi の design mode 本体 (`design/README.md`) から参照される補助ドキュメント。画面生成後の検証は 3 層に分ける。
 **hard gate は最小限**に留め、それ以外は soft / lint に降ろす。
 
 ## hard gate (5-7 項目)
@@ -18,8 +18,7 @@ profile の `layout_invariants.hard` に列挙。
 | no_overlap | z-index 衝突で互いを覆わない | snapshot diff |
 | grid_break_protection | 横スクロール発生時は設計 bug | scrollWidth > clientWidth |
 
-5-7 項目に絞る理由: hard を増やすと誤検知で bypass 常態化する。`/sweep` で観点ごとに
-追加したくなっても、profile レベルで足す前に **soft → hard 昇格の履歴**を残す。
+5-7 項目に絞る理由: hard を増やすと誤検知で bypass 常態化する。takumi の sweep mode で観点ごとに追加したくなっても、profile レベルで足す前に **soft → hard 昇格の履歴**を残す。
 
 ### 昇格ルール
 

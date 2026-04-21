@@ -1,12 +1,11 @@
-# バックログ入力モード（plan skill 内部参照）
+# バックログ入力モード (takumi 内部参照)
 
-`/probe` から呼ばれた場合、または backlog.md が指定された場合に使用。
-インタビューを省略し、バックログから直接 Wave 計画を生成する。
+takumi の probe mode / sweep mode から backlog.md が生成された場合、またはユーザー発話で明示された場合に使用。インタビューを省略し、バックログから直接 Wave 計画を生成する。
 
 ## 起動条件
 
 以下のいずれかで起動:
-- `/probe` オーケストレーターからの呼び出し
+- probe mode / sweep mode が triage を終えて backlog.md を確定したあと
 - ユーザーが「backlog.md から計画を作って」と指示
 - `.takumi/sprints/{日付}/backlog.md` を明示的に指定
 
