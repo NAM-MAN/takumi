@@ -4,7 +4,9 @@ React Testing Library + fast-check で **画面コンポーネントの小さな
 **Tier A 画面 (60-70%) はこれだけで守る**。state machine 不要。
 
 > [!IMPORTANT]
-> **USS 原則 (`spec-tests.md`)**: 1 component = 1 test file (`{Component}.test.tsx`)。`.property.test.tsx` / `.pbt.test.tsx` 等の分割は禁止。`it` 名は `{Subject} は {input} に対して {output} を返すべき` / `{User} が {action} すると {observable} が表示されるべき` の骨格で書く (strict-refactoring Rule 14 継承、verify 6 原則の第 6)。
+> **USS 原則 (`spec-tests.md`)**: 1 component = 1 test file (`{Component}.test.tsx`)。`.property.test.tsx` / `.pbt.test.tsx` 等の分割は禁止。
+> **命名は結合骨格**: `{A} を {action} すると {result} として記録されるべき` / `{Subject} を {action} すると {result} が表示されるべき` 等。L2 Component Test は DOM + interaction を叩く**結合レベル**なので、ユニット骨格 (`{Subject} は {input} に対して {output} を返すべき`) は使わない (strict-refactoring Rule 14 / verify 7 原則の第 6)。
+> **ファイル内の統一性**: 同一 test file 内では常に結合骨格で揃える (`spec-tests.md` §3.3)。
 
 ---
 
@@ -52,7 +54,7 @@ import fc from "fast-check"
 import { UserBadge } from "../UserBadge"
 
 describe('UserBadge', () => {
-  it('UserBadge は任意の user オブジェクトに対して name を画面に表示するべき', () => {
+  it('任意の user を UserBadge に渡してレンダリングすると、その name が画面に表示されるべき', () => {
     const userArb = fc.record({
       id: fc.uuid(),
       name: fc.string({ minLength: 1, maxLength: 50 }),
@@ -78,7 +80,7 @@ Props のあらゆる組合せで **render が落ちない** + **表示が仕様
 
 ```ts
 describe('SettingsToggle', () => {
-  it('SettingsToggle は任意回クリックされた後も偶数回なら OFF・奇数回なら ON の状態を返すべき', () => {
+  it('SettingsToggle を任意回クリックすると、偶数回で OFF・奇数回で ON の状態として表示されるべき', () => {
     fc.assert(fc.property(fc.array(fc.boolean(), { maxLength: 20 }), (clicks) => {
       const spy = vi.fn()
       const { unmount } = render(<SettingsToggle onChange={spy} />)
@@ -100,7 +102,7 @@ describe('SettingsToggle', () => {
 
 ```ts
 describe('FormError', () => {
-  it('FormError は全ての error 種別に対して空でないメッセージを返すべき', () => {
+  it('FormError に全ての error 種別を渡してレンダリングすると、空でないメッセージが表示されるべき', () => {
     const errorArb = fc.constantFrom(
       "required", "too_short", "too_long", "invalid_email", "duplicate"
     )
@@ -122,7 +124,7 @@ describe('FormError', () => {
 
 ```ts
 describe('Pagination', () => {
-  it('Pagination は不正なページ番号に対してページ 1 を表示するべき', () => {
+  it('Pagination に不正なページ番号を渡してレンダリングすると、ページ 1 が表示されるべき', () => {
     const invalidArb = fc.oneof(
       fc.integer({ max: -1 }),
       fc.float().filter((n) => !Number.isInteger(n)),
@@ -151,7 +153,7 @@ describe('Pagination', () => {
 import { UserProfile } from "../UserProfile"
 
 describe('UserProfile (Server Component)', () => {
-  it('UserProfile は任意の user id に対して valid な JSX 要素を返すべき', async () => {
+  it('UserProfile を任意の user id で呼び出すと、valid な JSX 要素として記録されるべき', async () => {
     await fc.assert(fc.asyncProperty(fc.uuid(), async (id) => {
       const element = await UserProfile({ id })
       expect(element).toBeTruthy()
@@ -167,7 +169,7 @@ describe('UserProfile (Server Component)', () => {
 import { updateUser } from "../actions"
 
 describe('updateUser (Server Action)', () => {
-  it('updateUser は valid な formData に対して success プロパティを持つ結果を返すべき', async () => {
+  it('updateUser を valid な formData で呼び出すと、success プロパティを持つ結果として返されるべき', async () => {
     await fc.assert(fc.asyncProperty(formDataArb, async (formData) => {
       const result = await updateUser(null, formData)
       expect(result).toHaveProperty("success")

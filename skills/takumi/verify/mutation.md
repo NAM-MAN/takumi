@@ -206,6 +206,54 @@ Mutant kill → mutation score 上昇
 
 ---
 
+## Subsumption 解析 (MSS compression 用)
+
+Phase 2 Compression (`~/.claude/skills/takumi/verify/compression.md`) で test を削除判定するための前処理。
+
+`stryker.config.mjs` に JSON reporter を有効化:
+
+```js
+reporters: ["json", "progress", "clear-text"],  // json を追加
+jsonReporter: { fileName: "reports/mutation/mutation.json" }
+```
+
+full run で report 取得 (incremental は killed-by 情報が不十分):
+
+```bash
+pnpm stryker run --mutate src/path/to/file.ts
+```
+
+出力 `reports/mutation/mutation.json` の schema:
+
+```jsonc
+{
+  "files": {
+    "src/path/to/file.ts": {
+      "mutants": [
+        {
+          "id": "0",
+          "mutatorName": "StringLiteral",
+          "status": "Killed",
+          "killedBy": ["11"],    // 殺した test id
+          "coveredBy": ["11", "12"]  // 実行した test id
+        }
+      ]
+    }
+  },
+  "testFiles": {
+    "src/path/to/__tests__/file.test.ts": {
+      "tests": [{ "id": "11", "name": "...", "location": {...} }]
+    }
+  }
+}
+```
+
+**subsumption 判定**: 各 test の `killed(t) = {mutant.id | t ∈ mutant.killedBy}` を計算し、`killed(A) ⊃ killed(B)` なら B を削除候補。削除手順は `compression.md` §4 を厳守 (1 件ずつ削除して再実行)。
+
+**zero-contribution 判定**: test が `coveredBy` には含まれるが `killedBy` に一度も登場しない → 飾り、削除候補。
+
+---
+
 ## CI 統合例 (週次)
 
 ```yaml

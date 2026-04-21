@@ -329,8 +329,9 @@ probe mode から backlog.md が渡された場合、または backlog.md が既
 | `executor.md` (同ディレクトリ) | 計画の Wave 実行 (内部責務) |
 | `~/.claude/skills/takumi/verify/README.md` | L1-L6 (LP) |
 | `~/.claude/skills/takumi/verify/runtime.md` | L1-L6 の AI runtime spec (recipe library 本体) |
-| `~/.claude/skills/takumi/verify/mutation.md` | 言語別 L4 tier 表 (Stryker / PIT / cargo-mutants / 等)、primary vs advisory |
-| `~/.claude/skills/takumi/verify/spec-tests.md` | Unified Spec Test — 1 unit = 1 test file、it 名は仕様文 (命名規約は strict-refactoring Rule 14 を継承) |
+| `~/.claude/skills/takumi/verify/mutation.md` | 言語別 L4 tier 表 (Stryker / PIT / cargo-mutants / 等)、primary vs advisory、subsumption 解析 |
+| `~/.claude/skills/takumi/verify/spec-tests.md` | Unified Spec Test (USS) + Minimal Spec Suite (MSS) — 1 unit = 1 test file、3 階層命名 (ユニット/結合/ユーザー)、SHARPEN > PRUNE > ADD |
+| `~/.claude/skills/takumi/verify/compression.md` | MSS 実装 recipe (subsumption / zero-contribution / runtime budget / spec-density) |
 | `~/.claude/skills/takumi/strict-refactoring/README.md` | リファクタリング指針 (plugin, LP)。詳細は guide.md / rules-required.md / rules-heuristics.md / rules-ui-state.md |
 | `verify-profiles-defaults/*.yaml` (同ディレクトリ) | 5 archetype defaults |
 | `~/.claude/skills/takumi/design/profiles-defaults/*.yaml` | 4 design profile defaults |
