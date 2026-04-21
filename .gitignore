@@ -18,3 +18,15 @@ pnpm-debug.log
 .env
 .env.local
 tmp/
+
+# Claude Code 内部ファイル (scheduled_tasks.lock 等)
+.claude/
+
+# takumi (計画・状態・sprint・telemetry・verify-loop の中間成果物)
+.takumi/
+
+# verify-loop が吐く Stryker tick artifact (ephemeral、追跡禁止)
+stryker.tick*.config.mjs
+vitest.stryker-*.config.ts
+.stryker-tmp/
+reports/stryker/
