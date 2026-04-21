@@ -12,6 +12,28 @@ license: MIT
 
 ---
 
+## 進入路 (AI 向け、最小読み込み指針)
+
+> [!IMPORTANT]
+> **全ファイルを読まない**。context 劣化を避けるため、task 種別から下表の「必ず読む」3-5 本だけを読み、「触れない」は開かない。
+
+| task 種別 | 必ず読む | 触れない |
+|---|---|---|
+| 新機能実装 (UI なし) | SKILL.md + `plan-template.md` + `executor.md` | verify/, probe/, sweep/, design/ |
+| 新機能実装 (UI あり) | SKILL.md + `plan-template.md` + `design/README.md` + `design/phases.md` | verify/, probe/, sweep/ |
+| テスト追加 | SKILL.md + `verify/README.md` + `verify/spec-tests.md` + (技法に応じて 1 本: `property-based.md` / `component-test.md` / `model-based.md`) | probe/, sweep/, design/ |
+| **テスト圧縮 (MSS)** | SKILL.md + `verify/spec-tests.md` + `verify/compression.md` | probe/, sweep/, design/ |
+| verify-loop 運用 | `verify-loop/runtime.md` + `verify/loop.md` + `verify/mutation.md` | probe/, sweep/, design/, その他 verify/ |
+| 観点診断 (probe mode) | SKILL.md + `probe/README.md` + `probe/runtime.md` + `probe/discover.md` + `probe/triage.md` (委譲時のみ `probe/delegation.md`) | verify/, sweep/ |
+| 全域棚卸 (sweep mode) | SKILL.md + `sweep/README.md` + `sweep/runtime.md` | probe/, verify/, design/ |
+| リファクタ / 設計見直し | SKILL.md + `strict-refactoring/README.md` + `strict-refactoring/rules-core.md` (+ 該当 rules-*.md 1 本) | probe/, sweep/, design/, verify/ |
+| design mode (Step 0d) | SKILL.md + `design/README.md` + `design/runtime.md` + `design/phases.md` (+ 該当 phases-*.md) | probe/, sweep/, verify/ |
+| 状態確認 / 再開 / override | SKILL.md + `natural-language.md` + `.takumi/state.json` | それ以外は不要 |
+
+**ファイルサイズ方針**: skill 内 md ファイルは 300-349 行まで acceptable、350 行超は必ず分割する (attention 劣化回避)。実行時に「**新規テスト追加なら verify 系だけ、リファクタなら strict-refactoring だけ**」のように選択的に読むことで、1 task あたりの context 消費を最小化する。
+
+---
+
 ## 意図分類ルータ (最優先判定)
 
 入力を以下の 6 モードに分類する。判定は「観点語 + 診断動詞」の組合せを基本条件とする。
@@ -75,32 +97,7 @@ executor とは別の **discovery orchestrator** が fan-out/fan-in を担う。
 
 軍師 起動コマンドと注意点は `executor.md` を参照。
 
-## 補助ファイル (内部モードの詳細)
-
-| ファイル / ディレクトリ | 用途 |
-|---------|------|
-| `natural-language.md` | 自然文 → 6 mode 判定辞書 |
-| `self-multiplying.md` | 自己増殖型計画の詳細(大規模・品質改善系) |
-| `backlog-mode.md` | probe / sweep から入った時の backlog → Wave 計画変換 |
-| `probe/` | probe mode 内部 (discover.md / triage.md) |
-| `sweep/` | sweep mode 内部 (quality-model.md / integration-playbook.md / reconcile.md) |
-| `design/` | design mode (ui/mixed 時の自動呼出、takumi 内部) |
-| `verify/` | L1-L6 recipe library |
-| `verify-loop/` | 期間限定 mutation score 向上 loop |
-| `strict-refactoring/` | refactor_profile_ref の policy |
-| `executor.md` | Wave 自動実行 |
-| `test-strategy.md` | AC-ID → verify_profile 選定 |
-| `telemetry-spec.md` / `telemetry-schema.md` / `telemetry-report.md` | 儀式化 drift 検出 |
-| `integrations.md` | 100 点統合版の接続ガイド |
-
-## ファイル
-
-| パス | 用途 |
-|------|------|
-| `.takumi/plans/{name}.md` | 計画ファイル（唯一の永続状態） |
-| `.takumi/drafts/{name}.md` | インタビュー中のメモ |
-| `.takumi/drafts/discovered-{id}.md` | 自己増殖: 職人 の発見 |
-| `.takumi/state.json` | 状態管理 |
+補助ファイルの一覧と用途は冒頭「進入路」表を参照。ローカル作業領域は全て `.takumi/` 配下 (`plans/{name}.md` 計画、`drafts/{name}.md` メモ、`drafts/discovered-{id}.md` 自己増殖発見、`state.json` 状態、`sprints/{date}/` probe 成果物、`telemetry/*.jsonl` イベント)。
 
 ---
 
@@ -316,24 +313,8 @@ probe mode から backlog.md が渡された場合、または backlog.md が既
 
 **人間が覚えるコマンドは `/takumi` の 1 つだけ**。観点診断・棚卸し・状態確認・再開・停止・リファクタ・検証・設計のいずれも `/takumi` に日本語で伝えれば、意図分類ルータが 6 モード (normal / probe / sweep / status / continue / override) に振り分ける。サブコマンド構文 (`/takumi status` 等) も対外コマンド (`/probe` 等) も採用しない。発話辞書は `natural-language.md`。
 
-## 関連リソース (100 点統合版)
+## 関連リソース
 
-| skill / file | 用途 |
-|---|---|
-| `integrations.md` (同ディレクトリ) | 新 skill 接続の詳細 |
-| `plan-template.md` (同ディレクトリ) | Step 4 の計画ファイルテンプレートとレビュー手順 |
-| `step0-bootstrap.md` (同ディレクトリ) | Step 0b の bootstrap 手順 (profiles copy + .gitignore 行) |
-| `telemetry-spec.md` (同ディレクトリ) | 儀式化 drift 検知の telemetry spec |
-| `~/.claude/skills/takumi/design/README.md` | IA / style-guide / wireframe 生成 (ui/mixed、takumi 内部モード) |
-| `test-strategy.md` (同ディレクトリ) | AC-ID → verify_profile 選定 (内部補助) |
-| `executor.md` (同ディレクトリ) | 計画の Wave 実行 (内部責務) |
-| `~/.claude/skills/takumi/verify/README.md` | L1-L6 (LP) |
-| `~/.claude/skills/takumi/verify/runtime.md` | L1-L6 の AI runtime spec (recipe library 本体) |
-| `~/.claude/skills/takumi/verify/mutation.md` | 言語別 L4 tier 表 (Stryker / PIT / cargo-mutants / 等)、primary vs advisory、subsumption 解析 |
-| `~/.claude/skills/takumi/verify/spec-tests.md` | Unified Spec Test (USS) + Minimal Spec Suite (MSS) — 1 unit = 1 test file、3 階層命名 (ユニット/結合/ユーザー)、SHARPEN > PRUNE > ADD |
-| `~/.claude/skills/takumi/verify/compression.md` | MSS 実装 recipe (subsumption / zero-contribution / runtime budget / spec-density) |
-| `~/.claude/skills/takumi/strict-refactoring/README.md` | リファクタリング指針 (plugin, LP)。詳細は guide.md / rules-required.md / rules-heuristics.md / rules-ui-state.md |
-| `verify-profiles-defaults/*.yaml` (同ディレクトリ) | 5 archetype defaults |
-| `~/.claude/skills/takumi/design/profiles-defaults/*.yaml` | 4 design profile defaults |
-| `.takumi/profiles/{verify,design}/*.yaml` | project 側 profile 本体 |
-| `.takumi/telemetry/profile-usage.jsonl` | event log (append-only) |
+**どのファイルを読むか**は冒頭「進入路」表で決める。各ファイルの 1 行概要は進入路の task 種別を参照。
+
+profile registry (外部参照): `verify-profiles-defaults/*.yaml` (5 archetype defaults) / `design/profiles-defaults/*.yaml` (4 design defaults) / `.takumi/profiles/{verify,design}/*.yaml` (project 側本体) / `.takumi/telemetry/profile-usage.jsonl` (event log、append-only)。
