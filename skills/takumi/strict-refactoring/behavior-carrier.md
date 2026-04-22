@@ -2,7 +2,7 @@
 
 `rules-heuristics.md` の **Rule 19 (Subject Owns Verbs) / Rule 21 (Behavior Carrier Selection) / Rule 17-D (dispatch 判断フロー)** を実運用に落とす recipe。`immutable-first.md` が **how to write statements** なら、本 md は **how to structure operations** (操作を関数 / class / hook のどれに載せるか)。
 
-軍師 (gpt-5.4) 敵対レビューで**3 つの穴を潰した**最終版。
+境界ケースを**敵対レビュー**で検証した最終版。
 
 ---
 
@@ -98,7 +98,7 @@ Default (どれにも該当しない): Q2 の export function。class を defaul
 
 ### EXC2 の実装形 — constructor DI with composition root
 
-軍師敵対レビュー で判明した罠:
+敵対レビューで判明した罠:
 
 - `constructor(db = getDefaultDb())` は**暗黙 default が test 汚染を隠す**
 - default arg は constructor 呼び出しごとに evaluate される (singleton だと危険)
@@ -124,7 +124,7 @@ const repo = new OrderRepository(inMemoryDb)
 
 ---
 
-## 3. 境界ケース (軍師敵対レビューで検証済 8 件)
+## 3. 境界ケース (敵対レビューで検証済 8 件)
 
 ### SC1: `order.save()` vs `repo.save(order)`
 
@@ -157,9 +157,9 @@ method ごとに**ロジック・失敗モード・契約が異なる** → **EX
 
 **grandfathered, no new debt** — 既存は触る箇所だけ opportunistic migration、新規は Rule 21 適用、rename-only PR 禁止。
 
-### SC8: Pilot 4 (name_editor) では 0 refactor target
+### SC8: 既に layer-consistent な codebase での扱い
 
-既に layer-consistent (repository = 全て procedural、domain = class method)。Rule 19/21 は **documentation rule** として機能、refactor trigger は持たせない。
+repository 層 = 全て procedural、domain 層 = class method という layer-consistent な codebase では Rule 19/21 による**refactor target がゼロ**になることが多い。その場合、本 rule は **documentation rule** として機能 (新規追加や新規 contributor 向けの policy)、refactor trigger は持たせない。
 
 ---
 
@@ -175,7 +175,7 @@ switch / if-else chain on literal key を見つけたら:
 └─ 4. 多メソッド handler (validate/run/rollback 等) or N > 8? → interface + class (domain 外でも推奨)
 ```
 
-### 選択肢比較 (pilot 実測: dispatch.ts の runQueueJob 6-case switch)
+### 選択肢比較 (6-case switch 規模の dispatch を想定)
 
 | 選択肢 | LoC | 型安全 | 可読性 | 拡張性 |
 |---|---|---|---|---|
@@ -190,7 +190,7 @@ switch / if-else chain on literal key を見つけたら:
 ### 判断の実例
 
 - badge / icon / label の static mapping → **dispatch table** (Record<State, Badge>)
-- job dispatcher (`runQueueJob`) — 6 kinds × 1 method → **switch + never keep**
+- job dispatcher — 6 kinds × 1 method per kind → **switch + never keep**
 - domain event handler — OrderPlaced / OrderCancelled / ... × 複数 methods → **interface + class** (Rule 3 適用)
 - 機能フラグ付きの策略パターン → **interface + class** (behavior variation)
 

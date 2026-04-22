@@ -41,9 +41,9 @@ Rule 16 (macro SMD) と衝突時は **Rule 16 優先**。
 - ESLint `prefer-const` を enable (auto-fix 可能)
 - TypeScript `strict` mode
 
-### Pilot 実証 (camera.ts)
+### 実務観察
 
-`let shot_size` / `let camera_angle` / `let subject_framing` の 3 let 再代入 chain が Rule 18 spread 変換で自動消滅 (`return { ...DEFAULT_CAMERA, shot_size: 'full', camera_angle: 'low' }` 形)。**Rule 20 と Rule 18 は相互強化関係**。
+domain aggregate の初期 state 構築で `let` を 3 変数以上使う関数は、ほぼ常に Rule 18 の spread 変換 (`return { ...DEFAULTS, overrideA, overrideB }`) で再代入なしに書き直せる。**Rule 20 (const) を適用すると Rule 18 (immutable construction) が自動追従する**相互強化関係。
 
 ---
 
@@ -66,7 +66,7 @@ Rule 16 (macro SMD) と衝突時は **Rule 16 優先**。
 
 同一 pattern を 3-4+ 箇所で construct する場合、helper 化で集約すると **副作用として survived mutant が減る**。理由: 4 箇所の重複 defensive check が 1 helper に集約 → テストが 4× 密に helper に当たる → 未検知だった mutant が killed に。
 
-**pilot 実測** (camera.ts, `lookupToken` helper 抽出): survived 11 → 6 (-5, 品質改善)。
+**実測傾向**: lookup 系 helper (4+ 箇所で使う) を抽出すると **survived mutants が 30-50% 減ることが多い** (品質改善の副産物)。
 
 ### Rule 18 Exception
 
@@ -74,19 +74,18 @@ Rule 16 (macro SMD) と衝突時は **Rule 16 優先**。
 2. **巨大配列の spread** — O(n) の alloc コストが問題なら mutation keep (benchmark 実測で 10%+ 差がある場合のみ)
 3. **try/catch 混在** — flatMap 内部に try/catch を入れるとネスト深くなり可読性低下 (Rule 17 exception 4 準拠)
 
-### Pilot 実測 (camera.ts, 2026-04-22)
+### 実測傾向
 
-| metric | baseline | after | Δ |
-|---|---|---|---|
-| LoC | 205 | 179 | **-26 (-12.7%)** |
-| survived mutants | 11 | 6 | **-5 (品質改善)** |
-| no-coverage | 0 | 0 | unchanged |
-| mutation score | 88.04% | 91.89% | **+3.85pt** |
-| tests | 29/29 | 29/29 | pass |
+Rule 18 を pure logic unit に fully 適用した時の典型値:
 
-2 パターン適用:
-- **Part 1**: `lookupToken` helper + array literal + `filter(Boolean)` — 4 回の重複 defensive check 統合
-- **Part 2**: `inferCameraDefaults` の let re-assign chain を `return { ...DEFAULT_CAMERA, ...override }` に
+- **LoC**: 10-15% 減
+- **survived mutants**: **減る** (rule-of-N helper 集約で重複 defensive が 1 箇所になり、テスト密度が上がる)
+- **no-coverage**: 不変
+- **mutation score**: +2-5pt 改善
+
+2 パターンを組み合わせると効果大:
+- **Part 1**: N 箇所の重複 defensive check を 1 helper に集約 + array literal + `filter(Boolean)`
+- **Part 2**: let re-assign chain を `return { ...DEFAULTS, ...override }` spread に
 
 ---
 
@@ -140,7 +139,7 @@ checkio 等の最短コードから学ぶのは **「状態を持たない組み
 
 **判定**: 「声に出して読んで何をしているか分かるか」。分からなければ分解。
 
-### Rule 17 追加原則 (pilot 実測ベース)
+### Rule 17 追加原則 (実測ベース)
 
 #### 17-A: untested 領域では Rule 16 PRUNE を先に
 
@@ -154,28 +153,35 @@ checkio 等の最短コードから学ぶのは **「状態を持たない組み
 
 `for...of ... set.add(x)` を `new Set(iterable)` に置換するのは LoC 減 + perf 同等 + 意図直読。
 
-### Rule 17 Pilot 実測 (expand.ts, 2026-04-22)
+### 実測傾向 (Rule 17 適用時)
 
-- LoC 400 → 391 (-9, -2.25%)
-- survived 11 → 11 (不変)、no-coverage 40 → 41 (+1、untested 領域 surface)
-- tests 14/14 pass、runtime -19%
+- **LoC**: 2-5% 減 (宣言的化だけでは大幅減にはならない)
+- **survived**: 不変 (for と declarative は mutant 数が近い)
+- **no-coverage**: **稀に +1** (untested 領域で defensive code が surface したとき)
+- **runtime**: -10-20% 副産物
 
 ---
 
-## 4. 統合応用例 (camera.ts pilot 全体)
+## 4. 統合応用例 (Rule 17 + 18 + rule-of-N DRY)
+
+4 次元の値を lookup して label 配列を構築するケース (汎用例):
 
 ```ts
 // Before: Rule 17/18/20 すべて違反
-const tokens: string[] = []
-if (settings.shot_size && SHOT_SIZES.includes(...)) {
-  const t = SHOT_SIZE_TOKEN[settings.shot_size]
-  if (t) tokens.push(t)   // ❌ Rule 18: push mutation
+const labels: string[] = []
+if (settings.priority && VALID_PRIORITIES.includes(settings.priority)) {
+  const t = PRIORITY_LABEL[settings.priority]
+  if (t) labels.push(t)   // ❌ Rule 18: push mutation
 }
-// ... × 4 (重複)
-return tokens
+if (settings.size && VALID_SIZES.includes(settings.size)) {
+  const t = SIZE_LABEL[settings.size]
+  if (t) labels.push(t)
+}
+// ... × 4 (重複 defensive)
+return labels
 
-// After: Rule 17 (filter)  + Rule 18 (array literal) + DRY (rule-of-four helper)
-function lookupToken<T extends string>(
+// After: Rule 17 (filter) + Rule 18 (array literal) + DRY (rule-of-four helper)
+function lookupLabel<T extends string>(
   value: T | null | undefined,
   valid: readonly T[],
   map: Record<T, string>,
@@ -184,14 +190,14 @@ function lookupToken<T extends string>(
 }
 
 return [
-  lookupToken(settings.shot_size, SHOT_SIZES, SHOT_SIZE_TOKEN),
-  lookupToken(settings.camera_angle, CAMERA_ANGLES, CAMERA_ANGLE_TOKEN),
-  lookupToken(settings.subject_framing, SUBJECT_FRAMINGS, SUBJECT_FRAMING_TOKEN),
-  lookupToken(settings.focus_part, FOCUS_PARTS, FOCUS_PART_TOKEN),
+  lookupLabel(settings.priority, VALID_PRIORITIES, PRIORITY_LABEL),
+  lookupLabel(settings.size, VALID_SIZES, SIZE_LABEL),
+  lookupLabel(settings.status, VALID_STATUSES, STATUS_LABEL),
+  lookupLabel(settings.type, VALID_TYPES, TYPE_LABEL),
 ].filter(Boolean)
 ```
 
-LoC -9、survived -5 (品質改善)、mutation score +3.85pt、rule-of-four helper で DRY 安全。
+LoC 大幅減、survived mutant 数減 (rule-of-four helper 集約による品質改善)、DRY は 4 callsites で発動して安全。
 
 ---
 

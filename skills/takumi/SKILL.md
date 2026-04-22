@@ -101,7 +101,7 @@ executor とは別の **discovery orchestrator** が fan-out/fan-in を担う。
 
 ---
 
-## Step 0 — プロジェクトモード判定と profiles 準備 (100 点統合版)
+## Step 0 — プロジェクトモード判定と profiles 準備
 
 計画生成の前に以下を確認する。詳細は `integrations.md`。
 
@@ -297,7 +297,7 @@ probe mode から backlog.md が渡された場合、または backlog.md が既
 
 ---
 
-## Step 7 — 100 点統合版の接続 (新規 skill との連携)
+## Step 7 — 新規 skill との連携
 
 詳細は **`integrations.md`** を読む。新規 skill との接続、reference-first 運用、telemetry 連携、採用閾値を記述。
 

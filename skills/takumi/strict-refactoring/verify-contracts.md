@@ -163,7 +163,7 @@ test("applyEvent is deterministic", () => {
 
 ```json
 {
-  "ts": "2026-04-20T12:00:00Z",
+  "ts": "2025-01-01T12:00:00Z",
   "event": "verify_contract_satisfied",
   "task_id": "T-042",
   "ui_state_model_tier": "B",

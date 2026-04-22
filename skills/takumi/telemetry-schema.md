@@ -12,7 +12,7 @@
 
 ```json
 {
-  "ts": "2026-04-19T10:00:00Z",
+  "ts": "2025-01-01T10:00:00Z",
   "event": "task_created",
   "task_id": "T-042",
   "ac_ids": ["AC-AUTH-002", "AC-AUTH-003"],
@@ -32,7 +32,7 @@
 
 ```json
 {
-  "ts": "2026-04-19T10:01:15Z",
+  "ts": "2025-01-01T10:01:15Z",
   "event": "profile_overridden",
   "task_id": "T-042",
   "ac_ids": ["AC-AUTH-002"],
@@ -54,7 +54,7 @@
 
 ```json
 {
-  "ts": "2026-04-19T12:34:56Z",
+  "ts": "2025-01-01T12:34:56Z",
   "event": "gate_passed",
   "task_id": "T-042",
   "ac_ids": ["AC-AUTH-002"],
@@ -85,7 +85,7 @@
 
 ```json
 {
-  "ts": "2026-04-19T12:40:02Z",
+  "ts": "2025-01-01T12:40:02Z",
   "event": "gate_failed",
   "task_id": "T-042",
   "ac_ids": ["AC-AUTH-002"],
@@ -125,7 +125,7 @@
 
 ```json
 {
-  "ts": "2026-04-19T12:20:00Z",
+  "ts": "2025-01-01T12:20:00Z",
   "event": "mutation_measured",
   "task_id": "T-042",
   "ac_ids": ["AC-AUTH-002"],
@@ -151,7 +151,7 @@ gate の通過/失敗とは別に、**測定事実そのもの**を記録する
 
 ```json
 {
-  "ts": "2026-04-19T11:50:00Z",
+  "ts": "2025-01-01T11:50:00Z",
   "event": "layout_checked",
   "task_id": "T-042",
   "ac_ids": ["AC-UI-012"],
@@ -173,13 +173,13 @@ gate の通過/失敗とは別に、**測定事実そのもの**を記録する
 
 ```json
 {
-  "ts": "2026-04-19T15:00:00Z",
+  "ts": "2025-01-01T15:00:00Z",
   "event": "gate_false_positive_flagged",
   "task_id": "T-042",
   "ac_ids": ["AC-AUTH-002"],
   "verify_profile_ref": "state-transition",
   "design_profile_ref": null,
-  "original_event_ts": "2026-04-19T12:40:02Z",
+  "original_event_ts": "2025-01-01T12:40:02Z",
   "original_gate_type": "mutation",
   "flagged_by": "reviewer@example.com",
   "reason": "equivalent mutant、logical equivalent"

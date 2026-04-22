@@ -29,8 +29,8 @@ append-only を徹底する理由: `git blame` 的に「いつ / 誰が / 何を
 ### 書き込みルール
 
 ```
-{"ts":"2026-04-19T12:34:56Z","event":"task_created", ... }
-{"ts":"2026-04-19T12:40:02Z","event":"gate_failed", ... }
+{"ts":"2025-01-01T12:34:56Z","event":"task_created", ... }
+{"ts":"2025-01-01T12:40:02Z","event":"gate_failed", ... }
 ```
 
 - 各行は valid な JSON object
@@ -63,7 +63,7 @@ append-only を徹底する理由: `git blame` 的に「いつ / 誰が / 何を
 
 ```json
 {
-  "ts": "2026-04-19T12:34:56Z",
+  "ts": "2025-01-01T12:34:56Z",
   "event": "<event_type>",
   "task_id": "T-042",
   "ac_ids": ["AC-AUTH-002"],

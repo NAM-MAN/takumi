@@ -9,8 +9,8 @@
 
 **reducer 化 = drift 防止のレバー。bug 検出力・速度・shrink は別レバー**。
 
-name_editor での実測 (2026-04 `model-based-100` plan、`keyboard/registry` パイロット):
-- reducer 未導入の baseline で既に **19/20 mutant kill (95%)**、precondition 反例 median **1 op**
+実測 (TS adapter / dispatch 系 unit での検証):
+- reducer 未導入の baseline で既に **mutant kill ~95%**、precondition 反例 median **1 op**
 - `check()` が全部 `return true`、`run()` 内 no-op あり、oracle 手複写ありでも 95% 取れる
 - 理由: **example test + structural invariant が category 別に網羅されていれば mutation は止まる**
 
@@ -32,7 +32,7 @@ reducer 化 (pure transition spec 分離) は長期保守 (仕様変更時の dr
 - 「画面数 = 状態数」の誤解 → スケールしない
 - **reducer 化すれば bug 検出力が上がると期待** → 実測で否定済み
 
-100 点の設計:
+推奨設計:
 1. Tier A-D で戦略を切替 (AST スコアリングで自動判定)
 2. Tier B のデフォルトは fast-check commands (plain TS、依存ゼロ)
 3. Tier C のみ XState (test-only、devDependencies)
@@ -135,10 +135,10 @@ class TypeCommand implements fc.Command<State, State> {
 - **oracle を手複写しない** — 本番 `reducer` を oracle としても import する
 - **deprecated shim / no-op 契約は adapter 側で変換** — 既存呼び出し側を壊す throw 化は禁止
 
-### 参考実装
-name_editor `keyboard/registry` refactor:
-- `src/lib/keyboard/transitions.ts` (pure spec、197 行)
-- `src/lib/keyboard/registry.ts` (adapter、215 行、dispatch CC 13 → 4)
+### 参考構造 (dispatch adapter の refactor 例)
+
+- `src/lib/<domain>/transitions.ts` — pure spec (200 行前後)
+- `src/lib/<domain>/registry.ts` — adapter (200 行前後、dispatch CC 13 → 4)
 
 ---
 
@@ -269,18 +269,18 @@ state 数の目安: **< 10 OK / 10-20 推奨上限 / 20-40 分割検討 / 40-60 
 
 ---
 
-## 参考 (実測値、例として)
+## 参考 (TS dispatch adapter unit での実測傾向)
 
-name_editor `keyboard/registry` パイロット (`model-based-100` plan、2026-04):
+軸 A (preconditions 共有 + run no-op 禁止 + structural invariant) を適用した時の典型値:
 
-| 指標 | baseline | post (軸 A 適用) |
+| 指標 | baseline | post |
 |---|---|---|
-| kill rate | 19/20 | **20/20** (M10 は example test 1 本で kill) |
+| kill rate | 19/20 | **20/20** (最後の 1 mutant は example test 1 本で kill) |
 | 反例 op 数 median | 1 op | 1 op |
 | runtime median | 0.83s | 0.52s (**-38%**) |
 | dispatch CC | 13 | 4 |
 
-**これは hard target ではなく、手法が機能することの 1 事例**。feature size が違う project では数値が変動する。
+**これは hard target ではなく、手法が機能することを示す例**。feature size が違う project では数値が変動する。
 
 ---
 

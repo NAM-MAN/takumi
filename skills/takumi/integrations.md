@@ -51,7 +51,7 @@ task 作成時に `.takumi/telemetry/profile-usage.jsonl` に `task_created` eve
 
 ```json
 {
-  "ts": "2026-04-19T12:00:00Z",
+  "ts": "2025-01-01T12:00:00Z",
   "event": "task_created",
   "task_id": "T-042",
   "ac_ids": ["AC-AUTH-002"],

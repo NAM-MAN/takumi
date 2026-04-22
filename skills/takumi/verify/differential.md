@@ -57,7 +57,7 @@ export function exportPsd(layout: Layout): Buffer {
 }
 
 /**
- * @deprecated 差分テスト用に残置。2026-05-31 までに削除予定。
+ * @deprecated 差分テスト用に残置。次メジャー version で削除予定。
  * 本番コードからの import 禁止 (eslint-plugin-deprecation で警告)。
  */
 export function exportPsdLegacy(layout: Layout): Buffer {
@@ -103,11 +103,11 @@ describe("PSD exporter differential", () => {
 
 ## 運用ルール (3 点)
 
-### 1. `@deprecated` JSDoc + 削除予定日
+### 1. `@deprecated` JSDoc + 削除予定
 
 ```ts
 /**
- * @deprecated 差分テスト用。2026-05-31 削除予定。
+ * @deprecated 差分テスト用。次メジャー version で削除予定。
  */
 export function exportPsdLegacy(...) { ... }
 ```

@@ -35,7 +35,7 @@ test A が殺す mutant 集合を `killed(A)` とする:
 `stryker.config.mjs` に `reporters: ['json', 'progress']` を追加し full run する:
 
 ```bash
-pnpm stryker run --reporters json --mutate src/lib/images/cache-key.ts
+pnpm stryker run --reporters json --mutate src/lib/example/<module>.ts
 ```
 
 出力: `reports/mutation/mutation.json`。schema:
@@ -43,7 +43,7 @@ pnpm stryker run --reporters json --mutate src/lib/images/cache-key.ts
 ```jsonc
 {
   "files": {
-    "src/lib/images/cache-key.ts": {
+    "src/lib/example/<module>.ts": {
       "mutants": [
         {
           "id": "0",
@@ -57,7 +57,7 @@ pnpm stryker run --reporters json --mutate src/lib/images/cache-key.ts
     }
   },
   "testFiles": {
-    "src/lib/images/__tests__/cache-key.test.ts": {
+    "src/lib/example/__tests__/<module>.test.ts": {
       "tests": [
         { "id": "11", "name": "imageUrl は thumbnail 種別に ...", "location": {...} }
       ]
@@ -268,14 +268,14 @@ it('左端と右端が同距離で両方 threshold 内のとき、左端 snap �
 
 ```
 Before:
-  cache-key.test.ts     (72 LOC, 9 tests)
-  cache-key.pbt.test.ts (113 LOC, 7 tests)
+  <module>.test.ts     (72 LOC, 9 tests)
+  <module>.pbt.test.ts (113 LOC, 7 tests)
   合計: 185 LOC, 16 tests
   mutation score: 82%
   runtime: 45ms
 
 Step 1 (USS 統合):
-  cache-key.pbt.test.ts 削除、cache-key.test.ts に統合
+  <module>.pbt.test.ts 削除、<module>.test.ts に統合
   重複 it を統合 (8 tests 残存)
   Rule 14 命名に統一
   → 90 LOC, 8 tests
@@ -290,7 +290,7 @@ Step 3 (PRUNE):
   → 70 LOC, 6 tests
 
 After:
-  cache-key.test.ts (70 LOC, 6 tests)
+  <module>.test.ts (70 LOC, 6 tests)
   mutation score: 82% (維持)
   runtime: 30ms (33% 減)
   LOC: 185 → 70 (62% 減)

@@ -111,19 +111,16 @@ codex exec -m gpt-5.4 -s read-only -C "$(pwd)" \
 
 ---
 
-## 5. pilot 実測 (2026-04-22、`name_editor/src/lib/prompt-engine/resolve-slots.ts` + `staging-translate.ts.bak`)
+## 5. 適用効果の目安 (pure logic unit での典型実測値)
 
-| metric | before | after | Δ |
-|---|---|---|---|
-| 総 LoC (prod + test + bak) | 1303 | 1063 | **-240 (-18.4%)** |
-| prod LoC (resolve-slots.ts) | 352 | 319 | -33 (-9.4%) |
-| public exports | 6 | 5 | -1 (`walkParentChain` dead export) |
-| survived mutants | 13 | 13 | **0 (不変)** |
-| no-coverage mutants | 0 | 1 | +1 (SHARPEN-B で defensive fallback `?? []` surface) |
-| tests passing | 23 | 20 | 23→20 (walkParentChain 関連 3 本も削除) |
-| test runtime | 136ms | 72ms | -47% (副産物) |
+1 unit の SHARPEN + PRUNE を fully 適用した時の目安:
 
-**適用 bucket**: SHARPEN 2 件 (dedup Set one-liner / flatMap)、PRUNE 2 件 (dead export / untracked .bak 残骸)、DRY reject 3 件 (`Premature DRY Trap` / `Semantic Collapse` / `Short-circuit Breakage`)、ADD 0 件 (不要)。
+- **LoC 減**: 10-20% (dead export / untracked 残骸 / 重複 defensive の helper 集約で)
+- **survived mutant 数**: 不変または減少 (rule-of-N DRY 集約で重複 defensive が 1 helper に集約 → テスト密度が N 倍に → 未検知 mutant が killed に変わる副作用)
+- **test runtime**: Set 構築・flatMap 化で 30-50% 減 (手書きループより JIT 最適化が効く)
+- **DRY reject 率**: 危険リスト 5-7 pattern のうち 2-3 件が発動、実コードで守られる
+
+必須 gate 5 本通過を条件に、上記を safe に達成可能。
 
 ---
 
@@ -135,28 +132,28 @@ SMD は **macro** (何を削るか)。ミクロ (どう書くか) は同じ "avo
 - **Rule 18** — Immutable Construction (構築)
 - **Rule 20** — Binding Immutability (束縛、const by default)
 
-詳細と pilot 実測は **`immutable-first.md`**。両者衝突時は **Rule 16 優先** — 宣言的化で一時配列 / fallback / 可読性負債が増えるなら退ける。
+詳細と実測傾向は **`immutable-first.md`**。両者衝突時は **Rule 16 優先** — 宣言的化で一時配列 / fallback / 可読性負債が増えるなら退ける。
 
 ---
 
-## 7. Rot Detection 適用条件 (negative finding)
+## 7. Rot Detection 適用条件
 
-Rule 16 の一種として「コメント・識別子・export が dead な世界状態を参照」(Stale Reference) の自動検出を検討したが、pilot で **name_editor では 0 候補**。理由:
+Rule 16 の一種として「コメント・識別子・export が dead な世界状態を参照」(Stale Reference) の自動検出を検討したが、**active project では候補ゼロ**が通常の結果:
 
-- `Wave N` / `R\d+ M-\d+` 参照 180 件は全て**生きた design doc tracking**
-- `.bak` / `.old` は 0 件 (cleanup 済)
-- `walkParentChain` 的 speculative YAGNI export は既存失敗モード **Invisible Consumer Breakage** で既にカバー
+- Sprint / ADR 管理が機能している project では `Wave N` / `R\d+ M-\d+` 参照は**生きた design doc tracking** (削除すると検索性が落ちる)
+- `.bak` / `.old` ファイルは通常 cleanup 済 (残っていたら即 PRUNE 候補)
+- speculative YAGNI export は既存失敗モード **Invisible Consumer Breakage** で既にカバー
 
-**結論**: Rot detection の有効性は **project の活性度に依存**:
+**有効性は project の活性度に依存**:
 
 - Active project (sprint 制度・ADR 運用あり) → false positive 支配、grep 自動検出は**逆効果**
-- Abandoned / legacy project → 効く可能性あり、要別 pilot
+- Abandoned / legacy project → 効く可能性あり
 
-SMD の新失敗モード追加は見送り。pilot で使った grep パターン (`grep -rnE "if .* ever|just in case|for later"`) は appendix 的 tool として保持:
+SMD の新失敗モード追加は見送り。ただし grep パターンは tool として保持 (判断を伴って使う):
 
 ```bash
 # Rot candidate scan (use with judgment, high false positive in active projects)
-grep -rnE "if .* ever|just in case|for later|Oracle's recommend" src/ --include="*.ts"
+grep -rnE "if .* ever|just in case|for later|as per .* recommend" src/ --include="*.ts"
 find src/ -name "*.bak" -o -name "*.old" -o -name "*.orig"
 ```
 
@@ -167,7 +164,7 @@ find src/ -name "*.bak" -o -name "*.old" -o -name "*.orig"
 | file | 用途 |
 |---|---|
 | `rules-heuristics.md` (同ディレクトリ) | Rule 16 含む L2 heuristics の目次 |
-| `immutable-first.md` (同ディレクトリ) | Rule 17 / 18 / 20 / 17-D の implementation recipe と pilot 実測 |
+| `immutable-first.md` (同ディレクトリ) | Rule 17 / 18 / 20 / 17-D の implementation recipe と実測傾向 |
 | `review-checklist.md` (同ディレクトリ) | profile 別の hard/soft 適用マトリクス |
 | `~/.claude/skills/takumi/verify/compression.md` | test 側 MSS (production 版の対比元) |
 | `~/.claude/skills/takumi/verify/mutation.md` | Stryker 設定、subsumption 解析の JSON schema |

@@ -57,7 +57,7 @@ Agent tool:
 
 ### 3. 検証 (Wave gate)
 
-100 点統合版の wave gate は以下を**全て**通過する必要あり:
+wave gate は以下を**全て**通過する必要あり:
 
 | フェーズ | 内容 |
 |---------|------|
@@ -150,7 +150,7 @@ Agent 内コンテキスト残量 20% を切ったら:
 |---|---|
 | `SKILL.md` (同ディレクトリ) | /takumi 本体 |
 | `test-strategy.md` (同ディレクトリ) | verify_profile 選定ロジック |
-| `integrations.md` (同ディレクトリ) | 100 点統合版の接続ガイド |
+| `integrations.md` (同ディレクトリ) | 新規 skill 連携ガイド |
 | `telemetry-spec.md` (同ディレクトリ) | event emit の spec |
 | `~/.claude/skills/takumi/verify/README.md` | verify run / recipe library |
 | `~/.claude/skills/takumi/design/README.md` | L7 hard gate の定義 (ui 時) |

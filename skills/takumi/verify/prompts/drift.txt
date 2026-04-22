@@ -51,7 +51,7 @@ Runtime \ Spec  → 想定外の動作 (緊急度高、調査)
 ```json
 {
   "slug": "<slug>",
-  "analyzed_at": "2026-04-18T...",
+  "analyzed_at": "2025-01-01T...",
   "summary": {
     "ok_transitions_count": 12,
     "issues_count": { "critical": 0, "high": 2, "medium": 3, "low": 1 }

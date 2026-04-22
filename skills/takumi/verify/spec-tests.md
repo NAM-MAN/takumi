@@ -76,8 +76,8 @@ verify 6 層との対応:
 > **1 ファイル (= 1 unit) 内で異なる階層の命名を混在させない**。
 > 対象の layer はファイル名と対象コードから自動的に決まるため、同一 test file では**常に同じ骨格**を使う。
 >
-> - `src/lib/images/__tests__/cache-key.test.ts` → 全部ユニット骨格
-> - `src/features/editor/__tests__/snap.test.ts` → 全部ユニット骨格 (pure 幾何計算)
+> - `src/lib/<utility>/__tests__/<module>.test.ts` → 全部ユニット骨格 (pure 関数)
+> - `src/features/<feature>/__tests__/<geometry>.test.ts` → 全部ユニット骨格 (pure 幾何計算等)
 > - `src/components/ui/__tests__/button.ct.test.tsx` → 全部結合骨格 (DOM 叩く)
 > - `e2e/login.spec.ts` → 全部ユーザー骨格
 >

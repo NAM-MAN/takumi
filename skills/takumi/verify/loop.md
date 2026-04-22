@@ -48,7 +48,7 @@ E は DOM と非同期があり最難関 → 最後に回す (strict-refactoring
       "status": "in_progress | done",
       "files": [
         {
-          "path": "src/lib/prompt-engine/resolve-slots.ts",
+          "path": "src/lib/<module>/<target>.ts",
           "status": "pending | active | graduated",
           "best_score": 0,
           "last_score": 0,

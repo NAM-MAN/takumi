@@ -174,4 +174,4 @@ log-based metrics として:
 | `telemetry-spec.md` (同ディレクトリ) | 本体 entry point |
 | `telemetry-schema.md` (同ディレクトリ) | 7 種 event の完全 JSON schema |
 | `SKILL.md` (同ディレクトリ) | `/takumi` 本体 |
-| `integrations.md` (同ディレクトリ) | 100 点統合版の新 skill 連携 |
+| `integrations.md` (同ディレクトリ) | 新規 skill 連携 |
