@@ -23,7 +23,7 @@
 
 **適用ルール**:
 - required invariants 5 個すべて
-- default heuristics 12 個すべて
+- default heuristics 14 個すべて
 - Pending Object Pattern (rule 11) を**積極適用**
 - Repository は Aggregate Root 単位 (rule 12)
 - concept-first task placement (rule 13) で directory を切る
@@ -49,7 +49,7 @@
 
 **適用ルール**:
 - required invariants 5 個
-- default heuristics 12 個 (一部 UI 固有の緩和あり、`language-relaxations.md` 参照)
+- default heuristics 14 個 (一部 UI 固有の緩和あり、`language-relaxations.md` 参照)
 - **UI State Rules L3**: Tier B (Pending Object) を基本、条件次第で C (State Machine) へ昇格
 - **`actionPreconditions` export 必須** (verify contract、絶対)
 
@@ -176,7 +176,7 @@
 | `SKILL.md` (同ディレクトリ) | 本 skill entry point |
 | `rules-core.md` (同ディレクトリ) | L1 / L2 / L3 の目次 |
 | `rules-required.md` (同ディレクトリ) | L1 required invariants 5 個 |
-| `rules-heuristics.md` (同ディレクトリ) | L2 default heuristics 12 個 |
+| `rules-heuristics.md` (同ディレクトリ) | L2 default heuristics 14 個 |
 | `rules-ui-state.md` (同ディレクトリ) | Tier 詳細、ui-pending-object で参照 |
 | `language-relaxations.md` (同ディレクトリ) | lang-relaxed-go-rust で参照 |
 | `~/.claude/skills/takumi/SKILL.md` | `/takumi` が refactor_profile_ref を自動推定 |

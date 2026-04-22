@@ -127,130 +127,38 @@ codex exec -m gpt-5.4 -s read-only -C "$(pwd)" \
 
 ---
 
-## 6. Rule 17 (宣言的デフォルト) との関係
+## 6. ミクロ Rule 17 / 18 / 20 との関係
 
-Rule 17 は SMD のミクロ層。Rule 16 が「何を削るか」なら Rule 17 は「どう書くか」。両者衝突時は **Rule 16 優先** — 宣言的化で一時配列 / fallback / 可読性負債が増えるなら退ける。
+SMD は **macro** (何を削るか)。ミクロ (どう書くか) は同じ "avoid mutation" 原則の 3 レイヤー:
 
----
+- **Rule 17** — Declarative Collection Transform (処理)
+- **Rule 18** — Immutable Construction (構築)
+- **Rule 20** — Binding Immutability (束縛、const by default)
 
-## 7. Rule 17 — 宣言的デフォルト (詳細)
-
-**コア原則**: collection 変換は宣言的 default。`for` は 4 exception のいずれかのときだけ残す。
-
-### 7.1 `for` を残して良い 4 exception
-
-| # | exception | 判定基準 | 典型例 |
-|---|---|---|---|
-| 1 | **副作用が本質** | 外部 mutable state への conditional 操作、1 回 iterate で複数副作用を起こしたい | `tags.delete` / `tags.add` を action で分岐、DB insert batch |
-| 2 | **早期中断 + 複雑 state** | `find` / `some` / `every` / `takeWhile` で表現できない、break に伴う状態蓄積がある | 条件満たしたら loop を抜けて accumulator を返す |
-| 3 | **perf critical で benchmark 済み** | JIT が手書き loop を優先最適化、実測 10%+ 差 | hot path の内部ループ、V8 inlining 依存 |
-| 4 | **可読性優位** | 宣言的にすると `?? default + conditional push + set/return` など **4 要素以上が 1 式で交差** | grouping accumulator (下記例) |
-
-### 7.2 exception 4 の具体例 (pilot から)
-
-```ts
-// for 版 (keep): 流れが自然
-const byMacro = new Map<number, Entry>()
-for (const row of rows) {
-  let entry = byMacro.get(row.macro_id)
-  if (!entry) {
-    entry = { macro_id: row.macro_id, name: row.name, tags: [] }
-    byMacro.set(row.macro_id, entry)
-  }
-  if (row.prompt_en) entry.tags.push(row.prompt_en)
-}
-
-// 宣言的試案 (reject): 4 要素交差で可読性低下
-const byMacro = rows.reduce((map, row) => {
-  const entry = map.get(row.macro_id) ?? { macro_id: row.macro_id, name: row.name, tags: [] }
-  if (row.prompt_en) entry.tags.push(row.prompt_en)
-  map.set(row.macro_id, entry)
-  return map
-}, new Map<number, Entry>())
-```
-
-`?? fallback` + `conditional push` + `.set()` + `return` の 4 要素が交差 → exception 4 発動、**for を keep**。
-
-### 7.3 チェーン上限: 4 段以上は中間変数
-
-**3 段固定 rule ではない**。下限は 1 段、上限の目安が「4 段以上になったら中間変数 or named helper に分解」。
-
-```ts
-// OK (3 段)
-items.filter(isActive).map(toDto).sort(byDate)
-
-// NG (5 段、レビューコスト跳ね)
-items.filter(...).map(...).filter(...).flatMap(...).reduce(...)
-
-// OK (分解後)
-const active = items.filter(isActive)
-const dtos = active.map(toDto)
-const grouped = groupByCategory(dtos)
-```
-
-### 7.4 code golf 禁止
-
-checkio のコードから参考にするのは **「状態を持たない組み合わせ」** のみ。
-
-- ✅ 学ぶべき: `sum(1 for c in s if c.isdigit())` — 意図が直接読める
-- ❌ 避ける: `reduce(lambda a,b: a|{b}, s, set())` — 同じだが読めない
-- ❌ 避ける: 4 段以上のチェーン
-
-**判定**: 「声に出して読んで何をしているか分かるか」。分かれば可、分からなければ分解。
+詳細と pilot 実測は **`immutable-first.md`**。両者衝突時は **Rule 16 優先** — 宣言的化で一時配列 / fallback / 可読性負債が増えるなら退ける。
 
 ---
 
-## 8. Rule 17 追加原則 (pilot 実測ベース)
+## 7. Rot Detection 適用条件 (negative finding)
 
-### 8.1 原則 17-A: untested 領域では Rule 16 PRUNE を先に
+Rule 16 の一種として「コメント・識別子・export が dead な世界状態を参照」(Stale Reference) の自動検出を検討したが、pilot で **name_editor では 0 候補**。理由:
 
-宣言的変換は ArrowFunction + ConditionalExpression を callback に持つため、**Stryker mutant 数を 2-3 倍に増やす**。対象領域が既にテストされていれば killed 数も増えるので net +、untested 領域では no-cov 一辺倒。
+- `Wave N` / `R\d+ M-\d+` 参照 180 件は全て**生きた design doc tracking**
+- `.bak` / `.old` は 0 件 (cleanup 済)
+- `walkParentChain` 的 speculative YAGNI export は既存失敗モード **Invisible Consumer Breakage** で既にカバー
 
-→ Rule 17 適用時は「対象領域が test されているか」を先に確認。untested なら **Rule 16 PRUNE を先に検討** (消せるなら消せ)。
+**結論**: Rot detection の有効性は **project の活性度に依存**:
 
-### 8.2 原則 17-B: partition は declarative 優位
+- Active project (sprint 制度・ADR 運用あり) → false positive 支配、grep 自動検出は**逆効果**
+- Abandoned / legacy project → 効く可能性あり、要別 pilot
 
-`add` / `remove` 分岐の 2 way partition は宣言的優位:
+SMD の新失敗モード追加は見送り。pilot で使った grep パターン (`grep -rnE "if .* ever|just in case|for later"`) は appendix 的 tool として保持:
 
-```ts
-// for 版
-const add: string[] = []
-const remove: string[] = []
-for (const r of rows) {
-  if (r.action === 'add') add.push(r.prompt_en)
-  else if (r.action === 'remove') remove.push(r.prompt_en)
-}
-
-// Rule 17 適用版 (prefer)
-return {
-  add: rows.filter((r) => r.action === 'add').map((r) => r.prompt_en),
-  remove: rows.filter((r) => r.action === 'remove').map((r) => r.prompt_en),
-}
+```bash
+# Rot candidate scan (use with judgment, high false positive in active projects)
+grep -rnE "if .* ever|just in case|for later|Oracle's recommend" src/ --include="*.ts"
+find src/ -name "*.bak" -o -name "*.old" -o -name "*.orig"
 ```
-
-alloc は 1 回 iterate → 2 回 iterate に増えるが、実 workload では sub-ms。10%+ 差の benchmark 実測があった時だけ for に戻す。
-
-### 8.3 原則 17-C: `new Set(iterable)` / `new Set(flatMap)` は clean win
-
-`for...of ... set.add(x)` を `new Set(iterable)` に置換するのは LoC 減 + perf 同等 + 意図直読。先行状態構築 (`const set = new Set<string>()` → `for { set.add }`) は ほぼ常に後続で mutate される → `const set = new Set<T>(iterable); for (x of more) set.add(x)` の形に集約。
-
----
-
-## 9. Rule 17 pilot 実測 (2026-04-22、`name_editor/src/lib/prompt-engine/expand.ts`)
-
-| metric | before | after | Δ |
-|---|---|---|---|
-| prod LoC | 400 | 391 | -9 (-2.25%) |
-| killed mutants | 21 | 20 | -1 |
-| survived mutants | 11 | 11 | **0 (不変)** |
-| no-coverage | 40 | 41 | +1 (untested 領域の surface) |
-| total mutants | 72 | 72 | unchanged |
-| tests | 14 | 14 | pass |
-| test runtime | 32ms | 26ms | -19% (副産物) |
-
-**適用**: R1 (`new Set(iterable)`)、R2 (filter+map partition)、R3 (`new Set(flatMap)`)。
-**keep as for**: 3 箇所 — exception 1 (副作用本質) × 2、exception 4 (可読性優位) × 1。
-**未観測副作用**: 短絡破壊 (find 化) — 今回 unit に該当コードなし、別 unit で要再 pilot。
 
 ---
 
@@ -258,7 +166,8 @@ alloc は 1 回 iterate → 2 回 iterate に増えるが、実 workload では 
 
 | file | 用途 |
 |---|---|
-| `rules-heuristics.md` (同ディレクトリ) | Rule 16 (本 skill entry point) |
+| `rules-heuristics.md` (同ディレクトリ) | Rule 16 含む L2 heuristics の目次 |
+| `immutable-first.md` (同ディレクトリ) | Rule 17 / 18 / 20 / 17-D の implementation recipe と pilot 実測 |
 | `review-checklist.md` (同ディレクトリ) | profile 別の hard/soft 適用マトリクス |
 | `~/.claude/skills/takumi/verify/compression.md` | test 側 MSS (production 版の対比元) |
 | `~/.claude/skills/takumi/verify/mutation.md` | Stryker 設定、subsumption 解析の JSON schema |
