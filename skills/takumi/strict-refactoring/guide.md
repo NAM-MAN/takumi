@@ -75,7 +75,7 @@ ui_state_model_tier: "B"   # Pending Object Pattern 適用
 
 strictness に応じて:
 - `L1`: required invariants 5 個のみ (`rules-required.md` 参照)
-- `L1+L2`: + default heuristics 10 個 (`rules-heuristics.md` 参照)
+- `L1+L2`: + default heuristics 11 個 (`rules-heuristics.md` 参照)
 - `L1+L2+L3`: + UI state rules (`rules-ui-state.md` 参照)
 
 ### 4. 職人 検証 (実装完了時)
@@ -138,10 +138,10 @@ state 数 / guard 数 / parallel 必要性が閾値を超えたら `ui_state_mod
 
 ---
 
-## Standard Heuristics (L2、10 個、4 カテゴリ)
+## Standard Heuristics (L2、11 個、4 カテゴリ)
 
 <details>
-<summary><b>4 カテゴリ 10 ルール (クリックで展開)</b></summary>
+<summary><b>4 カテゴリ 11 ルール (クリックで展開)</b></summary>
 
 **基本遵守、profile で一部緩和あり**:
 
@@ -293,7 +293,7 @@ verify_contract_required: false  # Tier B 以上なら true
 | `profiles.md` (同ディレクトリ) | 5 profile の詳細 |
 | `rules-core.md` (同ディレクトリ) | L1 / L2 / L3 の目次 (3 本への pointer) |
 | `rules-required.md` (同ディレクトリ) | L1 required invariants 5 個の詳細 |
-| `rules-heuristics.md` (同ディレクトリ) | L2 default heuristics 10 個の詳細 |
+| `rules-heuristics.md` (同ディレクトリ) | L2 default heuristics 11 個の詳細 |
 | `rules-ui-state.md` (同ディレクトリ) | L3 (UI state modeling、Tier A-D) |
 | `verify-contracts.md` (同ディレクトリ) | Tier → verify archetype 対応 |
 | `language-relaxations.md` (同ディレクトリ) | Go / Rust / Python の緩和 |

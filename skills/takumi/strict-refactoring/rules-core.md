@@ -14,11 +14,11 @@ profile を問わず全 project で必須。詳細は **`rules-required.md`**。
 4. イミュータブル
 5. Result 型でドメインエラー表現
 
-## Level 2 — Default Heuristics (10 個、4 カテゴリ、strictness L1+L2 以上)
+## Level 2 — Default Heuristics (11 個、4 カテゴリ、strictness L1+L2 以上)
 
 詳細は **`rules-heuristics.md`**。カテゴリ一覧:
 
-- **structure** (4 個) — ファイル構造、責務分離
+- **structure** (5 個) — ファイル構造、責務分離、表面積最小化 (Rule 16 = SMD、詳細 `smd.md`)
 - **api-shape** (3 個) — 関数シグネチャ、export 境界
 - **testability** (2 個) — テスト容易性、DI
 - **layout** (1 個) — テスト命名 (Rule 14、verify/spec-tests.md が継承)
@@ -34,7 +34,7 @@ profile を問わず全 project で必須。詳細は **`rules-required.md`**。
 | 項目 | L1 | L1+L2 | L1+L2+L3 |
 |---|---|---|---|
 | Required Invariants (5 個) | ✓ hard | ✓ hard | ✓ hard |
-| Default Heuristics (10 個) | - | ✓ | ✓ |
+| Default Heuristics (11 個) | - | ✓ | ✓ |
 | UI State Rules (React) | - | - | ✓ (`rules-ui-state.md`) |
 
 ## profile × hard/soft
@@ -49,7 +49,8 @@ profile を問わず全 project で必須。詳細は **`rules-required.md`**。
 |---|---|
 | `SKILL.md` (同ディレクトリ) | 本 skill entry point |
 | `rules-required.md` (同ディレクトリ) | L1 の 5 個の詳細 |
-| `rules-heuristics.md` (同ディレクトリ) | L2 の 10 個の詳細 |
+| `rules-heuristics.md` (同ディレクトリ) | L2 の 11 個の詳細 |
+| `smd.md` (同ディレクトリ) | Rule 16 (Surface Minimization) の実装 recipe |
 | `rules-ui-state.md` (同ディレクトリ) | L3 (React UI state) |
 | `profiles.md` (同ディレクトリ) | 5 profile の詳細、適用条件 |
 | `verify-contracts.md` (同ディレクトリ) | Tier → verify archetype 対応 |

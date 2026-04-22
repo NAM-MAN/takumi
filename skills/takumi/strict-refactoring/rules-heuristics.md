@@ -1,14 +1,14 @@
 # strict-refactoring: Default Heuristics (L2)
 
-本 skill (`SKILL.md`) から参照される Level 2 の推奨ヒューリスティック (10 個、4 カテゴリ)。strictness が L1+L2 以上で適用される。必須不変条件 (L1) は `rules-required.md`、UI state は `rules-ui-state.md`。
+本 skill (`SKILL.md`) から参照される Level 2 の推奨ヒューリスティック (11 個、4 カテゴリ)。strictness が L1+L2 以上で適用される。必須不変条件 (L1) は `rules-required.md`、UI state は `rules-ui-state.md`。
 
 ---
 
-## Default Heuristics (L2、10 個、4 カテゴリ)
+## Default Heuristics (L2、11 個、4 カテゴリ)
 
 `structure` / `api-shape` / `testability` / `layout` の 4 カテゴリに分類。`legacy-touchable` profile では全て advisory に降格。
 
-### structure カテゴリ (4 個)
+### structure カテゴリ (5 個)
 
 #### 6. Early Return Only
 
@@ -87,6 +87,35 @@ OK (概念ベース):
 - `legacy-touchable` profile では既存構造を壊さない
 
 **骨格**: `src/expense-reports/DraftExpenseReport.ts`
+
+#### 16. Surface Minimization (SMD)
+
+責務 / 品質 / 検知能力を落とさずに **表面積** を削る。詳細 recipe は **`smd.md`**。
+
+関心の分離 / テスト / セキュリティで行数は膨らむが、context 効率と管理簡素のため **削る方向の圧力も first-class action** として明示する。test 側 MSS (`verify/compression.md`) の production 版だが、意味が反転する点に注意 (ADD は "削除の前提条件を先に足す" で、test MSS のような "新仕様追加" ではない)。
+
+```
+SHARPEN > PRUNE > ADD
+  ├─ SHARPEN: 責務を保ったまま密度 ↑ (分岐正規化、重複 validation 統合、型で代替可能な defensive code の型化)
+  ├─ PRUNE:   観測上不要な削除 (dead export、恒久 flag、未使用 error subtype、薄い forwarding)
+  └─ ADD:     削除の前提条件を足す (型制約、contract test、lint rule、boundary)
+```
+
+**必須 gate (hard)**:
+1. **survived + no-coverage count ≤ baseline** (mutation score 絶対値は分母変動で誤発火、代わりに survived / no-cov 数を見る)
+2. public API 署名不変 (対象 unit が export するとき)
+3. feature flag 参照 invariant 不変 (参照数ではなく behavioral invariant、direct ref は別 helper に隠せる)
+4. tests pass
+5. 変更行に新規 no-cov を作ったら **説明義務** (surface させた defensive は「テスト足す / 削る」の二択に寄せる、放置禁止)
+
+**重大な失敗モード** (smd.md で具体例):
+- **Premature DRY Trap** — rule-of-three 未満の DRY
+- **Lifecycle Confusion** — lifecycle/ownership が違う処理の DRY
+- **Silent Contract Violation** — 空 catch / defensive の早期削除
+- **Invisible Consumer Breakage** — plugin / 動的 import / 外部 SDK consumer を grep で見つけられず export 削除
+- **Unbounded Rollout Risk** — 100% 見えても staging / 古い client で生きてる flag の撤去
+
+**骨格**: `SHARPEN > PRUNE > ADD, gate by survived/no-cov non-regression`
 
 ### api-shape カテゴリ (3 個)
 

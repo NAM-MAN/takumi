@@ -288,7 +288,7 @@ UI state modeling は React/Next.js 特化。他言語では:
 | `SKILL.md` (同ディレクトリ) | 本 skill entry point |
 | `rules-core.md` (同ディレクトリ) | L1 / L2 / L3 の目次 |
 | `rules-required.md` (同ディレクトリ) | L1 required invariants 5 個 |
-| `rules-heuristics.md` (同ディレクトリ) | L2 default heuristics 10 個 |
+| `rules-heuristics.md` (同ディレクトリ) | L2 default heuristics 11 個 |
 | `verify-contracts.md` (同ディレクトリ) | Tier → verify archetype 対応、actionPreconditions contract 詳細 |
 | `profiles.md` (同ディレクトリ) | ui-pending-object profile 詳細 |
 | `review-checklist.md` (同ディレクトリ) | Tier B/C/D の contract 評価 |
