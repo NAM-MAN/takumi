@@ -162,40 +162,7 @@ checkio 等の最短コードから学ぶのは **「状態を持たない組み
 
 ---
 
-## 4. Rule 17-D — Dispatch 判断フロー (NEW)
-
-`switch` / `if-else chain on literal` を見つけたら、以下の 4 択から選ぶ:
-
-```
-switch / if-else chain on literal key を見つけたら:
-├─ 1. ドメイン層? → L1 Rule 3 (hard): interface + class 必須
-├─ 2. 分岐値が純粋データ (method なし、関数呼び出しなし)? → dispatch table (Record<K,T>)
-├─ 3. 単一メソッド dispatch で N ≤ 8? → **switch + never default を keep** (NEW)
-└─ 4. 多メソッド handler (validate/run/rollback 等) or N > 8? → interface + class (domain 外でも推奨)
-```
-
-### 選択肢比較 (pilot 実測: dispatch.ts の runQueueJob 6-case switch)
-
-| 選択肢 | LoC | 型安全 | 可読性 | 拡張性 |
-|---|---|---|---|---|
-| **switch + never default** (keep) | 20 | ✓ exhaustive check | ◎ self-documenting | ○ 1 line |
-| **dispatch table (Record)** | 16 | △ payload 型 erase、`as never` cast 必要 | △ | ○ 1 line |
-| **interface + class** | ~36 | ✓ fully typed | ○ | ○ class + map |
-
-### Key Insight
-
-**TypeScript の `switch + never default` は既に "dispatch table 級" の type safety** を提供する (exhaustive check, payload 型は generic 推論)。単純 dispatch では**switch が勝つ**ことが多い。
-
-### 判断の実例
-
-- badge / icon / label の static mapping → **dispatch table** (Record<State, Badge>)
-- job dispatcher (`runQueueJob`) — 6 kinds × 1 method → **switch + never keep**
-- domain event handler — OrderPlaced / OrderCancelled / ... × 複数 methods → **interface + class** (Rule 3 適用)
-- 機能フラグ付きの策略パターン → **interface + class** (behavior variation)
-
----
-
-## 5. 統合応用例 (camera.ts pilot 全体)
+## 4. 統合応用例 (camera.ts pilot 全体)
 
 ```ts
 // Before: Rule 17/18/20 すべて違反
@@ -228,11 +195,20 @@ LoC -9、survived -5 (品質改善)、mutation score +3.85pt、rule-of-four help
 
 ---
 
+## 5. 関連 Rule (別 md)
+
+- **Rule 17-D (dispatch 判断フロー)**: `behavior-carrier.md` §4 に移動
+- **Rule 19 (Subject Owns Verbs) / Rule 21 (Behavior Carrier Selection)**: `behavior-carrier.md`
+- Immutable First (本 md) は **how to write statements**、Behavior Carrier は **how to structure operations** — 異なる軸
+
+---
+
 ## 関連リソース
 
 | file | 用途 |
 |---|---|
-| `smd.md` (同ディレクトリ) | Rule 16 (macro Surface Minimization) の implementation recipe |
-| `rules-heuristics.md` (同ディレクトリ) | 14 L2 heuristics の目次 (Rule 17/18/20 含む) |
+| `smd.md` (同ディレクトリ) | Rule 16 (macro Surface Minimization) の recipe |
+| `behavior-carrier.md` (同ディレクトリ) | Rule 19/21/17-D (how to structure operations) の recipe |
+| `rules-heuristics.md` (同ディレクトリ) | 16 L2 heuristics の目次 |
 | `rules-required.md` (同ディレクトリ) | L1 Rule 3 (ドメイン層 switch 禁止 → interface + class) |
 | `verify/compression.md` (`~/.claude/skills/takumi/`) | test 側 MSS (production 版との対比元) |

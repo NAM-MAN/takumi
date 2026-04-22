@@ -162,7 +162,7 @@ tier_graduation_proposed:
 | `profiles.md` (同ディレクトリ) | profile 選定ロジック |
 | `rules-core.md` (同ディレクトリ) | L1 / L2 / L3 の目次 |
 | `rules-required.md` (同ディレクトリ) | L1 required invariants 5 個 |
-| `rules-heuristics.md` (同ディレクトリ) | L2 default heuristics 14 個 |
+| `rules-heuristics.md` (同ディレクトリ) | L2 default heuristics 16 個 |
 | `rules-ui-state.md` (同ディレクトリ) | L3 / Tier 詳細 |
 | `verify-contracts.md` (同ディレクトリ) | actionPreconditions contract |
 | `~/.claude/skills/takumi/telemetry-spec.md` | `refactor_review_completed` event |
