@@ -1,14 +1,14 @@
 # strict-refactoring: Default Heuristics (L2)
 
-本 skill (`SKILL.md`) から参照される Level 2 の推奨ヒューリスティック (11 個、4 カテゴリ)。strictness が L1+L2 以上で適用される。必須不変条件 (L1) は `rules-required.md`、UI state は `rules-ui-state.md`。
+本 skill (`SKILL.md`) から参照される Level 2 の推奨ヒューリスティック (12 個、4 カテゴリ)。strictness が L1+L2 以上で適用される。必須不変条件 (L1) は `rules-required.md`、UI state は `rules-ui-state.md`。
 
 ---
 
-## Default Heuristics (L2、11 個、4 カテゴリ)
+## Default Heuristics (L2、12 個、4 カテゴリ)
 
 `structure` / `api-shape` / `testability` / `layout` の 4 カテゴリに分類。`legacy-touchable` profile では全て advisory に降格。
 
-### structure カテゴリ (5 個)
+### structure カテゴリ (6 個)
 
 #### 6. Early Return Only
 
@@ -116,6 +116,34 @@ SHARPEN > PRUNE > ADD
 - **Unbounded Rollout Risk** — 100% 見えても staging / 古い client で生きてる flag の撤去
 
 **骨格**: `SHARPEN > PRUNE > ADD, gate by survived/no-cov non-regression`
+
+#### 17. 宣言的デフォルト (Rule 16 のミクロ対)
+
+collection 変換は **宣言的 default**。`for` は 4 exception のいずれかに該当するときだけ残す。Rule 16 (マクロ) が「何を削るか」なら Rule 17 は「どう書くか」。詳細と pilot 実測は **`smd.md` §7-9**。
+
+**言語別 default**:
+| 言語 | 優先 | 非推奨 |
+|---|---|---|
+| JS/TS | `map` / `filter` / `flatMap` / `reduce` / `new Set(iterable)` | index-based `for` で配列構築 |
+| Python | 内包表記 / generator / `itertools` | append-only `for` + range-index |
+| Java/Kotlin | streams / sequences | 手書き Iterator |
+| Rust | iterator chain (`.iter().filter().map().collect()`) | 明示 `for` + `Vec::push` |
+| Go | **`for` が慣用** (言語設計上、例外扱い) | — |
+| C / C++ | **`for` が慣用** (low-level control 優先、例外扱い) | — |
+
+**`for` を残して良い 4 exception** (いずれかを満たすこと):
+1. **副作用が本質** — mutable state への conditional add/delete、DB insert batch、API call 逐次
+2. **早期中断 + 複雑 state** — `find` / `some` / `every` / `takeWhile` で表現できない蓄積を伴う break
+3. **perf critical で benchmark 済み** — 実測で 10%+ 差がある場合のみ
+4. **可読性優位** — 宣言的にすると `?? default + conditional push + set/return` など 4 要素以上が 1 式で交差するケース (例: grouping accumulator)
+
+**チェーン上限**: **4 段以上は中間変数へ分解**原則 (3 段固定 rule ではない)。code golf 禁止 — `reduce` 1 行で詰める系は不可、「声に出して読んで意図が分かる最短」を狙う。
+
+**Rule 16 と衝突時は Rule 16 優先**: 宣言的化で一時配列 / fallback / 可読性負債が増えるなら退ける。
+
+**Pilot 実測** (name_editor/expand.ts): 3 refactor 適用で LoC 400 → 391 (-9)、survived 不変、no-cov +1 (元々 untested 領域の surface)。可読性優位 exception は実コードで 2 箇所に発動。
+
+**骨格**: `for → map/filter/flatMap/reduce (default); for only if 副作用・中断・perf・可読性`
 
 ### api-shape カテゴリ (3 個)
 
