@@ -1,5 +1,11 @@
 #!/usr/bin/env node
 /**
+ * EXAMPLE ONLY — Next.js App Router 専用の参考実装。
+ * このファイルは takumi skill の配布物ではなく「参考例」です。利用者は project 側の
+ * `scripts/` 等に cp してから、対象プロジェクトの構造 (app ディレクトリ位置、
+ * guard ファイル名など) に合わせて改変してください。skill をこの .ts に直接
+ * 依存させてはいけません。
+ *
  * Stage 1: Next.js App Router の route graph を抽出する
  *
  * 入力:  プロジェクトルート (cwd)
@@ -156,9 +162,10 @@ function run() {
   }
 
   fs.mkdirSync(path.dirname(OUTPUT_FILE), { recursive: true })
+  // NOTE: 絶対パスは出力しない (成果物を誤 commit したときの漏洩防止)。
   fs.writeFileSync(OUTPUT_FILE, JSON.stringify({
     generated_at: new Date().toISOString(),
-    project_root: PROJECT_ROOT,
+    project_basename: path.basename(PROJECT_ROOT),
     app_root: path.relative(PROJECT_ROOT, appRoot),
     route_count: routes.length,
     routes,

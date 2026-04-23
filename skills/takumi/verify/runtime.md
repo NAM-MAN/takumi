@@ -228,9 +228,9 @@ devDependencies に追加:
 | `ai-review.md` | 軍師 cross-model レビュー |
 | `machine-generator.md` | AI 生成 5 stage パイプライン + probe 統合 |
 | `loop.md` | `/loop 10m /verify-loop` — レイヤー A→E を順に mutation 80% へ引き上げる継続ループ |
-| `scripts/extract-routes.ts` | Stage 1: Next.js route 抽出 (依存ゼロ) |
-| `scripts/score-metrics.ts` | Stage 2: Tier 判定 (regex、依存ゼロ) |
-| `scripts/generate.ts` | Stage 3-5: AI 生成オーケストレータ |
+| `examples/scripts/extract-routes.ts` | (参考例) Stage 1: Next.js route 抽出。project 側に cp して改変 |
+| `examples/scripts/score-metrics.ts` | (参考例) Stage 2: Tier 判定 (regex)。project 側に cp して改変 |
+| `examples/scripts/generate.ts` | (参考例) Stage 3-5: AI 生成オーケストレータ。project 側に cp して改変 |
 | `prompts/tier-a.txt` | Tier A (Component Test) 生成プロンプト |
 | `prompts/tier-b.txt` | Tier B (Pending Object + fc.commands) 生成 |
 | `prompts/tier-c.txt` | Tier C (XState + @xstate/test) 生成 |

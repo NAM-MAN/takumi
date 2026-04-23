@@ -1,5 +1,10 @@
 #!/usr/bin/env node
 /**
+ * EXAMPLE ONLY — Next.js App Router 専用の参考実装。
+ * このファイルは takumi skill の配布物ではなく「参考例」です。利用者は project 側の
+ * `scripts/` 等に cp してから、対象プロジェクトの構造 (state ライブラリ選択、
+ * handler 命名規則、guard の表現など) に合わせて regex と重みを調整してください。
+ *
  * Stage 2: 各 route を regex で解析して Tier スコアリング
  *
  * 入力:  .takumi/machines/routes.json

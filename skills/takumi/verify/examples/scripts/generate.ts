@@ -1,6 +1,14 @@
 #!/usr/bin/env node
 /**
- * Stage 3-5: Tier に応じてテスト / machine を生成する (Claude Agent SDK 経由)
+ * EXAMPLE ONLY — Claude 経由のテスト生成オーケストレータ参考実装。
+ * このファイルは takumi skill の配布物ではなく「参考例」です。
+ * 実装は簡易版として `claude-code` CLI を `spawn` する方式を示していますが、
+ * 本番運用では Claude Agent SDK (@anthropic-ai/claude-agent-sdk) に置き換える
+ * 方が堅牢です。利用者は project 側の `scripts/` 等に cp してから、認証設定・
+ * prompt ファイルの配置先・出力フォーマット選択 (vitest/playwright/xstate 等)
+ * を project 要件に合わせて調整してください。
+ *
+ * Stage 3-5: Tier に応じてテスト / machine を生成する (Claude CLI を呼び出す参考実装)
  *
  * 使い方:
  *   npx tsx generate.ts --full               # 全 route
