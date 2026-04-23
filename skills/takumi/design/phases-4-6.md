@@ -198,5 +198,5 @@ design_profile_ref: dashboard-dense
 | `SKILL.md` (同ディレクトリ) | 本体 entry point |
 | `l7-invariant.md` (同ディレクトリ) | L7 Layout Invariant 3 層の詳細 |
 | `profiles-defaults/*.yaml` (同ディレクトリ) | 4 design profile defaults |
-| `~/.claude/skills/takumi/SKILL.md` | /takumi 連携 |
-| `~/.claude/skills/takumi/verify/README.md` | verify との接続 (L7 gate) |
+| `../SKILL.md` | /takumi 連携 |
+| `../verify/README.md` | verify との接続 (L7 gate) |

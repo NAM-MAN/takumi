@@ -116,6 +116,6 @@ test("state transition preserves layout hard gate", () => {
 | `SKILL.md` (同ディレクトリ) | 本体 entry point |
 | `phases.md` (同ディレクトリ) | Phase 1-6 の詳細 |
 | `profiles-defaults/*.yaml` (同ディレクトリ) | 4 design profile defaults |
-| `~/.claude/skills/takumi/verify/property-based.md` | PBT テンプレの参照 |
-| `~/.claude/skills/takumi/verify/model-based.md` | fc.commands / XState test |
-| `~/.claude/skills/takumi/verify/smoke-e2e.md` | L5 smoke (fallback) |
+| `../verify/property-based.md` | PBT テンプレの参照 |
+| `../verify/model-based.md` | fc.commands / XState test |
+| `../verify/smoke-e2e.md` | L5 smoke (fallback) |

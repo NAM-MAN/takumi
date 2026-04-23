@@ -6,12 +6,23 @@
 
 ## 4 ロール体制
 
-| ロール | モデル | 担当 |
-|--------|--------|------|
-| 棟梁 | opus (自分) | 実行管理・まとめ・ユーザー報告 |
-| 軍師 | gpt-5.4 (`codex exec`) | レビュー・設計判断 |
-| 職人 | sonnet (Agent tool) | 実装 |
-| 斥候 | haiku (Agent tool) | 調査 |
+| ロール | モデル | effort 既定 | 担当 |
+|--------|--------|---|------|
+| 棟梁 | Opus 4.7 (自分) | xhigh | 実行管理・まとめ・ユーザー報告・**1 response で済む作業は自分で処理** |
+| 軍師 | gpt-5.4 (`codex exec`) | (max 相当) | クロスモデルレビュー・設計判断 |
+| 職人 | sonnet (Agent tool) | xhigh | 中規模以上の実装 |
+| 斥候 | haiku (Agent tool) | medium | 広範・深さ未定の探索 |
+
+### Opus 4.7 delegation policy
+
+Anthropic 公式指針 ([blog](https://claude.com/blog/best-practices-for-using-claude-opus-4-7-with-claude-code)) に従い subagent spawn を**抑制**する:
+
+- **棟梁が自分で完結できる作業は spawn しない**: 1 response で `Read` / `Edit` / 小範囲 `grep` が済む範囲は自分で処理
+- **職人 (sonnet) を spawn する条件**: 規模「中」以上の実装、複数ファイル跨ぎ、長時間回る test iteration、Wave ごとの明示的実装タスク
+- **斥候 (haiku) を spawn する条件**: 深さ未定の広範探索、複数 keyword × 複数ディレクトリ、独立ドメイン並列 fan-out (例: security / perf / a11y 同時)
+- **軍師 (gpt-5.4) を spawn する条件**: 計画レビュー、設計判断、公開前レビュー、破壊的変更時のクロスモデル確認
+
+ロールは「呼ぶ義務」ではなく「必要なら呼べる道具」。`max` effort は真に難しい問題 (arch 決定 / 複雑な security 判断 / legacy 大改修) のみ使用、overthinking リスクあり。
 
 ## Step 0 — 計画読み込み
 
@@ -152,5 +163,5 @@ Agent 内コンテキスト残量 20% を切ったら:
 | `test-strategy.md` (同ディレクトリ) | verify_profile 選定ロジック |
 | `integrations.md` (同ディレクトリ) | 新規 skill 連携ガイド |
 | `telemetry-spec.md` (同ディレクトリ) | event emit の spec |
-| `~/.claude/skills/takumi/verify/README.md` | verify run / recipe library |
-| `~/.claude/skills/takumi/design/README.md` | L7 hard gate の定義 (ui 時) |
+| `verify/README.md` (同階層配下) | verify run / recipe library |
+| `design/README.md` (同階層配下) | L7 hard gate の定義 (ui 時) |

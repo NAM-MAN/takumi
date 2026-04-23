@@ -176,7 +176,7 @@ for ac in task.ac_ids:
 |---|---|
 | `SKILL.md` (同ディレクトリ) | /takumi 本体 |
 | `verify-profiles-defaults/*.yaml` (同ディレクトリ) | 5 archetype の default template (bootstrap 時 project にコピー) |
-| `~/.claude/skills/takumi/verify/README.md` | L1-L6 定義・recipe library |
-| `~/.claude/skills/takumi/design/README.md` | takumi の design mode。同じ profile registry 方式、design_profile 側 |
+| `verify/README.md` (同階層配下) | L1-L6 定義・recipe library |
+| `design/README.md` (同階層配下) | takumi の design mode。同じ profile registry 方式、design_profile 側 |
 | `.takumi/profiles/verify/{name}.yaml` | project 側の profile 本体 |
 | `.takumi/verify/testing-matrix.md` | 導出ルール表 (月次保守) |

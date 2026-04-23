@@ -162,9 +162,12 @@ UI を含む場合、**plan 本体より先に** design mode で IA / style-guid
 
 | 規模 | 基準 | アクション |
 |------|------|-----------|
-| 小 | 1-3 ファイル、明確 | 1-2問で計画生成 |
+| 小 | 1-3 ファイル、明確 | 1-2問で計画生成、**棟梁が直接対応** (subagent spawn なし) |
 | 中 | 4-10 ファイル | インタビュー + 斥候 調査 |
 | 大 | 10+ ファイル or 設計変更 | インタビュー + 軍師 分析 + 斥候 調査 |
+
+> [!IMPORTANT]
+> **Opus 4.7 delegation policy**: 棟梁 (Opus 4.7 main session) は自分で完結できる作業に subagent を spawn しない ([公式指針](https://claude.com/blog/best-practices-for-using-claude-opus-4-7-with-claude-code))。「小」規模は棟梁が直接処理、「中」以上で初めて斥候/職人を呼ぶ。effort 既定は xhigh、max は真に難しい問題のみ。詳細は `executor.md` の「Opus 4.7 delegation policy」節。
 
 ### 自己増殖型が必要か判定
 

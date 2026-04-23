@@ -79,14 +79,14 @@ task 作成時に `.takumi/telemetry/profile-usage.jsonl` に `task_created` eve
 
 | file | 用途 |
 |---|---|
-| `~/.claude/skills/takumi/SKILL.md` | 本体 (entry point、対外コマンドは /takumi のみ) |
-| `~/.claude/skills/takumi/natural-language.md` | 発話 → 6 mode 振り分けの辞書 |
-| `~/.claude/skills/takumi/test-strategy.md` | AC-ID → verify_profile_ref 選定ロジック (takumi 内部) |
-| `~/.claude/skills/takumi/design/README.md` | design mode 本体 (takumi 内部モード) |
-| `~/.claude/skills/takumi/telemetry-spec.md` | 儀式化 drift 検知の telemetry spec |
-| `~/.claude/skills/takumi/verify/README.md` | L1-L6 + recipe library |
-| `~/.claude/skills/takumi/verify/spec-tests.md` | Unified Spec Test (USS) 原則、Rule 14 命名規約 |
-| `~/.claude/skills/takumi/verify-profiles-defaults/*.yaml` | 5 archetype defaults |
-| `~/.claude/skills/takumi/design/profiles-defaults/*.yaml` | 4 design profile defaults |
+| `SKILL.md` (同階層) | 本体 (entry point、対外コマンドは /takumi のみ) |
+| `natural-language.md` (同階層) | 発話 → 6 mode 振り分けの辞書 |
+| `test-strategy.md` (同階層) | AC-ID → verify_profile_ref 選定ロジック (takumi 内部) |
+| `design/README.md` (同階層配下) | design mode 本体 (takumi 内部モード) |
+| `telemetry-spec.md` (同階層) | 儀式化 drift 検知の telemetry spec |
+| `verify/README.md` (同階層配下) | L1-L6 + recipe library |
+| `verify/spec-tests.md` (同階層配下) | Unified Spec Test (USS) 原則、Rule 14 命名規約 |
+| `verify-profiles-defaults/*.yaml` (同階層配下) | 5 archetype defaults |
+| `design/profiles-defaults/*.yaml` (同階層配下) | 4 design profile defaults |
 | `.takumi/profiles/{verify,design}/*.yaml` | project 側 profile 本体 |
 | `.takumi/telemetry/profile-usage.jsonl` | event log (append-only) |
