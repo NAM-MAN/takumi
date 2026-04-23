@@ -1,0 +1,10 @@
+# Exclude developer-only guides from `git archive` / release tarballs.
+# These files stay in the git repository for forkers but are not part
+# of the distributed skill package.
+#
+# Pattern note: `path/` alone does NOT recurse in .gitattributes.
+# Use `path/**` to match all files under the directory.
+docs/CONTRIBUTING/**  export-ignore
+.takumi/**            export-ignore
+CLAUDE.md             export-ignore
+.gitattributes        export-ignore
