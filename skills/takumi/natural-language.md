@@ -19,7 +19,7 @@
 | 「もう 1 回動かして」「再開」 | override mode (pause 解除) |
 | 「<観点> 心配」「<観点> 見て」「<観点> 調べて」 | probe mode に自動遷移 (発見者並列起動 → backlog → 計画) |
 | 「全般的に棚卸し」「リリース前にちゃんと見て」 | sweep mode に自動遷移 (8 次元並列発見) |
-| 「リファクタして」「設計見直して」 | strict-refactoring skill (plugin) に委譲 |
+| 「リファクタして」「設計見直して」 | takumi 内部の strict-refactoring モード (`strict-refactoring/README.md`) に委譲 |
 | 「この計画続きから」「再開」 | continue mode (`.takumi/state.json` を読んで paused 状態から再開) |
 | 「今の計画捨てて」「やり直し」 | state.json を reset、normal mode を新規開始 |
 
