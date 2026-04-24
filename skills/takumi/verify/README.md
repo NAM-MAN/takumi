@@ -29,13 +29,13 @@
 
 ```mermaid
 quadrantChart
-    title テスト品質の 2x2 マトリクス
-    x-axis 量が少ない (coverage 低) --> 量が多い (coverage 高)
-    y-axis 鋭さが低い (mutation 低) --> 鋭さが高い (mutation 高)
-    quadrant-1 "🏆 Q1 精鋭大軍<br/>Elite Army ★"
-    quadrant-2 "🎯 Q2 少数精鋭<br/>Lean Elite"
-    quadrant-3 "🌱 Q3 白紙<br/>Blank Slate"
-    quadrant-4 "🎭 Q4 張子の虎<br/>Paper Tiger ⚠"
+    title テスト品質マトリクス (量 x 鋭さ)
+    x-axis 量が少ない --> 量が多い
+    y-axis 鋭さが低い --> 鋭さが高い
+    quadrant-1 Q1 精鋭大軍 Elite Army
+    quadrant-2 Q2 少数精鋭 Lean Elite
+    quadrant-3 Q3 白紙 Blank Slate
+    quadrant-4 Q4 張子の虎 Paper Tiger
 ```
 
 （mermaid 非対応 viewer 向け ASCII 版）:
@@ -76,15 +76,14 @@ quadrantChart
 
 ```mermaid
 flowchart LR
-    Q3["🌱 Q3<br/>白紙<br/>(start)"] -->|① PBT 先行| Q2["🎯 Q2<br/>少数精鋭"]
-    Q2 -->|② USS で網羅拡大| Q1["🏆 Q1<br/>精鋭大軍<br/>★ goal"]
-    Q3 -.->|× 量産誘惑| Q4["🎭 Q4<br/>張子の虎<br/>⚠ trap"]
+    Q3["🌱 Q3 白紙 (start)"] -->|1 PBT 先行| Q2["🎯 Q2 少数精鋭"]
+    Q2 -->|2 USS で網羅拡大| Q1["🏆 Q1 精鋭大軍 ★ goal"]
+    Q3 -.->|量産誘惑| Q4["🎭 Q4 張子の虎 ⚠ trap"]
     Q4 -.->|要 refactor| Q1
-    
-    style Q1 fill:#d4f4dd,stroke:#2d7a3e,stroke-width:3px
-    style Q2 fill:#fff4cc,stroke:#b8860b,stroke-width:2px
-    style Q3 fill:#e8e8e8,stroke:#666,stroke-width:2px
-    style Q4 fill:#ffd6d6,stroke:#b00020,stroke-width:3px
+    style Q1 fill:#2e7d32,stroke:#1b5e20,stroke-width:3px,color:#fff
+    style Q2 fill:#c77700,stroke:#8b5a00,stroke-width:2px,color:#fff
+    style Q3 fill:#616161,stroke:#424242,stroke-width:2px,color:#fff
+    style Q4 fill:#c62828,stroke:#8b0000,stroke-width:3px,color:#fff
 ```
 
 - **正道** (推奨): `Q3 → Q2 → Q1` — PBT で**鋭さ先行**、後から網羅拡大。test 1 本あたりの情報量が高く、maintenance cost も抑えられる
