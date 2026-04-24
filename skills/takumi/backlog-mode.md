@@ -72,8 +72,8 @@ takumi の probe mode / sweep mode から backlog.md が生成された場合、
 - [ ] F1. 全検証項目の再確認
 - [ ] F2. ビルド通過
 - [ ] F3. テスト通過
-- [ ] F4. 軍師 最終レビュー
-  - `codex exec -m gpt-5.4 -s read-only -C "$(pwd)" "git diff main...HEAD の全変更を敵対的にレビューせよ。境界条件・障害パス・競合状態・セキュリティを重点的に" 2>&1 | tail -100`
+- [ ] F4. 軍師 最終レビュー (tier は env.yaml preference に従う、詳細は `executor.md` 参照)
+  - Tier 2 例: `codex exec -m gpt-5.4 -s read-only -C "$(pwd)" "git diff main...HEAD の全変更を敵対的にレビューせよ。境界条件・障害パス・競合状態・セキュリティを重点的に" 2>&1 | tail -100`
 ```
 
 ## 通常モードとの使い分け

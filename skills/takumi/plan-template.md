@@ -46,7 +46,9 @@
 - [ ] F2. ビルド通過
 - [ ] F3. テスト通過
 - [ ] F4. 軍師 最終レビュー
+  - `.takumi/profiles/env.yaml` の preference に応じて tier を選択 (copilot / codex / opus-max)。Tier 2 (codex) の例:
   - `codex exec -m gpt-5.4 -s read-only -C "$(pwd)" "git diff main...HEAD の全変更を敵対的にレビューせよ。境界条件・障害パス・競合状態・セキュリティを重点的に" 2>&1 | tail -100`
+  - 他 tier の exact 構文は `executor.md` 「軍師 routing」節参照
 ```
 
 ## ルール
@@ -58,12 +60,18 @@
 
 ## 軍師 計画レビュー (自動・生成直後)
 
-計画ファイル生成直後、軍師 に自動でレビューを依頼:
+計画ファイル生成直後、軍師 に自動でレビューを依頼。`.takumi/profiles/env.yaml` の `preference` に応じて tier を選択:
 
 ```bash
+# Tier 2 (codex exec、ChatGPT Plus) の例
 codex exec -m gpt-5.4 -s read-only -C "$(pwd)" \
   ".takumi/plans/{name}.md を読み、前提の誤り・スコープの漏れ・Wave依存の矛盾・リスクを指摘せよ" 2>&1 | tail -100
+
+# Tier 1 (copilot、Copilot Pro) の例
+# copilot -p "..." --model gpt-5.4 --cwd "$(pwd)" --available-tools="view,grep,glob,web_fetch" --silent
 ```
+
+各 tier の詳細呼出パターンは `executor.md` 「軍師 routing (3-tier + quota rotation)」参照。
 
 - 指摘あり → 計画ファイルに反映してから提示
 - 指摘なし → そのまま提示
