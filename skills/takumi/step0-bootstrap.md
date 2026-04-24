@@ -36,10 +36,13 @@ reports/stryker/
 
 ```
 .takumi/
-!.takumi/plans/        # PR に plan を添えてレビューする運用
-!.takumi/specs/        # AC-ID をチームの契約 (source of truth) に
-!.takumi/design/       # デザイン成果物の共有
-!.takumi/profiles/     # チーム共通の verify/design/refactor 基準
+!.takumi/plans/                # PR に plan を添えてレビューする運用
+!.takumi/specs/                # AC-ID をチームの契約 (source of truth) に
+!.takumi/design/               # デザイン成果物の共有
+!.takumi/profiles/             # profiles/ ディレクトリ自体は unignore
+!.takumi/profiles/verify/      # チーム共通 verify 基準
+!.takumi/profiles/design/      # チーム共通 design 基準
+.takumi/profiles/env.yaml      # ただし env.yaml (軍師 routing の user 固有 preference) は共有しない
 ```
 
 **絶対 ignore を維持するもの** (unignore しない):
@@ -48,6 +51,7 @@ reports/stryker/
 - `control/` — 一時停止フラグ、session で使い捨て
 - `drafts/` / `notepads/` — 作業中の走り書き
 - `state.json` / `discovery-calibration.jsonl` — session state
+- `profiles/env.yaml` — 軍師 routing の user preference (CLI availability + quota rotation)
 
 判断基準: 「他開発者 or 未来の自分が読んで得をするか」が Yes のものだけ unignore。個人開発では全部 default (ignore) のままが自然。
 
