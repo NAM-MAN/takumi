@@ -69,7 +69,7 @@ probe mode に遷移させた発話 (例: 「security 見て」「perf 心配」
 |--------------|--------|
 | `ux` | ペルソナ発見者、UXデザイナー発見者 |
 | `security`, `sec` | セキュリティ発見者 |
-| `perf`, `performance` | パフォーマンス発見者 |
+| `perf`, `performance`, `bundle`, `重い` | パフォーマンス発見者 ([`roles/perf.md`](roles/perf.md) で C1-C6 checklist を適用) |
 | `a11y`, `accessibility` | アクセシビリティ発見者 |
 | `architecture`, `arch` | アーキテクチャ発見者 |
 | `dx` | DX発見者 |
