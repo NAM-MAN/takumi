@@ -54,6 +54,24 @@ codex exec -m gpt-5.4 -s read-only -C "$(pwd)" \
 
 **重要**: パイロットで生じる production code の変更・seeded bug branch・集計 script・telemetry jsonl は**パイロット repo 側に留める**。takumi skill repo には絶対にコピーしない。
 
+### 3-a. Smoke batch (full execution 前のパイプライン検証)
+
+全 30-38 trial を本走らせる前に、**3-5 trial の smoke batch** でパイプライン動作確認:
+
+- 各 arm 最低 1 trial ずつ選び、実 diff で reviewer を回す
+- 出力 CSV の列数 / severity 表記 / normalize 成否を確認
+- telemetry jsonl に 1 行書かれ、集計 script が動くことを確認
+- **maintainer verdict は 0 のまま** で OK (smoke は pipeline 確認のみ、quality 測定は本走時)
+- smoke で発見した不備 (正規化漏れ、keyword regex 誤検知等) は本走前に修正
+
+Smoke batch の出力は telemetry に **"notes": "smoke"** マーカーを付け、最終集計で除外する (本走データと混ぜない)。
+
+Smoke で見つかる典型的な不備:
+- 対象 corpus の品質問題 (metadata-heavy commit が混入して review 対象にならない)
+- reviewer prompt の ambiguity (arm 間の差分が出力に現れない)
+- normalizer の列数ズレ
+- token_cost / latency の計測方法が環境依存
+
 ### 4. 判定 (機械的に)
 
 事前定義した閾値を適用:
