@@ -25,71 +25,21 @@
 
 テスト品質を **量** (coverage) × **鋭さ** (mutation score) の 2 軸で捉えると、repo は 4 つの状態に分類できる。**verify skill の主目的は Q3 から Q1 へ、正しい経路で連れていくこと** と **Q4 への drift 防止**。
 
-### 4 象限マップ
+### 4 象限プロフィール
 
-```mermaid
-quadrantChart
-    title Test Quality Matrix
-    x-axis Low Volume --> High Volume
-    y-axis Low Sharpness --> High Sharpness
-    quadrant-1 Q1 Elite Army
-    quadrant-2 Q2 Lean Elite
-    quadrant-3 Q3 Blank Slate
-    quadrant-4 Q4 Paper Tiger
-```
-
-> 軸: x = 量 (coverage)、y = 鋭さ (mutation score)。日本語は下の象限プロフィール表で扱います (mermaid quadrantChart の title/axis は非 ASCII でパーサが落ちるため英字に統一)。
-
-（mermaid 非対応 viewer 向け ASCII 版）:
-
-```
-                 鋭さ (mutation score)
-                     高 ▲
-                        │
-     ┌──────────────────┼──────────────────┐
-     │                  │                  │
-     │  🎯 Q2           │   🏆 Q1    ★    │
-     │  少数精鋭         │   精鋭大軍       │
-     │  Lean Elite      │   Elite Army     │
-     │                  │                  │
-     ├──────────────────┼──────────────────┤
- 量少 ◀─────────────────┼──────────────────▶ 量多
- (coverage)             │             (coverage)
-     │                  │                  │
-     │  🌱 Q3           │   🎭 Q4    ⚠    │
-     │  白紙            │   張子の虎       │
-     │  Blank Slate     │   Paper Tiger    │
-     │                  │                  │
-     └──────────────────┼──────────────────┘
-                        │
-                     低 ▼
-```
-
-### 象限プロフィール
+縦軸 = **鋭さ** (mutation score)、横軸 = **量** (coverage)。
 
 | 象限 | コードネーム | 状態の姿 | 特徴 | 次の手 |
 |---|---|---|---|---|
-| 🏆 **Q1** | **精鋭大軍** <br/>_Elite Army_ | 兵が多く、全員鋭い | mut ≥ 70% かつ cov ≥ 80%、assert 具体的 | 維持。PBT を増やして壁を厚くする |
-| 🎯 **Q2** | **少数精鋭** <br/>_Lean Elite_ | 少数だが全員鋭い | cov < 50% だが mut ≥ 70%、PBT 主体 | 未カバー領域に USS で 1 unit=1 test を追加 → Q1 |
-| 🌱 **Q3** | **白紙** <br/>_Blank Slate_ | まだ軍がいない | cov < 30%、mut < 50%、test ほぼ無 | PBT で pure 層を先に押さえる → Q2 |
-| 🎭 **Q4** | **張子の虎** <br/>_Paper Tiger_ | 兵は多いが張子 | cov > 80% だが mut < 50%、空 assert / snapshot-only / retry 吸収 | **増やすな、鋭くせよ**。既存 test を mutation-kill で refactor |
+| 🏆 **Q1** | **精鋭大軍** _Elite Army_ | 兵が多く、全員鋭い | mut ≥ 70% かつ cov ≥ 80%、assert 具体的 | 維持。PBT を増やして壁を厚くする |
+| 🎯 **Q2** | **少数精鋭** _Lean Elite_ | 少数だが全員鋭い | cov < 50% だが mut ≥ 70%、PBT 主体 | 未カバー領域に USS で 1 unit=1 test を追加 → Q1 |
+| 🌱 **Q3** | **白紙** _Blank Slate_ | まだ軍がいない | cov < 30%、mut < 50%、test ほぼ無 | PBT で pure 層を先に押さえる → Q2 |
+| 🎭 **Q4** | **張子の虎** _Paper Tiger_ | 兵は多いが張子 | cov > 80% だが mut < 50%、空 assert / snapshot-only / retry 吸収 | **増やすな、鋭くせよ**。既存 test を mutation-kill で refactor |
 
-### 移動経路 — 正道と注意経路
+### 移動経路
 
-```mermaid
-flowchart LR
-    Q3["🌱 Q3 白紙 (start)"] -->|1 PBT 先行| Q2["🎯 Q2 少数精鋭"]
-    Q2 -->|2 USS で網羅拡大| Q1["🏆 Q1 精鋭大軍 ★ goal"]
-    Q3 -.->|量産誘惑| Q4["🎭 Q4 張子の虎 ⚠ trap"]
-    Q4 -.->|要 refactor| Q1
-    style Q1 fill:#2e7d32,stroke:#1b5e20,stroke-width:3px,color:#fff
-    style Q2 fill:#c77700,stroke:#8b5a00,stroke-width:2px,color:#fff
-    style Q3 fill:#616161,stroke:#424242,stroke-width:2px,color:#fff
-    style Q4 fill:#c62828,stroke:#8b0000,stroke-width:3px,color:#fff
-```
-
-- **正道** (推奨): `Q3 → Q2 → Q1` — PBT で**鋭さ先行**、後から網羅拡大。test 1 本あたりの情報量が高く、maintenance cost も抑えられる
-- **注意経路** (AI で起きやすい): `Q3 → Q4 → Q1` — AI で test を量産 → 後から鋭さを足す。**runtime / flake / review surface / ownership の 4 コストが累積**し Q4 滞在で技術負債化しやすい
+- 🌱 **正道** (推奨): `Q3 → Q2 → Q1` — PBT で**鋭さ先行**、後から USS で網羅拡大。test 1 本あたりの情報量が高く、maintenance cost も抑えられる
+- 🎭 **注意経路** (AI で起きやすい): `Q3 → Q4 → Q1` — AI で test を量産 → 後から鋭さを足す。**runtime / flake / review surface / ownership の 4 コストが累積**し Q4 滞在で技術負債化しやすい
 
 ### Q4 の典型的な症状 (複数シグナル合算で判定)
 
