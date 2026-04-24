@@ -236,7 +236,7 @@ takumi は内部で、役割に応じて 4 種類の AI エージェントを使
 | ロール | モデル | 担当 | ポイント |
 |---|---|---|---|
 | **棟梁** (とうりょう) | Claude Opus | 全体設計・計画作成 | 会話の中心 |
-| **軍師** (ぐんし) | OpenAI GPT-5 | 敵対的レビュー | 別系統モデルで交差レビュー |
+| **軍師** (ぐんし) | OpenAI GPT-5 (`copilot` / `codex` のいずれか) | 敵対的レビュー | 別系統モデルで交差レビュー |
 | **職人** (しょくにん) | Claude Sonnet | 実装・テスト作成 | 手を動かす |
 | **斥候** (せっこう) | Claude Haiku | コードベース探索 | 軽量で高速 |
 
@@ -561,7 +561,11 @@ Claude Code を一度でも使ったことがあれば十分です。AC-ID や m
 > [!WARNING]
 > - Claude Code 専用です (Anthropic API を直接利用する環境では動きません)
 > - 意図分類は日本語に最適化されています
-> - 軍師ロール (交差レビュー) は OpenAI Codex CLI (GPT-5) を使用します。未インストールでは Opus 代替で精度はやや落ちます
+> - 軍師ロール (交差レビュー) は以下の 3-tier fallback で GPT-5 にアクセスします (`skills/takumi/executor.md` 参照):
+>   - **Tier 1**: GitHub Copilot CLI (`copilot` コマンド、Copilot Pro 加入者、定額で最安)
+>   - **Tier 2**: OpenAI Codex CLI (`codex` コマンド、ChatGPT Plus 加入者、従量課金)
+>   - **Tier 3**: 両 CLI 不在時は Opus の自己レビュー (劣化モード、同系列のため盲点分離効果が減る)
+>   - 両方持ちで月次クォータを rotate させる場合は「軍師を codex に切り替えて」等の自然文で `.takumi/profiles/env.yaml` の preference を更新
 > - 自動判定を誤り続ける語彙があれば、`natural-language.md` の辞書に追加してください (PR 歓迎)
 
 ---
