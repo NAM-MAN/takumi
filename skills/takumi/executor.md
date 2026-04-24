@@ -108,7 +108,7 @@ codex exec -m gpt-5.4 -s read-only -C "$(pwd)" \
 # 冒頭に "⚠ Tier: opus-max self-review (degraded mode)" を明記。
 ```
 
-これらの tier の quality 等価性は `.takumi/drafts/pilot-gunshi-routing.md` で pilot 検証予定 (Wave 4 と並行実施可)。
+これらの tier の quality 等価性は pilot で検証予定 (`docs/CONTRIBUTING/pilot-driven-development.md` の方法論に従い、別リポジトリで arm A/B/C 比較)。
 
 ## Step 0 — 計画読み込み
 
