@@ -19,6 +19,11 @@ description: "Mutation score 80% 到達を各レイヤー (A 純粋ロジック 
 
 10 分ごとに自動起動し、1 つのファイルに集中して、「テストの抜け穴」を塞いでいきます。純粋ロジック層 (A) から順に攻略し、全部で 5 層 (A→B→C→D→E) を走破します。
 
+> [!NOTE]
+> **なぜループが必要か**: mutation testing は「どの mutant が生き残ったか」を**観測するだけ**で、1 回走らせても test は鋭くなりません。観察 → test 追加 → 再観察のループが**必須**です。単発 Stryker での sharpening には限界があります。verify-loop はこのループを機械化した skill。
+>
+> **pure 関数層 (layer A) は PBT で loop 回避可能**: `fast-check` の property は 1 実行で多数の mutant を一撃 kill できる (詳細 → `../verify/property-based.md`)。PBT で地力を上げ、PBT で守れない層 (state / I/O / async) のみ本ループで回すのが最も効率的。
+
 > [!IMPORTANT]
 > verify-loop は tick 毎に mutation testing ツールの incremental 実行を前提とするため、**project 言語が L4 primary tier である必要があります** — 具体的には JS/TS (Stryker-JS) / Java/Kotlin (PIT) / C# (Stryker.NET) / Rust (cargo-mutants, `--in-diff` 必須) / Scala (Stryker4s) のいずれか。Python / Go は advisory tier (operator 覆盖が Stryker レベルに到達していない) のため verify-loop の対象外となります。その場合は L1 PBT の拡充ループを別途検討してください。tier 定義は `../verify/mutation.md` 「対応言語と tier」を参照。
 

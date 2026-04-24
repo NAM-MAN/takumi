@@ -21,6 +21,58 @@
 
 ---
 
+## verify skill の目的 — 4 象限の位置取り
+
+テスト品質は **量 (coverage)** と **鋭さ (mutation score)** の 2 軸で捉える。
+
+|   | 鋭くない (mutation 低) | 鋭い (mutation 高) |
+|---|---|---|
+| **test 多** (coverage 高) | **Q4: AI 特有 worst** | **Q1: 理想** ★ |
+| **test 少** (coverage 低) | **Q3: 初期状態** | **Q2: 少数精鋭** (PBT 重点) |
+
+### verify skill の主目的: **Q4 → Q1 への移動 + Q4 drift の prevention**
+
+**Q4 (多量 test × 低 mutation) は最悪の状態**で、AI 時代特有のアンチパターン:
+
+- 人間が test を書いていた era では執筆コストが高く Q4 は稀だった
+- **AI は test を安価に量産できる** ため、ガードなしでは Q4 が default 化する
+- Q4 repo は「**仕事した感**」の外観 (大量 test、高 coverage) と裏腹に**バグ検出力がほぼゼロ**
+- 一度 Q4 に入ると、大量 test の maintenance cost を払い続けながら価値を生まない **技術負債経路**
+
+### 経路の原則
+
+- **正道**: Q3 → Q2 (PBT で地力) → Q1 (coverage 拡充)
+- **Anti-pattern**: Q3 → Q4 (AI で量産) → Q1 (後から質を足す) — maintenance cost 累積で最悪
+
+### Q4 の検出シグナル (「AI が書いた test」臭)
+
+以下 1 つでも該当したら Q4 疑い:
+- line coverage > 80% かつ mutation score < 50%
+- `expect(result).toBeDefined()` 型の空 assertion が多数
+- snapshot-only test で具体的な値検証が無い
+- `it('動作すること', ...)` など Subject / 期待値 不明な test 名
+- 1 ファイルに 30+ `it()` で `describe` 構造のみ乱立
+
+### Q4 exit 戦略
+
+「test 追加」ではなく「既存 test の **mutation-kill による強化**」。量でなく**質の refactor**:
+1. [`../verify-loop/README.md`](../verify-loop/README.md) で mutation を観測
+2. 生存 mutant を殺す assertion を既存 test に**埋め込む** (新規 test 追加ではない、重複になる)
+3. `expect().toBeDefined()` 等の空 assert を具体値検証に置換
+4. snapshot-only を output 構造の明示検証に置換
+
+### verify の Q4 prevention 設計 (既に組込み済)
+
+takumi verify は Q4 drift を**書き始める時点**で抑止:
+- **USS 原則**: `it('{Subject} は {input} に対して {output} を返すべき')` で Subject / input / output の 3 点セットを強制 → 空 assert を書きにくい
+- **新規 `*.pbt.test.ts` 禁止**: 機構名での分割 (= AI の量産パターン) を禁止、既存 `{module}.test.ts` 内に統合 → ファイル数インフレ抑止
+- **mutation gate** (L4): 新 PR は mutation score 維持が要件 → 量で通そうとすると gate で止まる
+- **AI 書いた PR には L6 軍師レビュー** (cross-model) → 空 assertion 発見
+
+「**test を増やす skill**」ではない、「**test を鋭くする skill**」。Q4 への逃避を構造的に封じ、Q2 → Q1 の質重視経路を強制する。
+
+---
+
 ## 目次
 
 - [こんなお悩み、ありませんか?](#こんなお悩みありませんか)
@@ -80,6 +132,14 @@ flowchart LR
 検知できなかったパターン (「生存したミュータント」) の割合が低いほど、テストが本当に意味をなしていることを示します。カバレッジでは絶対に見えない「テストの鋭さ」が数値でわかります。
 
 verify は Stryker というツールを使って、差分 (pre-push) や週次 (CI) でこれを自動計測し、目標値 (デフォルト 65-80%) を超えないコードはリリースさせません。
+
+> [!CAUTION]
+> **Stryker は measurement (測定器) であって sharpener ではありません**。どの mutant が生存しているかを**観測する**だけで、**1 回走らせても** test は鋭くなりません。鋭くするには以下のいずれかが必要:
+>
+> - **ループ**: Stryker 実行 → survived mutant 観察 → test 追加/修正 → 再実行 → 繰り返す。これを回す専用 skill が **[`verify-loop`](../verify-loop/README.md)** (`/loop 10m /verify-loop` で自動回し)
+> - **PBT (Property-Based Testing)**: pure function + 有界 input なら、1 つの property が多くの mutant を同時に殺せる。ループ不要で地力を上げる。詳細 → [`property-based.md`](property-based.md)
+>
+> **現実解**: pure 層は PBT で先回り → 状態を持つ層は verify-loop で回す → それでも残る隙間を hand-written で埋める。単発 Stryker で sharpening を期待しない。
 
 > [!IMPORTANT]
 > **L4 Mutation は言語によって役割が変わります**。JS/TS (Stryker-JS) / Java/Kotlin (PIT) / C# (Stryker.NET) / Rust (cargo-mutants) / Scala (Stryker4s) は **primary tier** として mutation score を hard gate に使えます。一方 Python (mutmut) / Go (gremlins) は operator 覆盖が Stryker レベルに届かないため **advisory tier** で telemetry 参考値のみ。その言語では L1 PBT + L6 AI Review を主守りにします。詳細 → `mutation.md` 「対応言語と tier」。

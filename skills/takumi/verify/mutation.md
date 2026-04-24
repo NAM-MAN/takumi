@@ -3,6 +3,14 @@
 `StrykerJS` でコードを意図的に壊し、テストが気づくか測る。
 **coverage は「実行された」だけ。mutation score は「検証された」を測る**。
 
+> [!CAUTION]
+> **Stryker (および他 mutation tool) は measurement (測定器) であって sharpener ではない**。単発で実行しても「どの mutant が生き残ったか」を**観測する**だけで、test は鋭くならない。**鋭くするには以下のどちらかが必要**:
+>
+> 1. **ループ** (Stryker 実行 → survived 観察 → test 追加 → 再実行) を回す → 専用 skill は **[`verify-loop`](../verify-loop/README.md)** (`/loop 10m /verify-loop` で継続回し)
+> 2. **PBT (Property-Based Testing)** で pure function 層を先回り保護 → 多くの mutant を property で一撃 kill、ループ不要 → `property-based.md`
+>
+> **運用指針**: pure 層は PBT、状態を持つ層は verify-loop、それでも残る隙間は hand-written。**単発 Stryker で sharpening を期待しない**。単発の役割は「鋭さが落ちていないかの監視」「release gate」のみ。
+
 ---
 
 ## 対応言語と tier (判定の原則)
@@ -142,15 +150,27 @@ pnpm stryker run --mutate src/lib/layout/calculate.ts
 
 ---
 
-## ローカル現実時間 (M3 Mac)
+## ローカル現実時間 (M3 Mac、Stryker-JS 目安)
 
 | 対象 | 時間 |
 |---|---|
-| 差分のみ (10 ファイル) | **20-40 秒** ← pre-push でも余裕 |
+| 1 ファイル `--mutate <path>` | **10-30 秒** (最速、開発中の確認向け) |
+| 差分のみ (10 ファイル、`--incremental` + git diff filter) | **20-40 秒** ← pre-push でも余裕 |
 | `src/features/*/utils` 全量 | 3-5 分 |
 | 全 `src/` (やらない方がいい) | 30 分+ |
 
 `mutate` を **pure utility に絞れば日常使える**。I/O 系を mutate するから遅くなる。
+
+---
+
+## 速度化
+
+速度 decision tree、`--in-diff` 相当 snippet、Stryker config tuning、pre-push hook は別ファイル [`mutation-speed.md`](mutation-speed.md) に分離。遅いと感じたらまずそちらを参照。
+
+要点:
+- 単発で速くしたいなら `--mutate <file>` (最速、~20s)
+- 継続的に鋭くしたいなら [`verify-loop`](../verify-loop/README.md) (10 分間隔ループ)
+- pure 層は [`property-based.md`](property-based.md) で loop を部分代替
 
 ---
 
