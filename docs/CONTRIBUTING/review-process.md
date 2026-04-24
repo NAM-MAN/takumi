@@ -74,11 +74,11 @@ else:
 | 2-5 file, <1000 行合計 | 自分で `Read` + 目視 (TaskCreate で進捗) |
 | 6+ files, >1000 行 | `/review` 組み込み、または `code-reviewer` agent 1 本 |
 | 独立ドメイン別 (security / perf / a11y) | agent 3 本並列 fan-out |
-| arch 影響 / legacy 移行 | 軍師 (codex exec gpt-5.4) に依頼 |
+| arch 影響 / legacy 移行 | 軍師 (copilot / codex / opus-max の preference に従う) に依頼 |
 
 ---
 
-## 軍師 (codex exec gpt-5.4) の発動条件
+## 軍師 (3-tier routing: copilot / codex / opus-max) の発動条件
 
 以下のいずれかで自動検討:
 
@@ -88,12 +88,18 @@ else:
 - 設計書・実験計画・RFC のクロスレビュー
 - 棟梁が「主張に自信が持てない」と判断した時
 
-**コマンドテンプレート**:
+**コマンドテンプレート** (tier は `.takumi/profiles/env.yaml` preference に従う、詳細は `skills/takumi/executor.md` 参照):
 
 ```bash
+# Tier 2 (codex exec、ChatGPT Plus) の例
 codex exec -m gpt-5.4 -s read-only -C "$(pwd)" \
   "git diff master...HEAD を敵対的にレビュー: (1) 破壊的変更の見逃し, (2) semver 判定の妥当性, (3) public repo として公開不可な情報, (4) 既存 skill との論調整合性" \
   2>&1 | tail -100
+
+# Tier 1 (copilot、Copilot Pro) の例
+# copilot -p "git diff master...HEAD を敵対的にレビュー..." \
+#   --model gpt-5.4 --cwd "$(pwd)" \
+#   --available-tools="view,grep,glob,web_fetch" --silent
 ```
 
 ---
