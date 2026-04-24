@@ -20,6 +20,7 @@
 | [`workflow.md`](docs/CONTRIBUTING/workflow.md) | 開発サイクル・commit 規約・release |
 | [`opus-4-7.md`](docs/CONTRIBUTING/opus-4-7.md) | effort / subagent / adaptive thinking |
 | [`review-process.md`](docs/CONTRIBUTING/review-process.md) | レビュー運用と max 発動ルール |
+| [`pilot-driven-development.md`](docs/CONTRIBUTING/pilot-driven-development.md) | 新規 skill / rule の pilot 駆動採否フロー |
 
 必要なものだけ読む (全部読まない)。
 
