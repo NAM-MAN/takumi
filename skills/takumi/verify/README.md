@@ -21,64 +21,102 @@
 
 ---
 
-## verify skill の目的 — 4 象限の位置取り
+## verify skill の目的 — テスト品質マトリクス
 
-テスト品質は **量 (coverage)** と **鋭さ (mutation score)** の 2 軸で捉える。
+テスト品質を **量** (coverage) × **鋭さ** (mutation score) の 2 軸で捉えると、repo は 4 つの状態に分類できる。**verify skill の主目的は Q3 から Q1 へ、正しい経路で連れていくこと** と **Q4 への drift 防止**。
 
-|   | 鋭くない (mutation 低) | 鋭い (mutation 高) |
-|---|---|---|
-| **test 多** (coverage 高) | **Q4: AI 特有 worst** | **Q1: 理想** ★ |
-| **test 少** (coverage 低) | **Q3: 初期状態** | **Q2: 少数精鋭** (PBT 重点) |
+### 4 象限マップ
 
-### verify skill の主目的: **Q4 → Q1 への移動 + Q4 drift の prevention**
+```mermaid
+quadrantChart
+    title テスト品質の 2x2 マトリクス
+    x-axis 量が少ない (coverage 低) --> 量が多い (coverage 高)
+    y-axis 鋭さが低い (mutation 低) --> 鋭さが高い (mutation 高)
+    quadrant-1 "🏆 Q1 精鋭大軍<br/>Elite Army ★"
+    quadrant-2 "🎯 Q2 少数精鋭<br/>Lean Elite"
+    quadrant-3 "🌱 Q3 白紙<br/>Blank Slate"
+    quadrant-4 "🎭 Q4 張子の虎<br/>Paper Tiger ⚠"
+```
 
-**Q4 (多量 test × 低 mutation) は AI 時代に頻度上昇する anti-pattern**:
+（mermaid 非対応 viewer 向け ASCII 版）:
 
-- 人間起源でも fixture-heavy E2E、legacy snapshot、compliance test 群で Q4 に陥る repo は存在する
-- **AI は test を安価に量産できる** ため、ガードなしでは Q4 が default 化しやすく頻度が上昇
-- Q4 repo は「**仕事した感**」の外観 (大量 test、高 coverage) と裏腹に**見かけの coverage の割にバグ検出力が低い**
-- Q4 滞在は **runtime / flake / review surface / ownership の 4 コストを累積する**ため、経験則的に技術負債化しやすい (規模・flake 率次第で影響度は変わる)
+```
+                 鋭さ (mutation score)
+                     高 ▲
+                        │
+     ┌──────────────────┼──────────────────┐
+     │                  │                  │
+     │  🎯 Q2           │   🏆 Q1    ★    │
+     │  少数精鋭         │   精鋭大軍       │
+     │  Lean Elite      │   Elite Army     │
+     │                  │                  │
+     ├──────────────────┼──────────────────┤
+ 量少 ◀─────────────────┼──────────────────▶ 量多
+ (coverage)             │             (coverage)
+     │                  │                  │
+     │  🌱 Q3           │   🎭 Q4    ⚠    │
+     │  白紙            │   張子の虎       │
+     │  Blank Slate     │   Paper Tiger    │
+     │                  │                  │
+     └──────────────────┼──────────────────┘
+                        │
+                     低 ▼
+```
 
-### 経路の原則 (経験則)
+### 象限プロフィール
 
-- **正道**: Q3 → Q2 (PBT で地力) → Q1 (coverage 拡充)
-- **注意経路**: Q3 → Q4 (AI で量産) → Q1 (後から質を足す) — 上記 4 コストの累積で**最悪になりやすい**
+| 象限 | コードネーム | 状態の姿 | 特徴 | 次の手 |
+|---|---|---|---|---|
+| 🏆 **Q1** | **精鋭大軍** <br/>_Elite Army_ | 兵が多く、全員鋭い | mut ≥ 70% かつ cov ≥ 80%、assert 具体的 | 維持。PBT を増やして壁を厚くする |
+| 🎯 **Q2** | **少数精鋭** <br/>_Lean Elite_ | 少数だが全員鋭い | cov < 50% だが mut ≥ 70%、PBT 主体 | 未カバー領域に USS で 1 unit=1 test を追加 → Q1 |
+| 🌱 **Q3** | **白紙** <br/>_Blank Slate_ | まだ軍がいない | cov < 30%、mut < 50%、test ほぼ無 | PBT で pure 層を先に押さえる → Q2 |
+| 🎭 **Q4** | **張子の虎** <br/>_Paper Tiger_ | 兵は多いが張子 | cov > 80% だが mut < 50%、空 assert / snapshot-only / retry 吸収 | **増やすな、鋭くせよ**。既存 test を mutation-kill で refactor |
 
-### Q4 の検出シグナル (repo 特性で調整、複数合算で判定)
+### 移動経路 — 正道と注意経路
 
-以下は single threshold でなく**複数シグナルの合算**で判定。equivalent mutant 多発領域 (integration-heavy 等) では誤検知が出るため repo 特性で調整:
+```mermaid
+flowchart LR
+    Q3["🌱 Q3<br/>白紙<br/>(start)"] -->|① PBT 先行| Q2["🎯 Q2<br/>少数精鋭"]
+    Q2 -->|② USS で網羅拡大| Q1["🏆 Q1<br/>精鋭大軍<br/>★ goal"]
+    Q3 -.->|× 量産誘惑| Q4["🎭 Q4<br/>張子の虎<br/>⚠ trap"]
+    Q4 -.->|要 refactor| Q1
+    
+    style Q1 fill:#d4f4dd,stroke:#2d7a3e,stroke-width:3px
+    style Q2 fill:#fff4cc,stroke:#b8860b,stroke-width:2px
+    style Q3 fill:#e8e8e8,stroke:#666,stroke-width:2px
+    style Q4 fill:#ffd6d6,stroke:#b00020,stroke-width:3px
+```
 
-- line coverage > 80% かつ mutation score < 50% (目安、integration-heavy は閾値を甘くする)
+- **正道** (推奨): `Q3 → Q2 → Q1` — PBT で**鋭さ先行**、後から網羅拡大。test 1 本あたりの情報量が高く、maintenance cost も抑えられる
+- **注意経路** (AI で起きやすい): `Q3 → Q4 → Q1` — AI で test を量産 → 後から鋭さを足す。**runtime / flake / review surface / ownership の 4 コストが累積**し Q4 滞在で技術負債化しやすい
+
+### Q4 の典型的な症状 (複数シグナル合算で判定)
+
+Q4 は single threshold では判定不能。以下の**複数シグナル合算**で疑う (integration-heavy 等の特殊 domain は閾値調整):
+
+- line coverage > 80% なのに mutation score < 50%
 - `expect(result).toBeDefined()` 型の空 assertion が多数
-- snapshot-only test で具体的な値検証が無い
+- snapshot-only test で具体値検証が無い
 - `it('動作すること', ...)` など Subject / 期待値 不明な test 名
 - 1 ファイルに 30+ `it()` で `describe` 構造のみ乱立
-- 実装コピペ assertion (production code と同じ定数/式を assert に使う)
+- 実装コピペ assertion (production と同じ定数/式を assert に使う)
 - 過剰 mocking (production path の大半を mock で置換)
 - retry / timeout で flake を吸収し「緑」にしている
 
-### Q4 exit 戦略
+### verify skill が取る手段
 
-「test 追加」の前に「既存 test の **mutation-kill による強化**」を優先。量でなく**質の refactor**:
+| ステージ | 手段 | 対応する象限移動 |
+|---|---|---|
+| **入口ガード** | USS 原則、新規 `*.pbt.test.ts` 禁止、mutation gate、implementation-derived assert 禁止、mocking 最小化、retry 吸収禁止 | Q3 → Q4 への **drift を構造的に阻止** |
+| **鋭化ループ** | verify-loop (`/loop 10m /verify-loop`) で survived mutant を観察 → assert 追加 → 再観察 | Q4 → Q2 → Q1 へ **救出** |
+| **先回り保護** | PBT (`fast-check`) で pure 層を property で覆う | Q3 → Q2 への **ショートカット** |
+| **cross-model audit** | 軍師 (gpt-5.4) による AI 書き PR レビュー | Q4 drift の **遅延検出** |
 
-1. [`../verify-loop/README.md`](../verify-loop/README.md) で mutation を観測
-2. 生存 mutant を殺す assertion を**既存 test に埋め込む**ことを優先 (既存強化、ただし新性質・失敗モードなら新規 test も可)
-3. `expect().toBeDefined()` 等の空 assert を具体値検証に置換
-4. snapshot-only を output 構造の明示検証に置換
+### 結論
 
-### verify の Q4 prevention 設計 (組込み済、追加指針)
-
-takumi verify は Q4 drift を**書き始める時点**で抑止:
-- **USS 原則**: `it('{Subject} は {input} に対して {output} を返すべき')` で Subject / input / output の 3 点セットを強制 → 空 assert を書きにくい
-- **新規 `*.pbt.test.ts` 禁止**: 機構名での分割 (= AI の量産パターン) を禁止、既存 `{module}.test.ts` 内に統合 → ファイル数インフレ抑止
-- **mutation gate** (L4): 新 PR は mutation score 維持が要件 → 量で通そうとすると gate で止まる
-- **AI 書いた PR には L6 軍師レビュー** (cross-model) → 空 assertion 発見
-- **implementation-derived assertion 禁止**: 実装コピペの assert を review で弾く
-- **mocking 最小化**: production path を mock で置換する範囲を限定、境界 (I/O / 外部 API) のみ
-- **retry / timeout での flake 吸収禁止**: 緑化のための retry 設定を review で検出
-- **duplicate test clustering 検出**: 同じ Subject × 同じ input × 同じ output の test は 1 本に集約
-
-「**test を増やす skill**」ではない、「**test を鋭くする skill**」。Q4 への逃避を構造的に封じ、Q2 → Q1 の質重視経路を強制する。
+> **takumi verify は「test を増やす skill」ではない。「test を鋭くする skill」である。**
+>
+> Q4 (張子の虎) への逃避を構造的に封じ、Q3 → Q2 → Q1 の **質重視経路** を強制する。既存コードが Q4 にいる場合は、追加ではなく既存の mutation-kill による refactor で Q1 に救出する。
 
 ---
 
