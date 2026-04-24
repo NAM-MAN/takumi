@@ -81,7 +81,7 @@ corpus に依存して hit 率が大きく変動するため、単独の発動 t
 - **本質的に cross-model 比較**: arm A (Opus xhigh) vs arm C (GPT-5.4 max) の差は effort でなく model 系列差。Claude 内の xhigh vs max 比較は別 pilot が必要
 - **n=8 per arm**: bootstrap CI 未実行、effect size の信頼区間不明
 - **maintainer blind verdict 未実施**: false positive rate は未確定 (0 扱い)
-- **corpus 偏り**: manga ツール domain で auth/payment 語彙が少ない、general 結論には限界
+- **corpus 偏り**: 今回の pilot repo が特定ドメインで auth/payment 系語彙が希薄、general 結論には限界
 
 これらの limitation は `pilot-driven-development.md` の原則に従い明記し、将来の pilot で埋める。
 

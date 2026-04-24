@@ -125,7 +125,7 @@ Smoke で見つかる典型的な不備:
 
 ## 例
 
-- **pilot-max-review** (max 発動基準): 3 arm (xhigh / xhigh+max on critical keyword / all max) で critical defect recall を bootstrap CI で測定。採用時は `review-process.md` の placeholder を埋める
+- **pilot-max-review** (max 発動基準): 3 arm (xhigh / xhigh+max on critical keyword / all max) で critical defect recall を bootstrap CI で測定。結果は `review-process.md` に「選択的発動 policy」として反映済 (次回 pilot で更新可能)
 - **gepa-comparison** (GEPA 部分採用): GEPA-lite を tier-a.txt に限定して 3 世代進化、mutation score で採否判定
 
 どちらも `.takumi/drafts/` 配下 (gitignored、開発者ローカルのみ) に原案を置き、判定結果だけが skill に反映される設計。公開ファイルからは具体名で参照せず、運用フローの一般説明のみ行う。

@@ -1,10 +1,15 @@
-# Exclude developer-only guides from `git archive` / release tarballs.
-# These files stay in the git repository for forkers but are not part
-# of the distributed skill package.
+# Exclude developer-only guides and non-skill files from `git archive` / release
+# tarballs. These files stay in the git repository for forks and contributors
+# but are not part of the distributed skill package.
 #
 # Pattern note: `path/` alone does NOT recurse in .gitattributes.
 # Use `path/**` to match all files under the directory.
-docs/CONTRIBUTING/**  export-ignore
-.takumi/**            export-ignore
-CLAUDE.md             export-ignore
-.gitattributes        export-ignore
+docs/CONTRIBUTING/**                         export-ignore
+.takumi/**                                   export-ignore
+CLAUDE.md                                    export-ignore
+.gitattributes                               export-ignore
+
+# verify の examples/ は「参考コード」扱いで skill 本体には依存させないが、
+# 配布 tarball には含める (利用者が cp して改変する想定)。もし将来 examples を
+# 完全に repo 管理外にするなら以下のコメントアウトを外す:
+# skills/takumi/**/examples/**               export-ignore

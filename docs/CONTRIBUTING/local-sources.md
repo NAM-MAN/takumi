@@ -50,14 +50,17 @@ takumi リポジトリで作業している間の**情報源ルール**。drift 
 
 ## 自分が takumi リポジトリにいるかの判定
 
-以下のすべてに該当すれば確定:
+**主要条件** (以下のすべて):
 
-- `pwd` が `/.../takumi/` もしくはその配下
 - `CLAUDE.md` がこの内容を持つ (本ファイルを含むガイド)
-- `git remote -v` が `NAM-MAN/takumi` を示す
 - `skills/takumi/SKILL.md` が存在する
+- `docs/CONTRIBUTING/` 配下にガイド群がある
 
-1 つでも外れる場合 (別リポジトリで作業中、sandbox など) はこのルールは適用外。通常の Claude Code 運用に戻る。
+**補助情報** (fork でも true にならない可能性あり):
+- `git remote -v` が `NAM-MAN/takumi` を示す — upstream 判定の参考、fork では異なる remote を持つので必須条件ではない
+- `pwd` が `takumi/` または類似ディレクトリ
+
+主要 3 条件を満たせば fork でも本ガイドが適用される。1 つでも外れる場合 (別リポジトリで作業中、sandbox など) はこのルールは適用外。通常の Claude Code 運用に戻る。
 
 ---
 

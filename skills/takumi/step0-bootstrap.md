@@ -36,12 +36,18 @@ reports/stryker/
 
 ```
 .takumi/
-!.takumi/plans/                # PR に plan を添えてレビューする運用
-!.takumi/specs/                # AC-ID をチームの契約 (source of truth) に
-!.takumi/design/               # デザイン成果物の共有
-!.takumi/profiles/             # profiles/ ディレクトリ自体は unignore
-!.takumi/profiles/verify/      # チーム共通 verify 基準
-!.takumi/profiles/design/      # チーム共通 design 基準
+# ディレクトリの unignore は `!dir/` と `!dir/**` の両方が必要 (子ファイル再包含)
+!.takumi/plans/
+!.takumi/plans/**              # PR に plan を添えてレビューする運用
+!.takumi/specs/
+!.takumi/specs/**              # AC-ID をチームの契約 (source of truth) に
+!.takumi/design/
+!.takumi/design/**             # デザイン成果物の共有
+!.takumi/profiles/
+!.takumi/profiles/verify/
+!.takumi/profiles/verify/**    # チーム共通 verify 基準
+!.takumi/profiles/design/
+!.takumi/profiles/design/**    # チーム共通 design 基準
 .takumi/profiles/env.yaml      # ただし env.yaml (軍師 routing の user 固有 preference) は共有しない
 ```
 

@@ -91,7 +91,7 @@ executor とは別の **discovery orchestrator** が fan-out/fan-in を担う。
 | ロール | モデル | 担当 |
 |--------|--------|------|
 | 棟梁 | opus (自分) | 日本語インタビュー・計画作成・ディスパッチ |
-| 軍師 | gpt-5.4 (`codex exec`) | 深い思考: 設計分析・計画レビュー・判断 |
+| 軍師 | GPT-5.4 via `copilot` / `codex` / opus-max fallback (`executor.md` の 3-tier routing 参照) | 深い思考: 設計分析・計画レビュー・判断 |
 | 職人 | sonnet (Agent tool) | 実装: コーディング・テスト・修正 |
 | 斥候 | haiku (Agent tool) | 調査: コード検索・Web検索・ドキュメント |
 
