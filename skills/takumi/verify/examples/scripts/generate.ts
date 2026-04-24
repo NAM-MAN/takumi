@@ -153,10 +153,15 @@ async function main() {
   await runScript(path.join(__dirname, "score-metrics.ts"))
 
   if (mode === "drift") {
-    console.log("[drift] Stage 5 only: triangulation against Runtime / Spec")
-    // TODO: Runtime trace の読み取り + Spec 比較 (ここでは stub)
-    console.log("(drift stage: not implemented in reference script; see machine-generator.md Stage 5)")
-    return
+    // Stage 5 (drift detection / 3-view triangulation) はこの参考スクリプトでは
+    // 未実装。実装手順は machine-generator.md の "Stage 5" 節を参照し、project
+    // 側の Runtime trace 形式と Spec の格納先に合わせて書き下ろす必要がある。
+    console.error(
+      "[drift] Stage 5 is not implemented in this reference script.\n" +
+        "See skills/takumi/verify/machine-generator.md 'Stage 5' for the\n" +
+        "triangulation design (AST / Runtime / Spec) and adapt to your project."
+    )
+    process.exit(2)
   }
 
   const routes = JSON.parse(fs.readFileSync(ROUTES_FILE, "utf-8")).routes as any[]
