@@ -260,7 +260,7 @@ verify_contract_required: false  # Tier B 以上なら true
 - `tier_graduated`: UI state tier 昇格 (A→B 等)
 - `verify_contract_satisfied`: Tier B の actionPreconditions export が実際に verify から参照されているか (true/false)
 
-詳細 schema は `~/.claude/skills/takumi/telemetry-spec.md` と `telemetry-schema.md` (後日追加)。
+詳細 schema は `../telemetry-spec.md` と `telemetry-schema.md` (後日追加)。
 
 </details>
 
@@ -298,8 +298,8 @@ verify_contract_required: false  # Tier B 以上なら true
 | `verify-contracts.md` (同ディレクトリ) | Tier → verify archetype 対応 |
 | `language-relaxations.md` (同ディレクトリ) | Go / Rust / Python の緩和 |
 | `review-checklist.md` (同ディレクトリ) | 実装完了時の評価 checklist |
-| `~/.claude/skills/takumi/SKILL.md` | 呼出元 (refactor_profile_ref を書く) |
-| `~/.claude/skills/takumi/verify/README.md` | L1-L6 テスト戦略、Tier B の precondition 再利用 |
-| `~/.claude/skills/takumi/design/README.md` | takumi の design mode (創発寄り)。本 skill は制約寄り (対) |
+| `../SKILL.md` | 呼出元 (refactor_profile_ref を書く) |
+| `../verify/README.md` | L1-L6 テスト戦略、Tier B の precondition 再利用 |
+| `../design/README.md` | takumi の design mode (創発寄り)。本 skill は制約寄り (対) |
 
 </details>

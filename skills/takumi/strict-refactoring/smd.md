@@ -166,5 +166,5 @@ find src/ -name "*.bak" -o -name "*.old" -o -name "*.orig"
 | `rules-heuristics.md` (同ディレクトリ) | Rule 16 含む L2 heuristics の目次 |
 | `immutable-first.md` (同ディレクトリ) | Rule 17 / 18 / 20 / 17-D の implementation recipe と実測傾向 |
 | `review-checklist.md` (同ディレクトリ) | profile 別の hard/soft 適用マトリクス |
-| `~/.claude/skills/takumi/verify/compression.md` | test 側 MSS (production 版の対比元) |
-| `~/.claude/skills/takumi/verify/mutation.md` | Stryker 設定、subsumption 解析の JSON schema |
+| `../verify/compression.md` | test 側 MSS (production 版の対比元) |
+| `../verify/mutation.md` | Stryker 設定、subsumption 解析の JSON schema |

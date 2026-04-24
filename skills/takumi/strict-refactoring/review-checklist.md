@@ -165,4 +165,4 @@ tier_graduation_proposed:
 | `rules-heuristics.md` (同ディレクトリ) | L2 default heuristics 16 個 |
 | `rules-ui-state.md` (同ディレクトリ) | L3 / Tier 詳細 |
 | `verify-contracts.md` (同ディレクトリ) | actionPreconditions contract |
-| `~/.claude/skills/takumi/telemetry-spec.md` | `refactor_review_completed` event |
+| `../telemetry-spec.md` | `refactor_review_completed` event |

@@ -292,4 +292,4 @@ UI state modeling は React/Next.js 特化。他言語では:
 | `verify-contracts.md` (同ディレクトリ) | Tier → verify archetype 対応、actionPreconditions contract 詳細 |
 | `profiles.md` (同ディレクトリ) | ui-pending-object profile 詳細 |
 | `review-checklist.md` (同ディレクトリ) | Tier B/C/D の contract 評価 |
-| `~/.claude/skills/takumi/verify/model-based.md` | fc.commands / @xstate/test 詳細 |
+| `../verify/model-based.md` | fc.commands / @xstate/test 詳細 |

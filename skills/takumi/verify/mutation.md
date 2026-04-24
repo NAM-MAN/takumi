@@ -208,7 +208,7 @@ Mutant kill → mutation score 上昇
 
 ## Subsumption 解析 (MSS compression 用)
 
-Phase 2 Compression (`~/.claude/skills/takumi/verify/compression.md`) で test を削除判定するための前処理。
+Phase 2 Compression (`compression.md`) で test を削除判定するための前処理。
 
 `stryker.config.mjs` に JSON reporter を有効化:
 

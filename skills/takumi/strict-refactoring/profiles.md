@@ -179,4 +179,4 @@
 | `rules-heuristics.md` (同ディレクトリ) | L2 default heuristics 16 個 |
 | `rules-ui-state.md` (同ディレクトリ) | Tier 詳細、ui-pending-object で参照 |
 | `language-relaxations.md` (同ディレクトリ) | lang-relaxed-go-rust で参照 |
-| `~/.claude/skills/takumi/SKILL.md` | `/takumi` が refactor_profile_ref を自動推定 |
+| `../SKILL.md` | `/takumi` が refactor_profile_ref を自動推定 |

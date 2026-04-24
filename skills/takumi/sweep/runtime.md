@@ -240,7 +240,7 @@ resolved-backlog.md に対して triage と同じ手順を実行:
 2. executor パターン (takumi 内部ロール) で実行
 
 修正対象がテスト追加 / property 強化 / mutation score 向上を伴う場合は、
-**verify skill を内部呼び出し** する (`~/.claude/skills/takumi/verify/README.md`)。
+**verify skill を内部呼び出し** する (`../verify/README.md`)。
 職人 タスクとして「verify L1 を utils に適用」のように具体化して Wave に組み込む。
 
 </details>

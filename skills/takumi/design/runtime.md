@@ -242,7 +242,7 @@ wave 1 gate:
 ### 成果物の配置
 
 - **project 側**の `.takumi/design/` 配下に全て書く
-- 本 skill 配下 (`~/.claude/skills/takumi/design/`) に project 固有の成果物を置かない
+- 本 skill 配下 (インストール先の `design/` ディレクトリ) に project 固有の成果物を置かない
 - takumi の計画 task と verify 運用の両方から参照できる相対パス (`.takumi/design/...`) で統一
 
 ### ツール禁止事項
@@ -286,9 +286,9 @@ takumi への発話から design mode に入ると、内部的に以下のフェ
 | `phases-4-6.md` (同ディレクトリ) | Phase 4-6 の詳細手順と生成 snippet |
 | `l7-invariant.md` (同ディレクトリ) | L7 hard/soft/lint の検出・昇格・PBT テンプレ |
 | `profiles-defaults/*.yaml` (同ディレクトリ) | 4 design profile defaults (dashboard-dense / list-standard / form-heavy / landing) |
-| `~/.claude/skills/takumi/SKILL.md` | /takumi 連携 (Step 0d で呼出) |
-| `~/.claude/skills/takumi/verify/README.md` | verify との profile_ref 共有 |
-| `~/.claude/skills/takumi/telemetry-spec.md` | `layout_checked` event の emit |
+| `../SKILL.md` | /takumi 連携 (Step 0d で呼出) |
+| `../verify/README.md` | verify との profile_ref 共有 |
+| `../telemetry-spec.md` | `layout_checked` event の emit |
 
 </details>
 

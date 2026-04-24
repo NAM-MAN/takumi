@@ -200,7 +200,7 @@ Tier A-D は React/Next.js 特化なので、他言語では**直接 verify arch
 | `SKILL.md` (同ディレクトリ) | 本 skill entry point |
 | `rules-ui-state.md` (同ディレクトリ) | Tier A-D の設計詳細 |
 | `profiles.md` (同ディレクトリ) | refactor_profile 選定、ui-pending-object で参照 |
-| `~/.claude/skills/takumi/verify/README.md` | L1-L6、recipe library |
-| `~/.claude/skills/takumi/verify/model-based.md` | fc.commands / @xstate/test 詳細 |
-| `~/.claude/skills/takumi/test-strategy.md` | AC-ID → verify_profile_ref 選定 |
-| `~/.claude/skills/takumi/telemetry-spec.md` | `verify_contract_satisfied` event |
+| `../verify/README.md` | L1-L6、recipe library |
+| `../verify/model-based.md` | fc.commands / @xstate/test 詳細 |
+| `../test-strategy.md` | AC-ID → verify_profile_ref 選定 |
+| `../telemetry-spec.md` | `verify_contract_satisfied` event |

@@ -3,7 +3,7 @@
 `verify/spec-tests.md` §8 の MSS 原則 ("テストは最小かつ最鋭") を実運用に落とすための recipe 集。`verify-loop/runtime.md` の Phase 2 から呼ばれる。
 
 > [!IMPORTANT]
-> Compression は **L4 Mutation が primary tier (`~/.claude/skills/takumi/verify/mutation.md` 参照) の project のみ**適用する。advisory tier (Python / Go) では operator 覆盖が薄く subsumption 判定が信頼できないため、compression は適用せず Phase 1 の SHARPEN > ADD のみで運用する。
+> Compression は **L4 Mutation が primary tier (`mutation.md` 参照) の project のみ**適用する。advisory tier (Python / Go) では operator 覆盖が薄く subsumption 判定が信頼できないため、compression は適用せず Phase 1 の SHARPEN > ADD のみで運用する。
 
 ---
 
@@ -304,5 +304,5 @@ After:
 |---|---|
 | `spec-tests.md` (同ディレクトリ) | USS + MSS の原則 (§5, §8) |
 | `mutation.md` (同ディレクトリ) | Stryker 設定と reporter 種別 |
-| `~/.claude/skills/takumi/verify-loop/runtime.md` | Phase 1 (Expansion) / 2 (Compression) / 3 (Maintenance) の実装 |
+| `../verify-loop/runtime.md` | Phase 1 (Expansion) / 2 (Compression) / 3 (Maintenance) の実装 |
 | `README.md` (同ディレクトリ) | 7 原則の第 7 (MSS) |

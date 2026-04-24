@@ -20,7 +20,7 @@ description: "Mutation score 80% 到達を各レイヤー (A 純粋ロジック 
 10 分ごとに自動起動し、1 つのファイルに集中して、「テストの抜け穴」を塞いでいきます。純粋ロジック層 (A) から順に攻略し、全部で 5 層 (A→B→C→D→E) を走破します。
 
 > [!IMPORTANT]
-> verify-loop は tick 毎に mutation testing ツールの incremental 実行を前提とするため、**project 言語が L4 primary tier である必要があります** — 具体的には JS/TS (Stryker-JS) / Java/Kotlin (PIT) / C# (Stryker.NET) / Rust (cargo-mutants, `--in-diff` 必須) / Scala (Stryker4s) のいずれか。Python / Go は advisory tier (operator 覆盖が Stryker レベルに到達していない) のため verify-loop の対象外となります。その場合は L1 PBT の拡充ループを別途検討してください。tier 定義は `~/.claude/skills/takumi/verify/mutation.md` 「対応言語と tier」を参照。
+> verify-loop は tick 毎に mutation testing ツールの incremental 実行を前提とするため、**project 言語が L4 primary tier である必要があります** — 具体的には JS/TS (Stryker-JS) / Java/Kotlin (PIT) / C# (Stryker.NET) / Rust (cargo-mutants, `--in-diff` 必須) / Scala (Stryker4s) のいずれか。Python / Go は advisory tier (operator 覆盖が Stryker レベルに到達していない) のため verify-loop の対象外となります。その場合は L1 PBT の拡充ループを別途検討してください。tier 定義は `../verify/mutation.md` 「対応言語と tier」を参照。
 
 ---
 
