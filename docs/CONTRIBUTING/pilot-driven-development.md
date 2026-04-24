@@ -107,10 +107,10 @@ codex exec -m gpt-5.4 -s read-only -C "$(pwd)" \
 
 ## 例
 
-- **[pilot-max-review](../../.takumi/drafts/pilot-max-review.md)** (max 発動基準): 4 arm で critical defect recall を bootstrap CI で測定。パイロット実行中、結果待ち。採用時は `review-process.md` の placeholder を埋める
-- **[gepa-comparison](../../.takumi/drafts/gepa-comparison.md)** (GEPA 部分採用): GEPA-lite を tier-a.txt に限定して 3 世代進化、mutation score で採否判定。Wave 4 完了後に開始予定
+- **pilot-max-review** (max 発動基準): 3 arm (xhigh / xhigh+max on critical keyword / all max) で critical defect recall を bootstrap CI で測定。採用時は `review-process.md` の placeholder を埋める
+- **gepa-comparison** (GEPA 部分採用): GEPA-lite を tier-a.txt に限定して 3 世代進化、mutation score で採否判定
 
-どちらも `.takumi/drafts/` 配下 (export-ignore、gitignored) に原案があり、判定結果だけが skill に反映される設計。
+どちらも `.takumi/drafts/` 配下 (gitignored、開発者ローカルのみ) に原案を置き、判定結果だけが skill に反映される設計。公開ファイルからは具体名で参照せず、運用フローの一般説明のみ行う。
 
 ---
 
