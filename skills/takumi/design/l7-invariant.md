@@ -1,7 +1,43 @@
-# design mode L7 Layout Invariant 詳細 (3 層)
+# design mode L7 Layout Invariant 詳細 (3 層 + preflight)
 
 takumi の design mode 本体 (`design/README.md`) から参照される補助ドキュメント。画面生成後の検証は 3 層に分ける。
 **hard gate は最小限**に留め、それ以外は soft / lint に降ろす。
+
+## preflight (実装前 約束事)
+
+hard gate の**事前約束版**。hard gate が「実装後に壊れていないか検出して block」なのに対し、preflight は「実装着手前に観点を網羅確認」の checklist として定位。Phase 1-3 (style guide + component 設計) 完了時点で確認、fail 項目があれば Phase 5 ワイヤーフレームで補完してから実装へ。
+
+### preflight と hard gate の線引き
+
+| 観点 | preflight (事前約束) | hard gate (事後 block) |
+|---|---|---|
+| タイミング | Phase 1-3 完了時 | 実装完了後 (wave gate) |
+| 粒度 | 設計意図の存在 (token / 階層 / 状態) | 計算可能な固定閾値 (上表) |
+| fail 時 | 次 Phase 進行前に補完 | 即 block |
+| 観点 | hit area 基準は hard gate を参照 (primary action で余裕を取る推奨) | `interactive_hit_area_min_32px` (§hard gate 既存) |
+
+観点が hard gate と同系統のものは、**hard gate の既存閾値を準拠**する。preflight 独自の新閾値は設けない (数値競合を避ける)。
+
+### preflight 観点
+
+実装着手前に以下が style guide / component 設計 / interactions / wireframe のいずれかに存在するかを確認:
+
+- **grid**: 基準 grid を token で宣言 (4px / 8px など、具体値は style guide に従う)
+- **spacing 階層**: outer (section) と inner (element) で token 階層を分離
+- **action 強弱**: primary / secondary / destructive がスタイルで区別される
+- **focus ring**: 色・太さ・offset を token 化 (既存 stack の規範に従う)
+- **breakpoint**: desktop + mobile 最低 2 つを style guide で定義
+- **状態含有**: error / empty / loading がワイヤーフレームに描かれる
+- **typography scale**: h1/h2/body/caption 等が tokens に
+- **semantic color**: success / warning / danger / info を brand から inference、token 化
+- **hit area**: primary action は余裕を取る (既存 hard gate `interactive_hit_area_min_32px` が下限、より厳しい目安は project profile で設定可)
+- **overflow 対策**: text-heavy 要素で truncate / wrap / scroll の方針明示
+- **aria-\***: form / interactive で命名指針
+- **motion-reduce**: `prefers-reduced-motion` fallback が interactions.md に
+
+**運用**: preflight fail 項目がある状態で Phase 4-6 に進むと、後続の hard gate fail 確率が高まる。「実装後に発見する defect は予防可能だったもの」という視点で事前チェック。
+
+動的 UI (progressive disclosure / hover / drag / animation / dark / print / zoom / i18n) への波及は preflight の対象外 (適用範囲は「静的・初期表示 UI」)。動的 UI 補助 check は別途 component 実装時の invariant テストに残す。
 
 ## hard gate (5-7 項目)
 

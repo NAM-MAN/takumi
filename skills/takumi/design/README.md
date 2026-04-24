@@ -111,6 +111,21 @@ Phase 1 から 6 まで、デザインの工程を順に進めます。
 
 これらはエコシステムが大きく、Claude や他の AI もよく知っています。「このライブラリ、このバージョンだと動かない」という事故を避けるために、**固定することで品質を担保**しています。
 
+> [!IMPORTANT]
+> **AI prior の前提** (pilot 測定上の注記、runtime stack 選択とは独立)
+>
+> 本 skill の prevention 規範 (L7 preflight / Phase 6.5 self-review 等) は、AI 事前学習に既に埋め込まれた知識に **加算** される増分 policy です。
+>
+> - `無追加ガード` の baseline は実質測定不能 (AI prior が常時漏れるため)
+> - 本 skill の効果を測るなら "incremental uplift" のみが妥当な評価軸
+> - AI prior は上記 **固定 stack (shadcn/ui + Tailwind + framer-motion + lucide-react) を前提として最も強く効く** (同 stack で学習された事例が多いため)
+>
+> 本 box は **pilot 比較の文脈での注記** であり、上記の **stack 固定契約を一切変更しません**。新 project では必ず固定 stack を採用してください。
+
+### Phase 1-6 + Phase 6.5 (実装後 self-review)
+
+上記 Phase 1-6 は **設計工程** (サイトマップ / スタイルガイド / component / 相互作用 / ワイヤーフレーム / takumi 連携)。実装完了直後には補助工程として **Phase 6.5: AI self-review (素人視点の limited-round 自己検証)** を挟む (詳細は `phases-4-6.md`)。Phase 6.5 は正式 Phase 1-6 の外側に置く補助工程 (実装後監査)、検証系 (verify の L5 Smoke / L6 AI Review) との棲み分けは Phase 6.5 節と `verify/README.md` 参照。
+
 ### 6. verify スキルと同時にゲート評価
 
 design スキルの L7 Hard Gate は、テスト戦略スキル (verify) の mutation gate と**同時に**評価されます。

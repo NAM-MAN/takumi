@@ -191,6 +191,52 @@ design_profile_ref: dashboard-dense
 **profile 本体を task に埋め込まない**。名前参照のみ。複数 task で同じ profile を
 共有することで一貫性が担保される (drift 検出も profile 単位で効く)。
 
+## Phase 6.5: 実装後 self-review (AI self-check、deterministic な限定 round)
+
+実装が完了した直後 (PR 提出前) に、AI 自身で素人視点 checklist を **limited round** だけ自己検証する補助工程。
+
+### 役割と L6 AI Review との棲み分け
+
+- **Phase 6.5 self-review**: 実装者が自分の成果物を「素人ユーザー視点」で監査。規範は実装規範と分離し、「初見の違和感」に絞る (token 厳密性でなく体感的な不便)。
+- **verify/ai-review.md の L6 AI Review**: PR 直前の広範 oracle review (bug / test coverage / security 等の技術規範)。
+- 呼び出し順序: Phase 6 実装完了 → **Phase 6.5 self-review** → L6 AI Review → PR。
+
+### 素人視点 checklist (観点のみ列挙、数値は既存 L7 hard gate を準拠)
+
+素人が初見で使って気付く違和感に焦点を絞った観点を self-review の checklist とする (project profile で具体数値を決める)。数値が必要な項目は **L7 hard gate の既存閾値を準拠**、checklist 独自の新閾値は設けない:
+
+- **grid / spacing 階層**: token grid からの逸脱ゼロ、outer と inner が階層分離
+- **typography scale / semantic color**: tokens.yaml 通り
+- **focus visible / contrast / hit area**: 既存 L7 hard gate 準拠 (数値は `l7-invariant.md` §hard gate 参照)
+- **toast / anchor / sticky の非重複**: error toast が入力を覆わない、sticky header が target を隠さない、overlay 重なりなし
+- **empty / loading / error の 3 状態**: ワイヤーフレーム時に約束した 3 状態が実装に反映
+- **responsive overflow**: モバイル view で horizontal scroll なし
+- **disabled pointer / arbitrary value**: 無効要素で click 非発火、token 外の arbitrary 値ゼロ
+- **motion-reduce**: `prefers-reduced-motion` 尊重
+
+具体的な checklist 項目数・数値・gate 強度は **project profile** (`.takumi/profiles/design/*.yaml`) で定義する。本 skill 側には **抽象規範のみ** (観点の taxonomy) を置く。
+
+### round state machine (曖昧さ排除)
+
+```
+impl_freeze → review_pass → post_review_edit → final_freeze
+```
+
+- **default**: `impl_freeze → review_pass → post_review_edit (0 or 1 回) → final_freeze` の **限定 round**
+- **escalation 許可条件**: 素人視点 checklist のうち **既存 L7 hard gate に該当する観点** が fail した場合に限り、追加 round を許可
+- **soft gate 系の残違反**: 限定 round 内で打ち切り、未修正項目は PR description に記録 (修正は後続 task で)
+- **round 消費判定**: review 後にコード diff が発生すれば round 消費、review note のみ生成は非消費
+
+具体的な round 上限 (default round 数 / escalation 時の最大 round 数) は project profile で定義。本 skill は「limited round で過剰 iteration を防ぐ」原則のみ記載。
+
+### implementation / review time 計測 (運用注記)
+
+orchestrator event log で自動計測する場合:
+- `implementation_time`: Phase 4-6 着手から最初の `impl_freeze` (artifact hash 確定) まで
+- `review_loop_time`: `review_pass` 発火から `final_freeze` までの全コード diff 時間
+
+人手申告は避け、自動計測に徹する。
+
 ## 関連リソース
 
 | file | 用途 |
