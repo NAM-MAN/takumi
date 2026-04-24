@@ -28,7 +28,28 @@ reports/stryker/
 ```
 
 > [!IMPORTANT]
-> `.takumi/` は計画・状態・telemetry を含むローカル作業領域であり、**リポジトリに commit しない**。tick config が大量に git 管理下に残る実例 (`stryker.tick79.config.mjs` 等が 10+ 個追跡される) を構造的に防止するためのガード。ただし project 側で `.takumi/specs/*.md` (AC-ID の正本) を共有したい場合は個別に unignore する判断もあり得る。
+> `.takumi/` は計画・状態・telemetry を含むローカル作業領域で、**default は全体 ignore**。tick config が大量に git 管理下に残る実例 (`stryker.tick79.config.mjs` 等が 10+ 個追跡される) を構造的に防止するためのガード。
+
+### チーム運用で個別 unignore する場合
+
+以下のサブディレクトリはチームで共有したい場合、`.gitignore` に例外行を追加する:
+
+```
+.takumi/
+!.takumi/plans/        # PR に plan を添えてレビューする運用
+!.takumi/specs/        # AC-ID をチームの契約 (source of truth) に
+!.takumi/design/       # デザイン成果物の共有
+!.takumi/profiles/     # チーム共通の verify/design/refactor 基準
+```
+
+**絶対 ignore を維持するもの** (unignore しない):
+- `sprints/` — セッション固有の発見ログ、共有すると雑音
+- `telemetry/` — 内部メトリクス、個人環境差が残る
+- `control/` — 一時停止フラグ、session で使い捨て
+- `drafts/` / `notepads/` — 作業中の走り書き
+- `state.json` / `discovery-calibration.jsonl` — session state
+
+判断基準: 「他開発者 or 未来の自分が読んで得をするか」が Yes のものだけ unignore。個人開発では全部 default (ignore) のままが自然。
 
 ## 他言語プロジェクトでの補足
 
