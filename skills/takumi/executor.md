@@ -24,6 +24,92 @@ Anthropic 公式指針 ([blog](https://claude.com/blog/best-practices-for-using-
 
 ロールは「呼ぶ義務」ではなく「必要なら呼べる道具」。`max` effort は真に難しい問題 (arch 決定 / 複雑な security 判断 / legacy 大改修) のみ使用、overthinking リスクあり。
 
+### 軍師 routing (3-tier + quota rotation)
+
+軍師は **GPT 系列によるクロスモデルレビュー** が本質。以下 3 tier の **available なものから user が preference を設定**する。毎回 quota を自動チェックするのは重いので「雑に切り替え」モデルを採用:
+
+| tier | ツール | モデル | 特性 |
+|---|---|---|---|
+| **copilot** | `copilot` (Copilot Pro) | gpt-5.4 | 定額・月次クォータ。新規受付は停止中、既存契約者のみ |
+| **codex** | `codex exec` (ChatGPT Plus) | gpt-5.4 | 従量またはクォータ制、新規契約可能 |
+| **opus-max** | Opus 4.7 max 自己レビュー | — | 常に利用可だが**劣化 mode** (同モデル系列 cross-model diversity なし)。critical MUST のみ最終手段 |
+
+### 切り替え方針 (user-declared preference)
+
+**両方持ちのユーザーがよくいる**: 月初は copilot (定額で実質無料)、使い切ったら codex (従量)、翌月また copilot、という rotation が現実的な使い方。
+
+- 自動クォータ検出は**しない** (毎回 API 叩くオーバーヘッドと複雑さが cost に見合わない)
+- user が preference を declare、takumi はそれを使う
+- 切り替えは**自然言語**: 「軍師を codex に切り替えて」「gunshi copilot」等の発話を `.takumi/profiles/env.yaml` 更新に mapping
+- preference が unavailable なら次善策に自動 fallback (user への通知付)
+
+### 検出と preference (`.takumi/profiles/env.yaml`)
+
+Step 0 で 1 度だけ**検出**、user が**preference** 設定:
+
+```yaml
+gunshi:
+  detected_at: 2026-04-24T...
+  availability:
+    copilot: true | false       # `command -v copilot` 結果
+    codex:   true | false       # `command -v codex` 結果
+  preference: copilot | codex | opus-max  # user 宣言 (null なら available 順で自動)
+  last_switched_at: 2026-04-24T...         # 切替日時 (月次 rotation の参考用)
+```
+
+初回 detection 後、preference が null の場合の既定順:
+1. availability.copilot → `copilot`
+2. availability.codex → `codex`
+3. どちらも false → `opus-max` (警告付)
+
+user が「軍師を codex に切り替えて」と言ったら preference を書き換え、以降はそれを使う。availability が false の tier に切り替え要求があれば拒否 + 警告。
+
+### 軍師 発火基準 (cost-aware)
+
+全タスクで軍師を呼ぶのは過剰。重要度で階層化:
+
+| 重要度 | 発火 | 使う Tier |
+|---|---|---|
+| **MUST** — 公開レビュー / pilot 実験設計 / breaking change / semver major | 必須 | available 最上位 (1→2→3) |
+| **SHOULD** — 大規模 plan / critical keyword 含む diff | 既定 on、user opt-out 可 | 同上 |
+| **MAY** — 中規模 plan / 設計検証 | 既定 off、user opt-in | Tier 1 のみ、なければ skip |
+| **SKIP** — 小規模 / ルーチン | 呼ばない | — |
+
+Tier 3 (opus-max) は MUST タスクでのみ「最後の手段」として起動する。劣化 mode なので結果に `⚠ opus-max fallback` を明記。
+
+### 各 tier の呼出パターン (exact syntax)
+
+```bash
+# copilot (Copilot Pro)
+# -p: プロンプト / --silent: ログ抑制して応答のみ / --cwd: 作業 dir
+# --available-tools で read-only 相当 (view/grep/glob/web_fetch のみ許可)
+copilot -p "{プロンプト}" \
+  --model gpt-5.4 \
+  --cwd "$(pwd)" \
+  --available-tools="view,grep,glob,web_fetch" \
+  --silent \
+  > .takumi/notepads/{name}/oracle-task-{N}.md
+```
+
+```bash
+# codex exec (ChatGPT Plus)
+codex exec -m gpt-5.4 -s read-only -C "$(pwd)" \
+  -o .takumi/notepads/{name}/oracle-task-{N}.md \
+  "{プロンプト}" 2>&1 | tail -100
+```
+
+```bash
+# opus-max 自己レビュー (fallback、劣化 mode)
+# 棟梁 (Opus 4.7 main session) が自身に指示を出す:
+#   「以下を max effort で敵対的に自問自答してください。
+#    cross-model 確認ではないため同系列の盲点が残る可能性に注意:
+#    {プロンプト}」
+# 結果を .takumi/notepads/{name}/oracle-task-{N}.md に書き出し、
+# 冒頭に "⚠ Tier: opus-max self-review (degraded mode)" を明記。
+```
+
+これらの tier の quality 等価性は `.takumi/drafts/pilot-gunshi-routing.md` で pilot 検証予定 (Wave 4 と並行実施可)。
+
 ## Step 0 — 計画読み込み
 
 1. `.takumi/state.json` を読む
@@ -52,6 +138,8 @@ Agent tool:
 ```
 
 **軍師 (gpt-5.4)** — レビュー・設計判断:
+以下は **Tier 2 (codex exec)** の例。他 tier の選択は上記「軍師 routing」参照。
+
 ```bash
 codex exec -m gpt-5.4 -s read-only -C "$(pwd)" \
   -o .takumi/notepads/{name}/oracle-task-{N}.md \

@@ -47,6 +47,20 @@
 
 `/takumi` が意図を認識して `.takumi/control/` の override ファイルを作成・削除する。人間は直接ファイル編集しない。
 
+## 軍師 routing の切替 (quota rotation)
+
+両方持ちの user が月次クォータを rotate させる想定 (詳細は `executor.md` 参照):
+
+| 発話 | 動作 |
+|---|---|
+| 「軍師を codex に切り替えて」「gunshi codex」 | `.takumi/profiles/env.yaml` の `preference` を `codex` に |
+| 「軍師を copilot に」「gunshi copilot」 | 同 `copilot` に |
+| 「軍師を opus-max に」「gunshi opus」 | 同 `opus-max` に (劣化 mode warning 付) |
+| 「軍師今どっち?」「gunshi status」 | 現在 preference と availability を提示 |
+| 「軍師 auto」「preference リセット」 | preference を null に戻す (availability 順の自動) |
+
+availability が false な tier への切替要求は拒否 + 警告 (「codex は未インストールです、`gh extension install` で導入するか preference を別に」)。クォータ枯渇の自動検出はしない — user が「切れた」と言ったタイミングで切り替える雑運用。
+
 ## 意図認識の曖昧さ対策
 
 `/takumi` が発話の意図を即断できない場合の挙動:

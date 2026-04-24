@@ -47,3 +47,28 @@ mutants.out.old/
 ```
 
 profile の `mutation_tool` field に応じて takumi が初回に提案する。
+
+## 軍師 routing の availability 検出 (初回のみ)
+
+利用者環境で使える GPT 系列 CLI を検出し `.takumi/profiles/env.yaml` に保存。詳細は `executor.md` の「軍師 routing (3-tier + quota rotation)」節:
+
+```bash
+mkdir -p .takumi/profiles
+{
+  echo "gunshi:"
+  echo "  detected_at: $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+  echo "  availability:"
+  command -v copilot > /dev/null && echo "    copilot: true" || echo "    copilot: false"
+  command -v codex   > /dev/null && echo "    codex: true"   || echo "    codex: false"
+  echo "  preference: null  # 'copilot' / 'codex' / 'opus-max'。null なら availability 順で自動選択"
+  echo "  last_switched_at: null"
+} > .takumi/profiles/env.yaml
+```
+
+**primary_tier は user 宣言**: detection だけでは決めない (毎回クォータを見ない運用)。両方持ちで月次 rotate する user が典型的なので、`preference` を自然言語で切り替える方式を採る:
+
+- 「軍師を codex に切り替えて」「gunshi copilot」「gunshi を opus に」等の発話 → `preference` 書き換え
+- availability が false の tier に切替要求 → 拒否 + 警告
+- preference が null のまま実行 → availability 順で自動 (copilot > codex > opus-max)
+
+どちらの CLI も無い利用者 (opus-max のみ) には、棟梁が「cross-model 効果が損なわれるため Copilot Pro か ChatGPT Plus の契約を推奨」と warning を出す (強制はしない)。

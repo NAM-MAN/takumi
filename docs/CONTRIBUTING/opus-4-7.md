@@ -62,6 +62,32 @@
 
 ---
 
+## 軍師 (cross-model review) の選択
+
+takumi の 軍師 ロールは GPT 系列による cross-model 敵対的レビュー。利用者環境で 3 tier から選択:
+
+- **`copilot`** (Copilot Pro) — 定額、GPT-5.4、既存ユーザーのみ (新規停止中)
+- **`codex`** (ChatGPT Plus) — 従量または月次、安定
+- **`opus-max`** 自己レビュー — 常に利用可、ただし **劣化 mode** (同モデル系列のため盲点分離効果が激減)
+
+### quota rotation (両方持ちの user)
+
+両方契約してクォータを monthly rotate させる利用パターンが典型的 (「月初 copilot 使い切り→ codex に移行→翌月 copilot 復活」)。takumi は **quota を自動チェックせず user preference で切替**:
+
+- `.takumi/profiles/env.yaml` の `preference` フィールドに宣言
+- 自然言語で切替: 「軍師を codex に切り替えて」「gunshi copilot」等
+- クォータが尽きたと気付いたら user が切り替える (自動検知しない)
+
+発火基準 (cost-aware):
+- **MUST** (公開レビュー / pilot 設計 / breaking change): available 最上位で必ず実行
+- **SHOULD** (大規模 plan / critical change): 既定 on、current preference 使用
+- **MAY** (中規模): Tier 1/2 のみ、opus-max なら skip
+- **SKIP** (小規模 / ルーチン): 呼ばない
+
+詳細 (exact 呼出構文 / detection / quota rotation) は `skills/takumi/executor.md` の「軍師 routing (3-tier + quota rotation)」節を参照。
+
+---
+
 ## adaptive thinking のプロンプト誘導
 
 固定 budget 指定は効かなくなったが、**自然言語での誘導は依然有効**:
