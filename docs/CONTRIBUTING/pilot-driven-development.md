@@ -29,7 +29,7 @@
 
 ### 2. 評価基準の設計 + 軍師レビュー
 
-- **primary metric**: scoreable で gaming されにくいもの (例: mutation score、critical defect recall、false positive rate)
+- **primary metric**: scoreable で gaming されにくいもの (例: mutation score、critical defect の seed 検出率 or per-trial average、false positive rate)。「recall」的な指標は既知 ground truth が無い実 PR 相手だと ill-defined になりやすいので、件数ベースの average か bounded rate (0-1) を使う
 - **adoption threshold**: 採用となる条件 (例: `primary_metric(new) >= baseline * 1.15`)
 - **rejection threshold**: 即中断する条件 (例: fp_rate が +25pt 超過)
 - **中間判定**: 途中で止めるかを決める chekpoint
@@ -125,7 +125,7 @@ Smoke で見つかる典型的な不備:
 
 ## 例
 
-- **pilot-max-review** (max 発動基準): 3 arm (xhigh / xhigh+max on critical keyword / all max) で critical defect recall を bootstrap CI で測定。結果は `review-process.md` に「選択的発動 policy」として反映済 (次回 pilot で更新可能)
+- **pilot-max-review** (max 発動基準): 3 arm (xhigh / xhigh+max on critical keyword / all max) で critical defect の per-trial average と seed 検出率を bootstrap CI で測定。結果は `review-process.md` に「選択的発動 policy」として反映済 (ヒューリスティックと明示、次回 pilot で個別 trigger の有効性検証予定)
 - **gepa-comparison** (GEPA 部分採用): GEPA-lite を tier-a.txt に限定して 3 世代進化、mutation score で採否判定
 
 どちらも `.takumi/drafts/` 配下 (gitignored、開発者ローカルのみ) に原案を置き、判定結果だけが skill に反映される設計。公開ファイルからは具体名で参照せず、運用フローの一般説明のみ行う。
