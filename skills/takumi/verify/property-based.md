@@ -9,9 +9,9 @@ example test の入力空間を AI が網羅する仕組み。
 > 機構名は test 名に漏らさない (`PBT:`, `P1`, `property:` 等は禁止)。
 
 > [!NOTE]
-> **PBT は verify-loop 不要で mutation 鋭さを底上げする唯一の手段**。1 つの `fc.property` が 100 通りの random input で 1 tick に mutant を**一撃 kill** できる (verify-loop が 1 tick 1 mutant なのと対照的)。
+> **PBT は verify-loop の負荷を大幅に減らす**。1 つの `fc.property` が 100 通りの random input で多数の mutant を**一撃 kill** できる (verify-loop が 1 tick 1 mutant なのと対照的)。ただし **loop を完全に不要にはしない** — property 自体の弱さ検証 (meta-property) や generator bias の補正には mutation feedback loop が依然必要。
 >
-> **PBT で loop を代替できる条件** (すべて満たす時):
+> **PBT で loop 回数を最小化できる条件** (すべて満たす時):
 > - **pure function** (副作用なし、state を持たない)
 > - **input space が有界か定義可能** (`fc.integer`, `fc.array`, `fc.string` 等で覆える)
 > - **output の性質 (property) が言語化可能** (上の決定木のどれかに当てはまる)

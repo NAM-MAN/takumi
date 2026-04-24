@@ -32,42 +32,51 @@
 
 ### verify skill の主目的: **Q4 → Q1 への移動 + Q4 drift の prevention**
 
-**Q4 (多量 test × 低 mutation) は最悪の状態**で、AI 時代特有のアンチパターン:
+**Q4 (多量 test × 低 mutation) は AI 時代に頻度上昇する anti-pattern**:
 
-- 人間が test を書いていた era では執筆コストが高く Q4 は稀だった
-- **AI は test を安価に量産できる** ため、ガードなしでは Q4 が default 化する
-- Q4 repo は「**仕事した感**」の外観 (大量 test、高 coverage) と裏腹に**バグ検出力がほぼゼロ**
-- 一度 Q4 に入ると、大量 test の maintenance cost を払い続けながら価値を生まない **技術負債経路**
+- 人間起源でも fixture-heavy E2E、legacy snapshot、compliance test 群で Q4 に陥る repo は存在する
+- **AI は test を安価に量産できる** ため、ガードなしでは Q4 が default 化しやすく頻度が上昇
+- Q4 repo は「**仕事した感**」の外観 (大量 test、高 coverage) と裏腹に**見かけの coverage の割にバグ検出力が低い**
+- Q4 滞在は **runtime / flake / review surface / ownership の 4 コストを累積する**ため、経験則的に技術負債化しやすい (規模・flake 率次第で影響度は変わる)
 
-### 経路の原則
+### 経路の原則 (経験則)
 
 - **正道**: Q3 → Q2 (PBT で地力) → Q1 (coverage 拡充)
-- **Anti-pattern**: Q3 → Q4 (AI で量産) → Q1 (後から質を足す) — maintenance cost 累積で最悪
+- **注意経路**: Q3 → Q4 (AI で量産) → Q1 (後から質を足す) — 上記 4 コストの累積で**最悪になりやすい**
 
-### Q4 の検出シグナル (「AI が書いた test」臭)
+### Q4 の検出シグナル (repo 特性で調整、複数合算で判定)
 
-以下 1 つでも該当したら Q4 疑い:
-- line coverage > 80% かつ mutation score < 50%
+以下は single threshold でなく**複数シグナルの合算**で判定。equivalent mutant 多発領域 (integration-heavy 等) では誤検知が出るため repo 特性で調整:
+
+- line coverage > 80% かつ mutation score < 50% (目安、integration-heavy は閾値を甘くする)
 - `expect(result).toBeDefined()` 型の空 assertion が多数
 - snapshot-only test で具体的な値検証が無い
 - `it('動作すること', ...)` など Subject / 期待値 不明な test 名
 - 1 ファイルに 30+ `it()` で `describe` 構造のみ乱立
+- 実装コピペ assertion (production code と同じ定数/式を assert に使う)
+- 過剰 mocking (production path の大半を mock で置換)
+- retry / timeout で flake を吸収し「緑」にしている
 
 ### Q4 exit 戦略
 
-「test 追加」ではなく「既存 test の **mutation-kill による強化**」。量でなく**質の refactor**:
+「test 追加」の前に「既存 test の **mutation-kill による強化**」を優先。量でなく**質の refactor**:
+
 1. [`../verify-loop/README.md`](../verify-loop/README.md) で mutation を観測
-2. 生存 mutant を殺す assertion を既存 test に**埋め込む** (新規 test 追加ではない、重複になる)
+2. 生存 mutant を殺す assertion を**既存 test に埋め込む**ことを優先 (既存強化、ただし新性質・失敗モードなら新規 test も可)
 3. `expect().toBeDefined()` 等の空 assert を具体値検証に置換
 4. snapshot-only を output 構造の明示検証に置換
 
-### verify の Q4 prevention 設計 (既に組込み済)
+### verify の Q4 prevention 設計 (組込み済、追加指針)
 
 takumi verify は Q4 drift を**書き始める時点**で抑止:
 - **USS 原則**: `it('{Subject} は {input} に対して {output} を返すべき')` で Subject / input / output の 3 点セットを強制 → 空 assert を書きにくい
 - **新規 `*.pbt.test.ts` 禁止**: 機構名での分割 (= AI の量産パターン) を禁止、既存 `{module}.test.ts` 内に統合 → ファイル数インフレ抑止
 - **mutation gate** (L4): 新 PR は mutation score 維持が要件 → 量で通そうとすると gate で止まる
 - **AI 書いた PR には L6 軍師レビュー** (cross-model) → 空 assertion 発見
+- **implementation-derived assertion 禁止**: 実装コピペの assert を review で弾く
+- **mocking 最小化**: production path を mock で置換する範囲を限定、境界 (I/O / 外部 API) のみ
+- **retry / timeout での flake 吸収禁止**: 緑化のための retry 設定を review で検出
+- **duplicate test clustering 検出**: 同じ Subject × 同じ input × 同じ output の test は 1 本に集約
 
 「**test を増やす skill**」ではない、「**test を鋭くする skill**」。Q4 への逃避を構造的に封じ、Q2 → Q1 の質重視経路を強制する。
 

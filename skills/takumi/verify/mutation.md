@@ -4,12 +4,12 @@
 **coverage は「実行された」だけ。mutation score は「検証された」を測る**。
 
 > [!CAUTION]
-> **Stryker (および他 mutation tool) は measurement (測定器) であって sharpener ではない**。単発で実行しても「どの mutant が生き残ったか」を**観測する**だけで、test は鋭くならない。**鋭くするには以下のどちらかが必要**:
+> **Stryker (および他 mutation tool) は measurement (測定器) であって sharpener ではない**。単発で実行しても「どの mutant が生き残ったか」を**観測する**だけで、test 自体は鋭くならない。**ただし単発結果を人間 or AI が読んで assertion を修正する行為は sharpening そのもの**。単発 Stryker を使った手動改善を**ループの 1 周**と位置づけるのが正確。継続的に鋭くするには以下のいずれか:
 >
-> 1. **ループ** (Stryker 実行 → survived 観察 → test 追加 → 再実行) を回す → 専用 skill は **[`verify-loop`](../verify-loop/README.md)** (`/loop 10m /verify-loop` で継続回し)
-> 2. **PBT (Property-Based Testing)** で pure function 層を先回り保護 → 多くの mutant を property で一撃 kill、ループ不要 → `property-based.md`
+> 1. **ループ自動化** (Stryker 実行 → survived 観察 → test 追加 → 再実行) → 専用 skill は **[`verify-loop`](../verify-loop/README.md)** (`/loop 10m /verify-loop` で継続回し)
+> 2. **PBT (Property-Based Testing)** で pure function 層を先回り保護 → 1 つの property で多数の mutant を一撃 kill、**loop を減らせる** (不要にはしない、property 自体の弱さ検証や generator bias 補正では feedback loop が必要) → `property-based.md`
 >
-> **運用指針**: pure 層は PBT、状態を持つ層は verify-loop、それでも残る隙間は hand-written。**単発 Stryker で sharpening を期待しない**。単発の役割は「鋭さが落ちていないかの監視」「release gate」のみ。
+> **運用指針**: pure 層は PBT、状態を持つ層は verify-loop、それでも残る隙間は hand-written。**単発 Stryker で完了を期待しない**。単発の役割は「鋭さが落ちていないかの監視」「release gate」、および「手動改善の 1 周の起点」。
 
 ---
 
