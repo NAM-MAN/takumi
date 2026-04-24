@@ -29,14 +29,16 @@
 
 ```mermaid
 quadrantChart
-    title テスト品質マトリクス (量 x 鋭さ)
-    x-axis 量が少ない --> 量が多い
-    y-axis 鋭さが低い --> 鋭さが高い
-    quadrant-1 Q1 精鋭大軍 Elite Army
-    quadrant-2 Q2 少数精鋭 Lean Elite
-    quadrant-3 Q3 白紙 Blank Slate
-    quadrant-4 Q4 張子の虎 Paper Tiger
+    title Test Quality Matrix
+    x-axis Low Volume --> High Volume
+    y-axis Low Sharpness --> High Sharpness
+    quadrant-1 Q1 Elite Army
+    quadrant-2 Q2 Lean Elite
+    quadrant-3 Q3 Blank Slate
+    quadrant-4 Q4 Paper Tiger
 ```
+
+> 軸: x = 量 (coverage)、y = 鋭さ (mutation score)。日本語は下の象限プロフィール表で扱います (mermaid quadrantChart の title/axis は非 ASCII でパーサが落ちるため英字に統一)。
 
 （mermaid 非対応 viewer 向け ASCII 版）:
 
