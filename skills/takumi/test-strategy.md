@@ -82,7 +82,11 @@ plan author は可能な限り ac_class を明示する運用を推奨。
 複数ヒット時は優先順で 1 つに収束。
 
 ### C. 曖昧 — 軍師 判定
-A / B で決まらなければ 軍師 (gpt-5.4) に 1 行 archetype 名だけ返させる:
+
+> [!NOTE]
+> **軍師モデル表記**: 以下の `-m gpt-5.4` は guaranteed baseline。`.takumi/profiles/env.yaml` の `preference.model: auto` 時、ChatGPT Plus user の runtime は **gpt-5.5** が選ばれる (詳細: `executor.md` の「GPT-5.5 upgrade path」)。
+
+A / B で決まらなければ 軍師 (GPT-5.x) に 1 行 archetype 名だけ返させる:
 
 ```bash
 codex exec -m gpt-5.4 -s read-only -C "$(pwd)" "以下の AC を 5 archetype に分類せよ。

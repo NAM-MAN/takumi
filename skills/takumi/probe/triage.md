@@ -8,7 +8,7 @@
 | ロール | モデル | 担当 |
 |--------|--------|------|
 | 棟梁 | opus (自分) | 重複排除・MECE分類・ICE採点・統合 |
-| 軍師 | gpt-5.4 (`codex exec`) | 反論者チェック |
+| 軍師 | GPT-5.x (`codex exec`、env.yaml driven; baseline 5.4、auto で Plus user は 5.5、詳細: `~/skills/takumi/executor.md`「GPT-5.5 upgrade path」) | 反論者チェック |
 | 斥候 | haiku (Agent tool) | 必要に応じた追加調査 |
 
 ## ファイル
@@ -104,6 +104,7 @@ discoveries.md を読み、以下の基準で重複を統合:
 
 ICEスコア上位20件を 軍師 に渡し、反論を求める:
 
+<!-- 例示は guaranteed baseline (gpt-5.4)。env.yaml の preference.model: auto 時、Plus user の runtime は gpt-5.5。 -->
 ```bash
 # 課題リストを1行1課題で変数に入れる（プロンプトに直接埋め込む）
 codex exec -m gpt-5.4 -s read-only -C "$(pwd)" \

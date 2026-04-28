@@ -170,7 +170,7 @@ pnpm stryker run --incremental --mutate <selected_file>
 2. 該当 test ファイル (`__tests__/{file}.test.ts`) に property test を 1-3 本追加
 3. テスト実行 → survived mutant が kill されるか確認
 4. kill されなければ、または mutant が **仕様違反の出力を示す**場合: **バグ確定扱いで即修正**
-   - 軍師 (codex exec gpt-5.4) に 400 字以内で相談: (a) 修正方針 (b) 既存テストへの影響 (c) 他の類似箇所波及
+   - 軍師 (codex exec、GPT-5.x; 例示は baseline gpt-5.4、env.yaml auto で Plus user は gpt-5.5、詳細: `executor.md`「GPT-5.5 upgrade path」) に 400 字以内で相談: (a) 修正方針 (b) 既存テストへの影響 (c) 他の類似箇所波及
    - 軍師 確定案を適用 → テスト更新 (filter 削除、回帰テスト追加) → 全スイート通過確認
    - `discovered-*.md` に残さない (テスト品質が下がるだけ)
    - 例外: セキュリティクリティカル or 大規模リファクタ必要な場合のみ draft に落として人間レビュー

@@ -46,9 +46,9 @@
 - [ ] F2. ビルド通過
 - [ ] F3. テスト通過
 - [ ] F4. 軍師 最終レビュー
-  - `.takumi/profiles/env.yaml` の preference に応じて tier を選択 (copilot / codex / opus-max)。Tier 2 (codex) の例:
+  - `.takumi/profiles/env.yaml` の preference.tier (copilot / codex / opus-max) + preference.model (auto / gpt-5.5 / gpt-5.4) で tier × model を決定。Tier 2 (codex) の例 (guaranteed baseline gpt-5.4、Plus user の auto 時 runtime は gpt-5.5):
   - `codex exec -m gpt-5.4 -s read-only -C "$(pwd)" "git diff main...HEAD の全変更を敵対的にレビューせよ。境界条件・障害パス・競合状態・セキュリティを重点的に" 2>&1 | tail -100`
-  - 他 tier の exact 構文は `executor.md` 「軍師 routing」節参照
+  - 他 tier の exact 構文と GPT-5.5 upgrade path は `executor.md` の「軍師 routing」+「GPT-5.5 upgrade path」節参照
 ```
 
 ## ルール
@@ -62,12 +62,13 @@
 
 計画ファイル生成直後、軍師 に自動でレビューを依頼。`.takumi/profiles/env.yaml` の `preference` に応じて tier を選択:
 
+<!-- 例示は guaranteed baseline (gpt-5.4)。env.yaml の preference.model: auto 時、Plus user / Pro+ user の runtime は gpt-5.5 (詳細: executor.md「GPT-5.5 upgrade path」)。 -->
 ```bash
 # Tier 2 (codex exec、ChatGPT Plus) の例
 codex exec -m gpt-5.4 -s read-only -C "$(pwd)" \
   ".takumi/plans/{name}.md を読み、前提の誤り・スコープの漏れ・Wave依存の矛盾・リスクを指摘せよ" 2>&1 | tail -100
 
-# Tier 1 (copilot、Copilot Pro) の例
+# Tier 1 (copilot、Copilot Pro / Pro+) の例
 # copilot -p "..." --model gpt-5.4 --cwd "$(pwd)" --available-tools="view,grep,glob,web_fetch" --silent
 ```
 

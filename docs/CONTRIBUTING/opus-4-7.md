@@ -66,9 +66,11 @@
 
 takumi の 軍師 ロールは GPT 系列による cross-model 敵対的レビュー。利用者環境で 3 tier から選択:
 
-- **`copilot`** (Copilot Pro) — 定額、GPT-5.4、既存ユーザーのみ (新規停止中)
-- **`codex`** (ChatGPT Plus) — 従量または月次、安定
+- **`copilot`** (Copilot Pro / Pro+) — 定額、GPT-5.x (Pro+ で gpt-5.5、Pro で gpt-5.4)、既存ユーザーのみ (新規停止中)
+- **`codex`** (ChatGPT Plus) — 従量または月次、GPT-5.x (Plus で gpt-5.5 利用可、`-codex` バリアントは ChatGPT account 不可で 5.4 fallback)、安定
 - **`opus-max`** 自己レビュー — 常に利用可、ただし **劣化 mode** (同モデル系列のため盲点分離効果が激減)
+
+model 軸は `.takumi/profiles/env.yaml` の `preference.model` (`auto` / `gpt-5.5` / `gpt-5.4`) で制御。auto は tier 内 highest available を選び、5.5 → 5.4 fallback 時は stderr に 1 行通知 + telemetry 記録。詳細は `skills/takumi/executor.md` の「GPT-5.5 upgrade path」。
 
 ### quota rotation (両方持ちの user)
 

@@ -51,6 +51,7 @@ append-only を徹底する理由: `git blame` 的に「いつ / 誰が / 何を
 | verify 運用 | mutation score 測定時 | `mutation_measured` |
 | design mode | L7 Layout Invariant チェック時 | `layout_checked` |
 | 人間 | gate failure を誤検知と判断した時 | `gate_false_positive_flagged` |
+| executor (軍師 routing) | 5.5 → 5.4 fallback 発生時 | `gunshi.model_fallback` |
 
 各 emitter は終了直前に telemetry を flush する。途中クラッシュで event が
 欠落するのは許容(完全性より可用性を優先)。上記 emitter はすべて takumi の内部モード / 内部ロールであり、人間が直接叩く別コマンドではない。
@@ -84,9 +85,107 @@ append-only を徹底する理由: `git blame` 的に「いつ / 誰が / 何を
 | 3.5 | `mutation_measured` | gate 判定と独立に測定事実を記録(trend 分析用) |
 | 3.6 | `layout_checked` | L7 Layout Invariant の hard / soft 違反と snapshot 参照 |
 | 3.7 | `gate_false_positive_flagged` | 人間が `gate_failed` を誤検知と判定した補正 event |
+| 3.8 | `gunshi.model_fallback` | 軍師 routing で 5.5 → 5.4 silent fallback が発生 (auto mode 限定) |
 
 各 event の完全な JSON schema と `failure_source` 判定ルールは
 `telemetry-schema.md` を参照。
+
+### 3.8 `gunshi.model_fallback` 詳細
+
+軍師呼出時に `preference.model: auto` で 5.5 を試した結果、4xx を踏んで 5.4 に切り替わった事実を記録する event。「精度劣化 NG」絶対制約の post-hoc 監視 (頻度トレンド、tier 別、reason 別) に使う。
+
+```jsonl
+{"ts":"2026-04-28T07:12:34Z","event":"gunshi.model_fallback","tier":"codex","attempted":"gpt-5.5","fallback":"gpt-5.4","reason":"400_not_supported","retry_attempted":false,"session_id":"019dd2e1-...","prompt_hash":"sha256:a3f2..."}
+{"ts":"2026-04-28T07:15:01Z","event":"gunshi.model_fallback","tier":"codex","attempted":"gpt-5.5","fallback":"gpt-5.4","reason":"429_rate_limit","retry_attempted":true,"session_id":"019dd2e1-...","prompt_hash":"sha256:b7c1..."}
+```
+
+| field | 値 | 説明 |
+|---|---|---|
+| `tier` | `codex` / `copilot` | どの tier で発生したか |
+| `attempted` | `gpt-5.5` (現状唯一) | 試したモデル名 |
+| `fallback` | `gpt-5.4` | fallback 先 |
+| `reason` | `400_not_supported` / `402_quota` / `404_model` / `429_rate_limit` / `other` | 4xx の細分類 |
+| `retry_attempted` | `true` / `false` | 一時的エラー (402/429) 時の 1 retry 試行有無 |
+| `session_id` | UUID | suppression 用 (stderr 通知の重複抑制キー) |
+| `prompt_hash` | sha256 | 同一 prompt の繰返 fallback 検出用 (debug 補助) |
+
+#### 4xx policy 分岐 (Wave 5 oracle 指摘反映)
+
+**永続的エラー** (`400_not_supported` / `404_model`) と **一時的エラー** (`402_quota` / `429_rate_limit`) を区別:
+
+| reason | 挙動 |
+|---|---|
+| `400_not_supported` | model 自体が tier で不在 → **即 fallback to 5.4** (retry 無意味)。`retry_attempted: false` |
+| `404_model` | 同上 (model name typo / deprecated)。**即 fallback**、`retry_attempted: false` |
+| `402_quota` | quota 枯渇 → **1 度だけ 60 秒待機して retry**、再 fail なら fallback。`retry_attempted: true` |
+| `429_rate_limit` | rate limit → **1 度だけ exponential backoff (5-15s) で retry**、再 fail なら fallback。`retry_attempted: true` |
+| `other` | 即 fallback、`retry_attempted: false`、reason 詳細を notes 別 field に保存 |
+
+**suppression rule**:
+- **stderr 通知**: 同一 session_id 内で 1 度のみ (user noise を抑える)
+- **telemetry emit**: 毎回 (頻度監視のため重複も記録)
+- **session 末尾 summary**: session 終了時に `fallback 発生 N 回 / 5.5 試行 M 回 (M-N 回成功)` を 1 行 stderr 出力 (user が断続 fail を見落とすことを防ぐ)
+
+`preference.model: gpt-5.5` 強制時は fallback せず呼出を拒否するため、本 event は **emit されない** (拒否は別途 `gate_failed` で記録される想定)。
+
+#### emit logic 責務 (executor 側、bash snippet 相当)
+
+軍師呼出 wrapper が以下を実行する。skill リポジトリには実コードを置かないが、各 user 側で executor シェル関数を以下の擬似コードに沿って実装:
+
+```bash
+# 軍師呼出 wrapper (auto mode、4xx 検出 → fallback + emit)
+gunshi_invoke() {
+  local prompt="$1"
+  local tier="$2"  # codex | copilot
+  local pref_model
+  pref_model=$(yq '.gunshi.preference.model' .takumi/profiles/env.yaml)
+
+  # auto mode で 5.5 試行
+  if [ "$pref_model" = "auto" ]; then
+    local target_model="gpt-5.5"
+    local result exit_code
+    result=$(invoke_tier "$tier" "$target_model" "$prompt" 2>&1)
+    exit_code=$?
+
+    if [ $exit_code -ne 0 ]; then
+      # 4xx 検出 + reason 分類
+      local reason
+      reason=$(classify_4xx "$result")  # 400_not_supported / 402_quota / 429_rate_limit / 404_model / other
+      local retry=false
+
+      # 一時的エラーは 1 回 retry
+      if [ "$reason" = "402_quota" ] || [ "$reason" = "429_rate_limit" ]; then
+        sleep $([ "$reason" = "402_quota" ] && echo 60 || echo 10)
+        result=$(invoke_tier "$tier" "$target_model" "$prompt" 2>&1)
+        exit_code=$?
+        retry=true
+      fi
+
+      # 再 fail or 永続的 → fallback to 5.4
+      if [ $exit_code -ne 0 ]; then
+        emit_fallback_event "$tier" "$reason" "$retry" "$prompt"
+        notify_stderr_once "$tier" "$reason"  # session 内 1 回のみ
+        result=$(invoke_tier "$tier" "gpt-5.4" "$prompt" 2>&1)
+      fi
+    fi
+    echo "$result"
+  fi
+}
+
+emit_fallback_event() {
+  local tier="$1" reason="$2" retry="$3" prompt="$4"
+  local prompt_hash
+  prompt_hash="sha256:$(echo -n "$prompt" | shasum -a 256 | cut -c1-16)"
+  jq -nc --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+         --arg tier "$tier" --arg reason "$reason" \
+         --argjson retry "$retry" --arg prompt_hash "$prompt_hash" \
+         --arg sid "${TAKUMI_SESSION_ID:-unknown}" \
+         '{ts:$ts, event:"gunshi.model_fallback", tier:$tier, attempted:"gpt-5.5", fallback:"gpt-5.4", reason:$reason, retry_attempted:$retry, session_id:$sid, prompt_hash:$prompt_hash}' \
+    >> .takumi/telemetry/profile-usage.jsonl
+}
+```
+
+実体は user 環境の executor 内 shell 関数として持つ (skill リポジトリは markdown 仕様のみ提供)。executor が軍師呼出を抽象化していない場合は wrapper を作成して呼出全体を経由させる。
 
 ---
 

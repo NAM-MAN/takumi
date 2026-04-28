@@ -139,6 +139,7 @@ for (const testId of allTestIds) {
 
 削除候補が 3 件以上ある場合、軍師 に敵対レビューを依頼:
 
+<!-- 例示は guaranteed baseline (gpt-5.4)。env.yaml の preference.model: auto 時、Plus user の runtime は gpt-5.5 (詳細: `~/skills/takumi/executor.md`「GPT-5.5 upgrade path」)。 -->
 ```bash
 codex exec -m gpt-5.4 -s read-only -C "$(pwd)" \
   "以下のテスト削除候補を敵対的にレビューせよ。subsumption 判定は正しいか、

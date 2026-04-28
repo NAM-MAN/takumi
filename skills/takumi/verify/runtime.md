@@ -73,7 +73,7 @@ flowchart TD
     Q -->|正解が書けない<br/>画像生成, ML, LLM| S4[L1 metamorphic + L3 Diff]
     Q -->|リファクタ予定| S5[L3 in-repo 2-export]
     Q -->|実 DOM / ネットワーク| S6[L5 CI のみ, ローカル禁止]
-    Q -->|AI が書いた PR| S7[L6 常時, 軍師 gpt-5.4]
+    Q -->|AI が書いた PR| S7[L6 常時, 軍師 GPT-5.x]
 ```
 
 <details>
@@ -91,7 +91,7 @@ flowchart TD
 ├─ 正解が書けない (画像生成, ML, LLM)    → L1 (metamorphic) + L3 Diff
 ├─ リファクタ予定                        → L3 in-repo 2-export
 ├─ 実 DOM / ネットワーク                 → L5 (CI のみ、ローカル禁止)
-└─ AI が書いた PR                        → L6 (常時、軍師 gpt-5.4)
+└─ AI が書いた PR                        → L6 (常時、軍師 GPT-5.x、env.yaml driven)
 ```
 
 </details>

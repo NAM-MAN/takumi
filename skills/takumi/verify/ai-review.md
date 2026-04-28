@@ -3,12 +3,13 @@
 AI が書いたコードを **別の AI** にレビューさせる。
 **Cross-model = blind spot の非対称性** で品質を担保する。
 
----
+> [!NOTE]
+> **軍師モデル表記について**: 本ファイルの軍師呼出例 (`-m gpt-5.4` / `--model gpt-5.4`) は guaranteed baseline。`.takumi/profiles/env.yaml` の `preference.model: auto` 時、ChatGPT Plus user / Copilot Pro+ user の runtime は **gpt-5.5** が選ばれる (詳細: `executor.md`「GPT-5.5 upgrade path」)。「軍師 (gpt-5.4)」「GPT-5.4 (軍師)」表記は文書上の baseline 表現で、実 runtime の model は env.yaml driven。
 
-## なぜ 軍師 (gpt-5.4 / codex)
+## なぜ 軍師 (GPT-5.x / codex)
 
 Claude が書いたコードを Claude にレビューさせると、訓練データ・推論パターンが
-共通で同じ盲点を持つ。GPT-5.4 (軍師) に投げると:
+共通で同じ盲点を持つ。GPT-5.x (軍師) に投げると:
 
 - 訓練データが違う
 - アーキテクチャが違う

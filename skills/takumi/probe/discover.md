@@ -8,7 +8,7 @@
 | ロール | モデル | 担当 |
 |--------|--------|------|
 | 棟梁 | opus (自分) | 製品診断・発見者選定・統合・ユーザー報告 |
-| 軍師 | gpt-5.4 (`codex exec`) | 発見結果の品質レビュー |
+| 軍師 | GPT-5.x (`codex exec`、env.yaml driven; baseline 5.4、auto で Plus user は 5.5、詳細: `~/skills/takumi/executor.md`「GPT-5.5 upgrade path」) | 発見結果の品質レビュー |
 | 斥候 | haiku (Agent tool) | 各発見者としてコードを読み課題を探す |
 
 ## ファイル
@@ -184,6 +184,7 @@ Agent tool:
 
 発見数が50件を超える場合、軍師 にノイズ除去を依頼:
 
+<!-- 例示は guaranteed baseline (gpt-5.4)。env.yaml の preference.model: auto 時、Plus user の runtime は gpt-5.5。 -->
 ```bash
 codex exec -m gpt-5.4 -s read-only -C "$(pwd)" \
   "以下の発見リストから、証拠が不十分または影響が極めて小さいものを特定せよ。

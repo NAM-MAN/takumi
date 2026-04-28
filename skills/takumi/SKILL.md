@@ -91,7 +91,7 @@ executor とは別の **discovery orchestrator** が fan-out/fan-in を担う。
 | ロール | モデル | 担当 |
 |--------|--------|------|
 | 棟梁 | opus (自分) | 日本語インタビュー・計画作成・ディスパッチ |
-| 軍師 | GPT-5.4 via `copilot` / `codex` / opus-max fallback (`executor.md` の 3-tier routing 参照) | 深い思考: 設計分析・計画レビュー・判断 |
+| 軍師 | GPT-5.x via `codex` / `copilot` / opus-max fallback (env.yaml driven、auto-fallback 5.5→5.4、`executor.md` の 3-tier routing + 「GPT-5.5 upgrade path」参照) | 深い思考: 設計分析・計画レビュー・判断 |
 | 職人 | sonnet (Agent tool) | 実装: コーディング・テスト・修正 |
 | 斥候 | haiku (Agent tool) | 調査: コード検索・Web検索・ドキュメント |
 
@@ -191,7 +191,8 @@ Agent tool:
   model: "haiku"
 ```
 
-**軍師 (gpt-5.4)** — 大規模タスクの設計分析:
+**軍師 (GPT-5.x)** — 大規模タスクの設計分析:
+<!-- 例示は guaranteed baseline (gpt-5.4)。env.yaml の preference.model: auto 時、Plus user の runtime は gpt-5.5。 -->
 ```bash
 codex exec -m gpt-5.4 -s read-only -C "$(pwd)" \
   "{設計に関する質問を日本語で記述}" 2>&1 | tail -100

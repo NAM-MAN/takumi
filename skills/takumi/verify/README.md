@@ -61,7 +61,7 @@ Q4 は single threshold では判定不能。以下の**複数シグナル合算
 | **入口ガード** | USS 原則、新規 `*.pbt.test.ts` 禁止、mutation gate、implementation-derived assert 禁止、mocking 最小化、retry 吸収禁止 | Q3 → Q4 への **drift を構造的に阻止** |
 | **鋭化ループ** | verify-loop (`/loop 10m /verify-loop`) で survived mutant を観察 → assert 追加 → 再観察 | Q4 → Q2 → Q1 へ **救出** |
 | **先回り保護** | PBT (`fast-check`) で pure 層を property で覆う | Q3 → Q2 への **ショートカット** |
-| **cross-model audit** | 軍師 (gpt-5.4) による AI 書き PR レビュー | Q4 drift の **遅延検出** |
+| **cross-model audit** | 軍師 (GPT-5.x; baseline gpt-5.4、env.yaml auto で Plus user は gpt-5.5、詳細: `~/skills/takumi/executor.md`「GPT-5.5 upgrade path」) による AI 書き PR レビュー | Q4 drift の **遅延検出** |
 
 ### 結論
 

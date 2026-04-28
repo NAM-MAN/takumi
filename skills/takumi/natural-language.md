@@ -47,19 +47,34 @@
 
 `/takumi` が意図を認識して `.takumi/control/` の override ファイルを作成・削除する。人間は直接ファイル編集しない。
 
-## 軍師 routing の切替 (quota rotation)
+## 軍師 routing の切替 (tier × model)
 
-両方持ちの user が月次クォータを rotate させる想定 (詳細は `executor.md` 参照):
+両方持ちの user が月次クォータを rotate させる想定 + GPT-5.5 / 5.4 の model 軸 (env.yaml schema v2、詳細は `executor.md` の「GPT-5.5 upgrade path」参照):
+
+### tier 切替 (どの CLI を使うか)
 
 | 発話 | 動作 |
 |---|---|
-| 「軍師を codex に切り替えて」「gunshi codex」 | `.takumi/profiles/env.yaml` の `preference` を `codex` に |
+| 「軍師を codex に切り替えて」「gunshi codex」 | `.takumi/profiles/env.yaml` の `preference.tier` を `codex` に |
 | 「軍師を copilot に」「gunshi copilot」 | 同 `copilot` に |
 | 「軍師を opus-max に」「gunshi opus」 | 同 `opus-max` に (劣化 mode warning 付) |
 | 「軍師今どっち?」「gunshi status」 | 現在 preference と availability を提示 |
-| 「軍師 auto」「preference リセット」 | preference を null に戻す (availability 順の自動) |
+| 「軍師 auto」「preference リセット」 | `preference.tier` を null に戻す (availability 順の自動) |
 
-availability が false な tier への切替要求は拒否 + 警告 (「codex は未インストールです、`gh extension install` で導入するか preference を別に」)。クォータ枯渇の自動検出はしない — user が「切れた」と言ったタイミングで切り替える雑運用。
+### model 切替 (5.5 / 5.4 / auto)
+
+| 発話 | 動作 |
+|---|---|
+| 「軍師を 5.5 に」「軍師の model を gpt-5.5 に」「gunshi 5.5」 | `preference.model` を `gpt-5.5` に強制 (5.5 不在 tier では拒否) |
+| 「軍師を 5.4 に固定」「軍師は 5.4 のままで」「gunshi 5.4」 | `preference.model` を `gpt-5.4` に強制 (安定性優先) |
+| 「軍師の model を auto に戻して」「gunshi model auto」 | `preference.model` を `auto` に (tier 内 highest available を自動選択) |
+| 「軍師の availability を再 detect」「gunshi redetect」 | step0-bootstrap.md の Stage 2 を再実行、5.5 ping 結果で `models[]` を更新 |
+
+availability が false な tier、または該当モデル不在の tier への切替要求は拒否 + 警告 (「codex は未インストールです、`gh extension install` で導入するか preference を別に」/「Pro+ 未契約のため copilot 5.5 は使えません、preference.model: auto なら gpt-5.4 が選ばれます」)。クォータ枯渇の自動検出はしない — user が「切れた」と言ったタイミングで切り替える雑運用。
+
+### 5.5 fallback の通知
+
+`preference.model: auto` で 5.5 → 5.4 fallback が発生した場合、stderr に 1 行通知が出る (session 内重複は抑制)。fallback 自体を拒否したい (劣化を一切許容しない) user は `preference.model: gpt-5.5` 強制で 5.4 への切替を完全に拒否できる。
 
 ## 意図認識の曖昧さ対策
 

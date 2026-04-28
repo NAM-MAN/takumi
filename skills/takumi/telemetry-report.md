@@ -58,7 +58,10 @@
 
 ## 軍師 自動呼出 (W=4 時のみ)
 
-儀式化 drift が 4 週続いた場合、軍師 (codex exec gpt-5.4) に以下を問い合わせ:
+> [!NOTE]
+> **軍師モデル表記**: 以下の `gpt-5.4` は guaranteed baseline。env.yaml の `preference.model: auto` 時、Plus user の runtime は **gpt-5.5** (詳細: `executor.md`「GPT-5.5 upgrade path」)。
+
+儀式化 drift が 4 週続いた場合、軍師 (codex exec、GPT-5.x) に以下を問い合わせ:
 
 > profile item (verify_profile_ref / design_profile_ref) と実際の gate failure が過去 4 週で乖離している。
 > 考えられる原因と、profile/defaults の修正案を挙げよ。
