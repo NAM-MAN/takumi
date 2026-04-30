@@ -4,21 +4,31 @@
 
 人間が直接叩くコマンドではない。`/takumi` 内の計画提示 → 確認後に自動的に executor が動く。plan name のタイポ問題も `/takumi` が最新計画を知っているため発生しない。
 
-## 4 ロール体制
+## 5 ロール体制 (2026-05-01 update、coding-shootout pilot 結論反映)
 
 | ロール | モデル | effort 既定 | 担当 |
 |--------|--------|---|------|
-| 棟梁 | Opus 4.7 (自分) | xhigh | 実行管理・まとめ・ユーザー報告・**1 response で済む作業は自分で処理** |
+| 棟梁 | Opus 4.7 (自分) | xhigh | 実行管理・まとめ・ユーザー報告・**dispatch・gate check (lint / test / spec compliance)・integrate (説明)** |
 | 軍師 | GPT-5.x (`codex exec` / `copilot`、env.yaml driven、auto-fallback 5.5→5.4) | (max 相当) | クロスモデルレビュー・設計判断 |
-| 職人 | sonnet (Agent tool) | xhigh | 中規模以上の実装 |
+| **職人(Sonnet)** | sonnet (Agent tool) | xhigh | 実装 (default、A-favored or unreliable category) |
+| **職人(GPT-5.5)** (NEW) | gpt-5.5 (`codex exec`) | (max 相当) | 実装 (`gpt55_priority` mode + C-favored category: T1/T3/T4/T8/T9) |
 | 斥候 | haiku (Agent tool) | medium | 広範・深さ未定の探索 |
+
+### 棟梁 直接 code-gen の例外規則 (2026-05-01、軍師 MED2 反映で T9 除外)
+
+棟梁 (Opus main session) は原則 **dispatch + gate check + 説明** に専念。**code-gen を直接書く例外** は以下 **3 cell** のみ (A strict winner で深い推論が必須、coding-shootout pilot 結論):
+
+- python_migration / refactor / realistic_debug_repair
+
+T9 long_context_patch は unified diff 1 行追加のみで出力 contract が明示されるので職人 dispatch に任せる。それ以外の category は全て dispatch (職人(Sonnet) または 職人(GPT-5.5))。dispatch 先は 3-mode capacity-aware routing で決まる (下節 routing 参照)。
 
 ### Opus 4.7 delegation policy
 
 Anthropic 公式指針 ([blog](https://claude.com/blog/best-practices-for-using-claude-opus-4-7-with-claude-code)) に従い subagent spawn を**抑制**する:
 
-- **棟梁が自分で完結できる作業は spawn しない**: 1 response で `Read` / `Edit` / 小範囲 `grep` が済む範囲は自分で処理
-- **職人 (sonnet) を spawn する条件**: 規模「中」以上の実装、複数ファイル跨ぎ、長時間回る test iteration、Wave ごとの明示的実装タスク
+- **棟梁が自分で完結できる作業は spawn しない**: 1 response で `Read` / `Edit` / 小範囲 `grep` が済む範囲は自分で処理 (上記 4 例外 cell の code-gen を含む)
+- **職人(Sonnet) を spawn する条件**: 規模「中」以上の実装で C-favored 以外の category、複数ファイル跨ぎ、長時間回る test iteration、Wave ごとの明示的実装タスク
+- **職人(GPT-5.5) を spawn する条件**: `mode_select` で `gpt55_priority` 判定 + category ∈ {T1/T3/T4/T8/T9}、または routing-matrix で C primary cell
 - **斥候 (haiku) を spawn する条件**: 深さ未定の広範探索、複数 keyword × 複数ディレクトリ、独立ドメイン並列 fan-out (例: security / perf / a11y 同時)
 - **軍師 (GPT-5.x) を spawn する条件**: 計画レビュー、設計判断、公開前レビュー、破壊的変更時のクロスモデル確認
 
@@ -160,6 +170,22 @@ codex exec -m gpt-5.4 -s read-only -C "$(pwd)" \
 ```
 
 これらの tier の quality 等価性は pilot で検証予定 (`docs/CONTRIBUTING/pilot-driven-development.md` の方法論に従い、別リポジトリで arm A/B/C 比較)。
+
+## 3-mode capacity-aware routing と職人(GPT-5.5) dispatch (2026-05-01 追加、軍師 NEEDS-FIX 反映)
+
+`coding-shootout-pilot-2026-04-30` の結論で導入された **3 mode** (`opus_protect` / `balanced` / `gpt55_priority`) と **職人(GPT-5.5) dispatch** + **lint-repair safety net** + **quota 分配規則** は、行数が多いため `routing-mode.md` に分離。
+
+resolver order は **manual_override 最優先 → mode_select(runtime_state) → cell mapping 引き → runtime_dynamic_check / quota_safe_static / quality_tie / unknown** (軍師 H3 反映)。
+
+### 1 行サマリ
+
+- **manual_override 最優先** (user 発話で軍師 / 職人 を固定)、次に `mode_select` で 3 mode 判定
+- `balanced` (default) = **全 cell 職人(Sonnet)** (既存 4-role と完全互換、軍師 H4 反映で破壊変更回避)
+- `gpt55_priority` で T1/T3/T4/T8/T9 を職人(GPT-5.5) primary に切替、他 cell は職人(Sonnet) のまま
+- 職人(GPT-5.5) は `codex exec -m gpt-5.5 -s read-only --skip-git-repo-check -C $(pwd) -` で起動 (stdin 経由 prompt、auto-fallback 拒否、4xx 先行判定で degrade path 確保)
+- 出力 format は category 別 contract (T9 は unified diff、他は full file)、棟梁 が出力を該当 path に Edit/Write apply
+- gate check (lint / test / spec) → fail なら職人(Sonnet) repair (max 3 attempts、最終 attempt fail で escalation)
+- codex 60/day quota は 軍師 10 / 職人(GPT-5.5) 30 / safety 20 で分配、職人(GPT-5.5) 30/day 到達で gpt55_priority を当日 disable
 
 ## Step 0 — 計画読み込み
 

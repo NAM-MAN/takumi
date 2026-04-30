@@ -19,7 +19,7 @@ license: MIT
 
 | task 種別 | 必ず読む | 触れない |
 |---|---|---|
-| 新機能実装 (UI なし) | SKILL.md + `plan-template.md` + `executor.md` | verify/, probe/, sweep/, design/ |
+| 新機能実装 (UI なし) | SKILL.md + `plan-template.md` + `executor.md` (dispatch 時 `routing-mode.md` も) | verify/, probe/, sweep/, design/ |
 | 新機能実装 (UI あり) | SKILL.md + `plan-template.md` + `design/README.md` + `design/phases.md` | verify/, probe/, sweep/ |
 | テスト追加 | SKILL.md + `verify/README.md` + `verify/spec-tests.md` + (技法に応じて 1 本: `property-based.md` / `component-test.md` / `model-based.md`) | probe/, sweep/, design/ |
 | **テスト圧縮 (MSS)** | SKILL.md + `verify/spec-tests.md` + `verify/compression.md` | probe/, sweep/, design/ |
@@ -28,6 +28,7 @@ license: MIT
 | 全域棚卸 (sweep mode) | SKILL.md + `sweep/README.md` + `sweep/runtime.md` | probe/, verify/, design/ |
 | リファクタ / 設計見直し | SKILL.md + `strict-refactoring/README.md` + `strict-refactoring/rules-core.md` (+ 該当 rules-*.md 1 本) | probe/, sweep/, design/, verify/ |
 | design mode (Step 0d) | SKILL.md + `design/README.md` + `design/runtime.md` + `design/phases.md` (+ 該当 phases-*.md) | probe/, sweep/, verify/ |
+| **dispatch 判定 (mode_select)** | SKILL.md + `executor.md` + `routing-mode.md` | それ以外は不要 |
 | 状態確認 / 再開 / override | SKILL.md + `natural-language.md` + `.takumi/state.json` | それ以外は不要 |
 
 **ファイルサイズ方針**: skill 内 md ファイルは 300-349 行まで acceptable、350 行超は必ず分割する (attention 劣化回避)。実行時に「**新規テスト追加なら verify 系だけ、リファクタなら strict-refactoring だけ**」のように選択的に読むことで、1 task あたりの context 消費を最小化する。
@@ -86,16 +87,31 @@ executor とは別の **discovery orchestrator** が fan-out/fan-in を担う。
 インタビューが必要なら行い、要らなければ即生成。計画は `.takumi/plans/{name}.md` に保存、
 確認後は executor (`executor.md` の内部責務) が Wave 順に自動実行する。
 
-## 4ロール体制
+## 5ロール体制 (2026-05-01 update、coding-shootout pilot 結論反映)
 
 | ロール | モデル | 担当 |
 |--------|--------|------|
-| 棟梁 | opus (自分) | 日本語インタビュー・計画作成・ディスパッチ |
+| 棟梁 | opus (自分) | 日本語インタビュー・計画作成・**ディスパッチ・gate check (lint / test / spec compliance)・integrate (説明)** |
 | 軍師 | GPT-5.x via `codex` / `copilot` / opus-max fallback (env.yaml driven、auto-fallback 5.5→5.4、`executor.md` の 3-tier routing + 「GPT-5.5 upgrade path」参照) | 深い思考: 設計分析・計画レビュー・判断 |
-| 職人 | sonnet (Agent tool) | 実装: コーディング・テスト・修正 |
+| **職人(Sonnet)** | sonnet (Agent tool) | 実装: コーディング・テスト・修正 (default、A-favored or unreliable category) |
+| **職人(GPT-5.5)** (NEW) | gpt-5.5 via `codex exec` | 実装: `gpt55_priority` mode + C-favored category (T1/T3/T4/T8/T9) で起動 |
 | 斥候 | haiku (Agent tool) | 調査: コード検索・Web検索・ドキュメント |
 
-軍師 起動コマンドと注意点は `executor.md` を参照。
+### 棟梁 直接 code-gen の例外規則
+
+棟梁 (Opus main session) は原則 dispatch + gate check + 説明に専念。**code-gen を直接書く例外** は **python_migration / refactor / realistic_debug_repair の 3 cell のみ** (A strict winner、深い推論必須)。T9 long_context_patch は unified diff 1 行のみで出力 contract 明示なので職人 dispatch。
+
+### 3-mode capacity-aware routing
+
+resolver は `manual_override` 最優先 → `mode_select(runtime_state)` → cell mapping (mode overlay) → 残 step。3 mode の動作:
+
+| mode | 起動条件 | 動作 |
+|---|---|---|
+| `opus_protect` | opus_weekly < 5h | 全 cell 職人(Sonnet) |
+| `balanced` (default) | normal | 全 cell 職人(Sonnet)、既存 4-role と完全互換 |
+| `gpt55_priority` | codex_remaining > 50% AND opus_weekly ≥ 5h | T1/T3/T4/T8/T9 を職人(GPT-5.5)、他は職人(Sonnet) |
+
+職人(GPT-5.5) 出力 → 棟梁 gate check → fail なら職人(Sonnet) repair (max 3 attempts、最終 fail で escalation)。**詳細手順 (mode_select pseudo-code / dispatch bash snippet / lint-repair / quota 分配) は `routing-mode.md` 参照**、resolver order と起動コマンドは `executor.md` 参照。
 
 補助ファイルの一覧と用途は冒頭「進入路」表を参照。ローカル作業領域は全て `.takumi/` 配下 (`plans/{name}.md` 計画、`drafts/{name}.md` メモ、`drafts/discovered-{id}.md` 自己増殖発見、`state.json` 状態、`sprints/{date}/` probe 成果物、`telemetry/*.jsonl` イベント)。
 
