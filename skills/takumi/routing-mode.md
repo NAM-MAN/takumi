@@ -27,27 +27,43 @@
 | mode | 起動条件 | 動作 |
 |---|---|---|
 | `opus_protect` | `opus_weekly_remaining_h < 5h` | 全 cell 職人(Sonnet) スライド (Opus 緊急保護) |
-| `gpt55_priority` | `codex_remaining_share > 0.5 AND opus_weekly_remaining_h ≥ 5h` | C-favored cell (T1/T3/T4/T8/T9) を職人(GPT-5.5)、他は職人(Sonnet) (= balanced と同じ) |
-| `balanced` (default) | 上記以外 | **全 cell 職人(Sonnet)** (既存 4-role 動作と完全互換、軍師 H4 反映) |
+| `gpt55_priority` (**default**、2026-05-01 update) | codex installed AND `codex_remaining_share > 0.5` (None なら通過) AND `opus_weekly_remaining_h ≥ 5h` | C-favored cell (T1/T3/T4/T8/T9) を職人(GPT-5.5)、他は職人(Sonnet) — **cell mapping は前回 pilot 結論維持** |
+| `balanced` (fallback) | 上記以外 (codex unavailable / quota 不足 / 4xx 検出) | **全 cell 職人(Sonnet)** (codex 不安定時の degrade、4-role 互換) |
 
-> **軍師 H4 反映**: 旧設計では balanced で T4 が職人(GPT-5.5) primary だったが、これは **既存 4-role plan の破壊的変更** に当たる。balanced は **既存と完全同等 (全 cell 職人(Sonnet))**、職人(GPT-5.5) は `gpt55_priority` mode 限定で起動する。これにより破壊変更を回避し、user が能動的に GPT-5.5 を使う mode に切り替えた時のみ effect が出る。
+> **2026-05-01 update**: user 判断で `gpt55_priority` を default に格上げ。`coding-shootout-repilot-2026-05-01` で arm C codex 全 hang skip = 比較データなし、ただし **「データ無し → routing 据置と格上げは equally unjustified、user 体感 (production code で GPT-5.5 強い) を尊重」** 判断。cell mapping は前回 pilot 結論維持で **C-favored 5 cell (T1/T3/T4/T8/T9) のみ GPT-5.5**、他 cell は職人(Sonnet) のまま (中庸案 = 軍師 H4「破壊変更回避」と user 体感の両立)。
+>
+> `balanced` は codex unavailable / quota 不足 / 4xx 検出時の fallback として保持 (4-role 互換)。manual_override は引き続き最優先 (user 発話で「コード生成を Sonnet に固定」「軍師 codex 5.4」等で個別 override 可)。
+>
+> 旧 default 根拠 (軍師 H4「既存 4-role plan の破壊変更回避」) は再 pilot (codex hang 解決後) で再評価予定。
 
 判定 pseudo-code:
 
 ```python
 def mode_select(runtime_state) -> Mode:
-    """env.yaml v3 の runtime_quota_tracker:
+    """env.yaml v3 の runtime_quota_tracker.
+       2026-05-01 update: gpt55_priority を default に格上げ、balanced は fallback。
+
        opus_weekly_remaining_h: float | None (Anthropic Code statusline、null なら decay 推定)
-       codex_remaining_share: float | None (codex は取得不能、conservative decay)
+       codex_remaining_share: float | None (codex は取得不能、conservative decay; None なら通過)
     """
+    # opus_protect 最優先 (Opus 緊急保護)
     if (runtime_state.opus_weekly_remaining_h is not None
             and runtime_state.opus_weekly_remaining_h < 5.0):
         return Mode.OPUS_PROTECT
-    if (runtime_state.codex_remaining_share is not None
-            and runtime_state.codex_remaining_share > 0.5
-            and runtime_state.opus_weekly_remaining_h is not None
-            and runtime_state.opus_weekly_remaining_h >= 5.0):
+
+    # default = gpt55_priority (2026-05-01 update)
+    # 起動条件: codex installed AND quota OK (None=通過) AND opus_weekly OK
+    codex_available = (
+        env_yaml.gunshi.availability.codex.installed
+        and (runtime_state.codex_remaining_share is None
+             or runtime_state.codex_remaining_share > 0.5)
+        and runtime_state.opus_weekly_remaining_h is not None
+        and runtime_state.opus_weekly_remaining_h >= 5.0
+    )
+    if codex_available:
         return Mode.GPT55_PRIORITY
+
+    # codex unavailable / quota 不足 / 4xx 検出 → balanced fallback (4-role 互換)
     return Mode.BALANCED
 ```
 

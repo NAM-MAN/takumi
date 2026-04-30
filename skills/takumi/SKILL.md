@@ -108,8 +108,8 @@ resolver は `manual_override` 最優先 → `mode_select(runtime_state)` → ce
 | mode | 起動条件 | 動作 |
 |---|---|---|
 | `opus_protect` | opus_weekly < 5h | 全 cell 職人(Sonnet) |
-| `balanced` (default) | normal | 全 cell 職人(Sonnet)、既存 4-role と完全互換 |
-| `gpt55_priority` | codex_remaining > 50% AND opus_weekly ≥ 5h | T1/T3/T4/T8/T9 を職人(GPT-5.5)、他は職人(Sonnet) |
+| `gpt55_priority` (**default**、2026-05-01 update) | codex installed AND quota OK AND opus_weekly ≥ 5h | T1/T3/T4/T8/T9 を職人(GPT-5.5)、他は職人(Sonnet) — cell mapping は前回 pilot 結論維持 |
+| `balanced` (fallback) | codex unavailable / quota 不足 / 4xx 検出 | 全 cell 職人(Sonnet)、4-role 互換 (codex 不安定時の degrade) |
 
 職人(GPT-5.5) 出力 → 棟梁 gate check → fail なら職人(Sonnet) repair (max 3 attempts、最終 fail で escalation)。**詳細手順 (mode_select pseudo-code / dispatch bash snippet / lint-repair / quota 分配) は `routing-mode.md` 参照**、resolver order と起動コマンドは `executor.md` 参照。
 
