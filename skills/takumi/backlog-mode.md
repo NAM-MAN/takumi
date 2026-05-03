@@ -72,8 +72,9 @@ takumi の probe mode / sweep mode から backlog.md が生成された場合、
 - [ ] F1. 全検証項目の再確認
 - [ ] F2. ビルド通過
 - [ ] F3. テスト通過
-- [ ] F4. 軍師 最終レビュー (tier は env.yaml preference に従う、model も env.yaml `preference.model: auto` で 5.5/5.4 自動選択、詳細は `executor.md` の「軍師 routing」+「GPT-5.5 upgrade path」参照)
-  - Tier 2 例 (例示は guaranteed baseline gpt-5.4、Plus user の runtime は gpt-5.5): `codex exec -m gpt-5.4 -s read-only -C "$(pwd)" "git diff main...HEAD の全変更を敵対的にレビューせよ。境界条件・障害パス・競合状態・セキュリティを重点的に" 2>&1 | tail -100`
+- [ ] F4. 軍師 最終レビュー (tier は env.yaml preference に従う、model も env.yaml `preference.model: auto` で 5.5/5.4 自動選択、hardening v2 の詳細は `executor.md` の「軍師 routing」+「GPT-5.5 upgrade path」+「invocation hardening v2」参照)
+  - Tier 2 例 (5.5 default、hardening v2、1 行目のみ示す、prompt は stdin heredoc): `timeout 600s codex exec -m gpt-5.5 -s read-only --skip-git-repo-check -C "$(pwd)" - <<'PROMPT' 2>&1 | tail -100`
+  - heredoc 本文: "git diff main...HEAD の全変更を敵対的にレビューせよ。境界条件・障害パス・競合状態・セキュリティを重点的に。出力 1.5KB 以内。" → `PROMPT`
 ```
 
 ## 通常モードとの使い分け

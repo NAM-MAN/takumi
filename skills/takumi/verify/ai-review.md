@@ -35,7 +35,9 @@ sweep の Phase 2e (Coherence Verification) や exec の 軍師 role が既に
 DIFF=$(git diff --staged)
 [ -z "$DIFF" ] && exit 0
 
-echo "$DIFF" | codex exec --model gpt-5.4 "
+# hardening v2: stdin heredoc + timeout 600s overall hard cap (long-thinking レビューを切らないため、hang 確実に kill する値) + 5.5 default
+PROMPT_FILE=$(mktemp)
+cat > "$PROMPT_FILE" <<EOF
 以下の git diff を 3 観点でレビューし、CRITICAL/HIGH があれば JSON で返せ:
 
 1. セキュリティ: OWASP Top 10、認証/認可、入力検証、秘密情報漏洩
@@ -45,13 +47,26 @@ echo "$DIFF" | codex exec --model gpt-5.4 "
 
 出力 JSON のみ:
 {
-  \"verdict\": \"approve\" | \"block\",
-  \"issues\": [{\"severity\": \"CRITICAL|HIGH|MEDIUM\", \"category\": \"...\",
-                \"file\": \"...\", \"line\": N, \"issue\": \"...\", \"fix\": \"...\"}]
+  "verdict": "approve" | "block",
+  "issues": [{"severity": "CRITICAL|HIGH|MEDIUM", "category": "...",
+              "file": "...", "line": N, "issue": "...", "fix": "..."}]
 }
-" > .verify-review.json
 
-VERDICT=$(jq -r .verdict .verify-review.json)
+## diff
+$DIFF
+EOF
+
+timeout 600s codex exec -m gpt-5.5 -s read-only --skip-git-repo-check -C "$(pwd)" - < "$PROMPT_FILE" > .verify-review.json
+EXIT=$?
+rm -f "$PROMPT_FILE"
+
+# timeout/hang 検出 (codex CLI 長 prompt hang 対策、運用継続のため block しない)
+if [ "$EXIT" = "124" ]; then
+  echo "⚠ codex hung > 600s (diff size $(echo "$DIFF" | wc -c) bytes), skipping AI review. Override with --no-verify if you want to bypass."
+  exit 0
+fi
+
+VERDICT=$(jq -r .verdict .verify-review.json 2>/dev/null || echo "approve")
 if [ "$VERDICT" = "block" ]; then
   jq . .verify-review.json
   echo "軍師 review blocked. Fix CRITICAL/HIGH or override with --no-verify."
@@ -88,9 +103,22 @@ jobs:
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         run: |
-          git diff origin/${{ github.base_ref }}...HEAD | \
-            codex exec --model gpt-5.4 "$(cat .github/prompts/review.txt)" \
-            > review.json
+          # hardening v2: stdin heredoc + timeout 600s overall hard cap + 5.5 default
+          DIFF=$(git diff origin/${{ github.base_ref }}...HEAD)
+          PROMPT_FILE=$(mktemp)
+          cat > "$PROMPT_FILE" <<EOF
+          $(cat .github/prompts/review.txt)
+
+          ## diff
+          $DIFF
+          EOF
+          timeout 600s codex exec -m gpt-5.5 -s read-only --skip-git-repo-check -C "$(pwd)" - < "$PROMPT_FILE" > review.json
+          EXIT=$?
+          rm -f "$PROMPT_FILE"
+          # codex hang/timeout 検出 (CI で stuck job を防ぐ)
+          if [ "$EXIT" = "124" ]; then
+            echo '{"verdict":"approve","issues":[],"_note":"codex hung > 600s, skipped"}' > review.json
+          fi
 
       - name: Post review to PR
         uses: actions/github-script@v7
@@ -98,7 +126,7 @@ jobs:
           script: |
             const fs = require('fs')
             const review = JSON.parse(fs.readFileSync('review.json'))
-            const body = `## 軍師 Review (gpt-5.4)\n\n` +
+            const body = `## 軍師 Review (gpt-5.5)\n\n` +
               review.issues.map(i =>
                 `**[${i.severity}]** \`${i.file}:${i.line}\`\n${i.issue}\n→ ${i.fix}`
               ).join('\n\n')

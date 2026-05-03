@@ -59,7 +59,7 @@
 ## 軍師 自動呼出 (W=4 時のみ)
 
 > [!NOTE]
-> **軍師モデル表記**: 以下の `gpt-5.4` は guaranteed baseline。env.yaml の `preference.model: auto` 時、Plus user の runtime は **gpt-5.5** (詳細: `executor.md`「GPT-5.5 upgrade path」)。
+> **軍師モデル表記**: 例文は `gpt-5.5` default (env.yaml `preference.model: auto`/`gpt-5.5`)。`gpt-5.4` 強制は env.yaml で設定可、auto-fallback rule + hardening v2 (stdin heredoc / `timeout 600s` / prompt 1.5KB 上限) は `executor.md`「GPT-5.5 upgrade path」+「invocation hardening v2」参照。
 
 儀式化 drift が 4 週続いた場合、軍師 (codex exec、GPT-5.x) に以下を問い合わせ:
 

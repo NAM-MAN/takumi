@@ -84,15 +84,17 @@ plan author は可能な限り ac_class を明示する運用を推奨。
 ### C. 曖昧 — 軍師 判定
 
 > [!NOTE]
-> **軍師モデル表記**: 以下の `-m gpt-5.4` は guaranteed baseline。`.takumi/profiles/env.yaml` の `preference.model: auto` 時、ChatGPT Plus user の runtime は **gpt-5.5** が選ばれる (詳細: `executor.md` の「GPT-5.5 upgrade path」)。
+> **軍師モデル表記**: 以下の `-m gpt-5.5` は default (env.yaml `preference.model: auto`/`gpt-5.5`)。`gpt-5.4` 強制は env.yaml で設定可、auto-fallback rule は `executor.md`「GPT-5.5 upgrade path」参照。hardening v2: stdin heredoc / `timeout 600s` / prompt 1.5KB 上限。
 
 A / B で決まらなければ 軍師 (GPT-5.x) に 1 行 archetype 名だけ返させる:
 
 ```bash
-codex exec -m gpt-5.4 -s read-only -C "$(pwd)" "以下の AC を 5 archetype に分類せよ。
+timeout 600s codex exec -m gpt-5.5 -s read-only --skip-git-repo-check -C "$(pwd)" - <<'PROMPT' 2>&1 | tail -5
+以下の AC を 5 archetype に分類せよ。
 archetype: state-transition | boundary | property | model | metamorphic
 ac_text: <本文>
-出力: archetype 名 1 語のみ" 2>&1 | tail -5
+出力: archetype 名 1 語のみ
+PROMPT
 ```
 
 ### Tie-breaker

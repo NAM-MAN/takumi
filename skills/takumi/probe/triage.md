@@ -104,11 +104,12 @@ discoveries.md を読み、以下の基準で重複を統合:
 
 ICEスコア上位20件を 軍師 に渡し、反論を求める:
 
-<!-- 例示は guaranteed baseline (gpt-5.4)。env.yaml の preference.model: auto 時、Plus user の runtime は gpt-5.5。 -->
+<!-- hardening v2 (2026-05-03): stdin heredoc / `timeout 600s` / 5.5 default / prompt 1.5KB 上限 (詳細: `executor.md`「invocation hardening v2」)。 -->
 ```bash
-# 課題リストを1行1課題で変数に入れる（プロンプトに直接埋め込む）
-codex exec -m gpt-5.4 -s read-only -C "$(pwd)" \
-  "あなたは反論者（Devil's Advocate）である。
+# 課題リストを変数に入れて heredoc に埋込む
+PROMPT_FILE=$(mktemp)
+cat > "$PROMPT_FILE" <<EOF
+あなたは反論者（Devil's Advocate）である。
 以下のプローブバックログについて、各課題に対して以下の観点で挑戦せよ:
 
 1. YAGNI: 本当に今直す必要があるか？ユーザーが実際に困っている証拠は？
@@ -128,15 +129,18 @@ codex exec -m gpt-5.4 -s read-only -C "$(pwd)" \
 課題リスト:
 B-001. {タイトル} [ICE:{スコア}] - {証拠の要約}
 B-002. {タイトル} [ICE:{スコア}] - {証拠の要約}
-..." 2>&1 | tail -100
+...
+EOF
+timeout 600s codex exec -m gpt-5.5 -s read-only --skip-git-repo-check -C "$(pwd)" - < "$PROMPT_FILE" 2>&1 | tail -100
 ```
 
 **注意点:**
-- `-o` オプションは存在しない。結果は stdout に出るので `2>&1 | tail -100` でノイズ除去
-- プロンプトは1つの文字列引数として渡す（ヒアドキュメント不要）
+- `-` で stdin 経由 prompt 渡し (codex に「読め」命令しない、長 prompt + sandbox の hang trigger 回避)
+- `timeout 600s` で hard timeout、超過時は subagent (Sonnet via Agent tool) Tier 2 fallback
 - 課題リストはプロンプト内に直接展開する（外部ファイル参照ではなく）
-- MCP起動ログが stderr に出るが `2>&1 | tail` で無視される
-- timeout 120秒を設定する（Bash tool の timeout パラメータ）
+- 上位 20 件超で 1.5KB を超える場合は ICE 上位 10 件に絞るか、subagent 直接 dispatch
+- MCP 起動ログが stderr に出るが `2>&1 | tail` で無視される
+- `--skip-git-repo-check` 必須 (sandbox trust 問題回避)
 
 軍師 の判定結果を反映:
 - ✅ 採用 → バックログに含める

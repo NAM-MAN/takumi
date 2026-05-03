@@ -98,7 +98,8 @@ command -v copilot > /dev/null && copilot_installed=true
 codex_models='[gpt-5.4]'
 copilot_models='[gpt-5.4]'
 if [ "$codex_installed" = true ]; then
-  if codex exec -m gpt-5.5 -s read-only -C "$(pwd)" "1" >/dev/null 2>&1; then
+  # 短 prompt (1 token) なので hang trigger ではないが、`--skip-git-repo-check` で sandbox trust 問題回避、`timeout 30s` で念のため hard cap
+  if timeout 30s codex exec -m gpt-5.5 -s read-only --skip-git-repo-check -C "$(pwd)" "1" >/dev/null 2>&1; then
     codex_models='[gpt-5.5, gpt-5.4]'
   fi
 fi

@@ -184,20 +184,25 @@ Agent tool:
 
 発見数が50件を超える場合、軍師 にノイズ除去を依頼:
 
-<!-- 例示は guaranteed baseline (gpt-5.4)。env.yaml の preference.model: auto 時、Plus user の runtime は gpt-5.5。 -->
+<!-- hardening v2 (2026-05-03): stdin heredoc / `timeout 600s` / 5.5 default / prompt 1.5KB 上限。
+  ファイル本文は呼出側で埋込み、codex に「読め」命令で hang trigger を引かない (詳細: `executor.md`「invocation hardening v2」)。 -->
 ```bash
-codex exec -m gpt-5.4 -s read-only -C "$(pwd)" \
-  "以下の発見リストから、証拠が不十分または影響が極めて小さいものを特定せよ。
-削除候補のIDリストと理由を日本語で出力せよ。
+PROMPT_FILE=$(mktemp)
+cat > "$PROMPT_FILE" <<EOF
+以下の発見リストから、証拠が不十分または影響が極めて小さいものを特定せよ。
+削除候補の ID リストと理由を日本語で出力せよ。出力 1.5KB 以内。
 
-$(cat .takumi/sprints/{日付}/discoveries.md)" 2>&1 | tail -100
+## 発見リスト
+$(cat .takumi/sprints/{日付}/discoveries.md)
+EOF
+timeout 600s codex exec -m gpt-5.5 -s read-only --skip-git-repo-check -C "$(pwd)" - < "$PROMPT_FILE" 2>&1 | tail -100
 ```
 
 **注意点:**
-- `-o` オプションは存在しない。結果は stdout に出るので `2>&1 | tail -100` でノイズ除去
-- プロンプトは1つの文字列引数として渡す
-- `$(cat ...)` でファイル内容をプロンプトに直接展開する
-- timeout 120秒を設定する（Bash tool の timeout パラメータ）
+- `-` で stdin 経由 prompt 渡し (codex に「読め」命令しない、長 prompt + sandbox の hang trigger 回避)
+- `timeout 600s` で hard timeout、超過時は subagent (Sonnet via Agent tool) Tier 2 fallback
+- 発見リストが 1.5KB 超なら ICE 上位だけ抽出するか、subagent 直接 dispatch を検討
+- `--skip-git-repo-check` 必須 (sandbox trust 問題回避)
 
 軍師 の指摘に基づき、discoveries.md から低品質な発見を除外。
 

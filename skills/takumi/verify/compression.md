@@ -139,13 +139,14 @@ for (const testId of allTestIds) {
 
 削除候補が 3 件以上ある場合、軍師 に敵対レビューを依頼:
 
-<!-- 例示は guaranteed baseline (gpt-5.4)。env.yaml の preference.model: auto 時、Plus user の runtime は gpt-5.5 (詳細: `~/skills/takumi/executor.md`「GPT-5.5 upgrade path」)。 -->
+<!-- hardening v2 (2026-05-03): stdin heredoc / `timeout 600s` / 5.5 default / prompt 1.5KB 上限 (詳細: `executor.md`「invocation hardening v2」)。 -->
 ```bash
-codex exec -m gpt-5.4 -s read-only -C "$(pwd)" \
-  "以下のテスト削除候補を敵対的にレビューせよ。subsumption 判定は正しいか、
-   仕様表現として残すべき test はないか、ドメイン上の暗黙の守りを失わないか。
-   候補一覧:
-   {削除候補の test 名と subsumption proof}" 2>&1 | tail -100
+timeout 600s codex exec -m gpt-5.5 -s read-only --skip-git-repo-check -C "$(pwd)" - <<'PROMPT' 2>&1 | tail -100
+以下のテスト削除候補を敵対的にレビューせよ。subsumption 判定は正しいか、
+仕様表現として残すべき test はないか、ドメイン上の暗黙の守りを失わないか。
+候補一覧:
+{削除候補の test 名と subsumption proof}
+PROMPT
 ```
 
 ---

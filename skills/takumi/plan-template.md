@@ -46,9 +46,10 @@
 - [ ] F2. ビルド通過
 - [ ] F3. テスト通過
 - [ ] F4. 軍師 最終レビュー
-  - `.takumi/profiles/env.yaml` の preference.tier (copilot / codex / opus-max) + preference.model (auto / gpt-5.5 / gpt-5.4) で tier × model を決定。Tier 2 (codex) の例 (guaranteed baseline gpt-5.4、Plus user の auto 時 runtime は gpt-5.5):
-  - `codex exec -m gpt-5.4 -s read-only -C "$(pwd)" "git diff main...HEAD の全変更を敵対的にレビューせよ。境界条件・障害パス・競合状態・セキュリティを重点的に" 2>&1 | tail -100`
-  - 他 tier の exact 構文と GPT-5.5 upgrade path は `executor.md` の「軍師 routing」+「GPT-5.5 upgrade path」節参照
+  - `.takumi/profiles/env.yaml` の preference.tier (copilot / codex / opus-max) + preference.model (auto / gpt-5.5 / gpt-5.4) で tier × model を決定。Tier 2 (codex、5.5 default、hardening v2) の例 (1 行目のみ示す、prompt は stdin heredoc):
+  - `timeout 600s codex exec -m gpt-5.5 -s read-only --skip-git-repo-check -C "$(pwd)" - <<'PROMPT' 2>&1 | tail -100`
+  - heredoc 本文: "git diff main...HEAD の全変更を敵対的にレビューせよ。境界条件・障害パス・競合状態・セキュリティを重点的に。出力 1.5KB 以内。" → `PROMPT`
+  - 他 tier の exact 構文と GPT-5.5 upgrade path / hang fallback は `executor.md` の「軍師 routing」+「GPT-5.5 upgrade path」+「invocation hardening v2」節参照
 ```
 
 ## ルール
@@ -62,14 +63,23 @@
 
 計画ファイル生成直後、軍師 に自動でレビューを依頼。`.takumi/profiles/env.yaml` の `preference` に応じて tier を選択:
 
-<!-- 例示は guaranteed baseline (gpt-5.4)。env.yaml の preference.model: auto 時、Plus user / Pro+ user の runtime は gpt-5.5 (詳細: executor.md「GPT-5.5 upgrade path」)。 -->
+<!-- hardening v2 (2026-05-03): stdin heredoc / `timeout 600s` / 5.5 default / prompt 1.5KB 上限。
+  ファイル参照は呼出側で本文を埋込み、codex に「読め」命令で hang trigger を引かない。
+  hang/4xx → subagent (Sonnet via Agent tool) Tier 2 fallback (詳細: executor.md「invocation hardening v2」)。 -->
 ```bash
-# Tier 2 (codex exec、ChatGPT Plus) の例
-codex exec -m gpt-5.4 -s read-only -C "$(pwd)" \
-  ".takumi/plans/{name}.md を読み、前提の誤り・スコープの漏れ・Wave依存の矛盾・リスクを指摘せよ" 2>&1 | tail -100
+# Tier 2 (codex exec、ChatGPT Plus、hardening v2) の例
+PROMPT_FILE=$(mktemp)
+cat > "$PROMPT_FILE" <<EOF
+以下の plan の前提の誤り・スコープの漏れ・Wave 依存の矛盾・リスクを指摘せよ。
+出力 1.5KB 以内、診断と修正案のみ。
 
-# Tier 1 (copilot、Copilot Pro / Pro+) の例
-# copilot -p "..." --model gpt-5.4 --cwd "$(pwd)" --available-tools="view,grep,glob,web_fetch" --silent
+## plan 本文
+$(cat .takumi/plans/{name}.md)
+EOF
+timeout 600s codex exec -m gpt-5.5 -s read-only --skip-git-repo-check -C "$(pwd)" - < "$PROMPT_FILE" 2>&1 | tail -100
+
+# Tier 1 (copilot、Copilot Pro / Pro+) の例 (default fallback chain から除外、user override 時のみ — executor.md「軍師 routing」節参照)
+# copilot -p "..." --model gpt-5.5 --cwd "$(pwd)" --available-tools="view,grep,glob,web_fetch" --silent
 ```
 
 各 tier の詳細呼出パターンは `executor.md` 「軍師 routing (3-tier + quota rotation)」参照。

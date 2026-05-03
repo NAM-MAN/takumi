@@ -37,10 +37,18 @@
 
 これを**軍師に 1 回だけ** 敵対的レビュー:
 
+<!-- hardening v2 (2026-05-03): stdin heredoc / `timeout 600s` / 5.5 default。
+  ファイル本文は呼出側で埋込み、codex に「読め」命令で hang trigger を引かない (詳細: `skills/takumi/executor.md`「invocation hardening v2」)。 -->
 ```bash
-codex exec -m gpt-5.4 -s read-only -C "$(pwd)" \
-  ".takumi/drafts/{proposal-name}.md を敵対的レビュー: metric の gaming 余地 / selection bias / blinding 破綻 / n 不足での結論反転リスクを指摘" \
-  2>&1 | tail -100
+PROMPT_FILE=$(mktemp)
+cat > "$PROMPT_FILE" <<EOF
+以下の proposal を敵対的にレビュー: metric の gaming 余地 / selection bias /
+blinding 破綻 / n 不足での結論反転リスクを指摘。出力 1.5KB 以内。
+
+## proposal 本文
+$(cat .takumi/drafts/{proposal-name}.md)
+EOF
+timeout 600s codex exec -m gpt-5.5 -s read-only --skip-git-repo-check -C "$(pwd)" - < "$PROMPT_FILE" 2>&1 | tail -100
 ```
 
 指摘を反映してから次段階へ。

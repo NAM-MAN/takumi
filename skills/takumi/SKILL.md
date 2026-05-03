@@ -208,10 +208,14 @@ Agent tool:
 ```
 
 **軍師 (GPT-5.x)** — 大規模タスクの設計分析:
-<!-- 例示は guaranteed baseline (gpt-5.4)。env.yaml の preference.model: auto 時、Plus user の runtime は gpt-5.5。 -->
+<!-- hardening v2 (2026-05-03): stdin heredoc / `timeout 600s` / 5.5 default / prompt 1.5KB 上限。
+  参照ファイルは呼出側で本文を埋込み、codex に「読め」命令で hang trigger を引かない。
+  hang/4xx/non-zero exit 時は subagent (Sonnet via Agent tool) Tier 2 fallback。
+  詳細: `executor.md`「invocation hardening v2」+「GPT-5.5 upgrade path」。 -->
 ```bash
-codex exec -m gpt-5.4 -s read-only -C "$(pwd)" \
-  "{設計に関する質問を日本語で記述}" 2>&1 | tail -100
+timeout 600s codex exec -m gpt-5.5 -s read-only --skip-git-repo-check -C "$(pwd)" - <<'PROMPT' 2>&1 | tail -100
+{設計に関する質問を日本語で記述、1.5KB 以内。参照ファイルは本文を埋込}
+PROMPT
 ```
 
 ---

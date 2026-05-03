@@ -125,9 +125,9 @@ cat > "$PROMPT_FILE" <<EOF
 [output format spec — category 別 contract、上表参照]
 EOF
 
-# 2. codex exec で 職人(GPT-5.5) dispatch (gpt-5.5 強制、auto-fallback 拒否)
+# 2. codex exec で 職人(GPT-5.5) dispatch (gpt-5.5 強制、auto-fallback 拒否、timeout 600s ハード)
 RAW_OUTPUT=$(mktemp /tmp/shokunin-output-XXXX.log)
-cat "$PROMPT_FILE" | codex exec -m gpt-5.5 -s read-only --skip-git-repo-check -C "$(pwd)" - > "$RAW_OUTPUT" 2>&1
+cat "$PROMPT_FILE" | timeout 600s codex exec -m gpt-5.5 -s read-only --skip-git-repo-check -C "$(pwd)" - > "$RAW_OUTPUT" 2>&1
 EXIT=$?
 
 # 3. metadata 抽出 (軍師 H1 反映: 4xx 先行判定で degrade path 確保)
@@ -135,7 +135,16 @@ HAS_4XX=$(grep -qiE '(429|401|403|400)' "$RAW_OUTPUT" && echo 1 || echo 0)
 ACTUAL_MODEL=$(grep -E '^model: ' "$RAW_OUTPUT" | head -1 | awk '{print $2}')
 TOKENS_USED=$(grep -A1 '^tokens used$' "$RAW_OUTPUT" | tail -1 | tr -d ',' | grep -oE '[0-9]+' || echo 0)
 
-# 4. 4xx 先行判定 (軍師 H1: actual_model 抽出より先に degrade path)
+# 4a. timeout 検出 (hardening v2、2026-05-03 追加: 長 prompt hang を 600s overall hard cap で吸収。
+#     正常な codex 長考は 600s 内で完了する想定、超過は異常として subagent fallback)
+if [ "$EXIT" = "124" ]; then
+  log_warning "codex hung > 600s, falling back to subagent (Sonnet) — prompt size $(wc -c < "$PROMPT_FILE") bytes"
+  trigger_mode_degrade
+  return_to_shokunin_sonnet  # subagent Tier 2 fallback (Claude subscription 内、追加 API 課金なし)
+  exit 0
+fi
+
+# 4b. 4xx 先行判定 (軍師 H1: actual_model 抽出より先に degrade path)
 if [ "$HAS_4XX" = "1" ]; then
   # 4xx 検出 → 当日 mode を強制 balanced に degrade、当該 task は職人(Sonnet) 経由で再 dispatch
   trigger_mode_degrade

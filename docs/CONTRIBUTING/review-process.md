@@ -124,16 +124,21 @@ corpus に依存して hit 率が大きく変動するため、単独の発動 t
 
 **コマンドテンプレート** (tier は `.takumi/profiles/env.yaml` preference.tier に従う、model は preference.model で 5.5/5.4/auto 切替、詳細は `skills/takumi/executor.md` 参照):
 
-<!-- 例示は guaranteed baseline (gpt-5.4)。env.yaml の preference.model: auto 時、Plus user の runtime は gpt-5.5、Pro+ user の copilot runtime も gpt-5.5。 -->
+<!-- hardening v2 (2026-05-03): stdin heredoc / `timeout 600s` / 5.5 default / prompt 1.5KB 上限。
+  hang/4xx → subagent (Sonnet via Agent tool) Tier 2 fallback。copilot は default fallback chain から除外 (user override 時のみ)。
+  詳細: `skills/takumi/executor.md`「invocation hardening v2」。 -->
 ```bash
-# Tier 2 (codex exec、ChatGPT Plus) の例
-codex exec -m gpt-5.4 -s read-only -C "$(pwd)" \
-  "git diff master...HEAD を敵対的にレビュー: (1) 破壊的変更の見逃し, (2) semver 判定の妥当性, (3) public repo として公開不可な情報, (4) 既存 skill との論調整合性" \
-  2>&1 | tail -100
+# Tier 2 (codex exec、ChatGPT Plus、hardening v2) の例
+timeout 600s codex exec -m gpt-5.5 -s read-only --skip-git-repo-check -C "$(pwd)" - <<'PROMPT' 2>&1 | tail -100
+git diff master...HEAD を敵対的にレビュー:
+(1) 破壊的変更の見逃し, (2) semver 判定の妥当性,
+(3) public repo として公開不可な情報, (4) 既存 skill との論調整合性。
+出力 1.5KB 以内。
+PROMPT
 
-# Tier 1 (copilot、Copilot Pro / Pro+) の例
+# Tier 1 (copilot、Copilot Pro / Pro+) の例 (default fallback chain から除外、user override 時のみ)
 # copilot -p "git diff master...HEAD を敵対的にレビュー..." \
-#   --model gpt-5.4 --cwd "$(pwd)" \
+#   --model gpt-5.5 --cwd "$(pwd)" \
 #   --available-tools="view,grep,glob,web_fetch" --silent
 ```
 
