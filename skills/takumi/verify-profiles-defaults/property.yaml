@@ -1,0 +1,19 @@
+name: "property"
+description: "不変条件の担保。pure property-based testing + mutation で冪等性・可換性・結合性を守る。"
+goal: "不変条件"
+oracle: "property"
+layers: ["L1", "L4"]
+mutation_floor: 80
+budget_sec: 45
+fallback_layer: null
+applies_to:
+  ac_class: "property"
+  layer: ["domain"]
+recipes:
+  - "fast-check-property"
+  - "invariant-pbt"
+examples:
+  - ac_id: "AC-SORT-003"
+    ac_text: "リスト順序は stable sort で保持される。"
+  - ac_id: "AC-DEDUP-005"
+    ac_text: "重複除去は冪等。同じ入力を 2 回適用しても結果は変わらない。"

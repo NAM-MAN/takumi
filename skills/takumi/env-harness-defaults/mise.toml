@@ -1,0 +1,28 @@
+# mise.toml — env tier L1 既定テンプレ (step0-env が project 直下へ copy)
+#
+# 単一 source: runtime バージョン + env var + task + venv 自動 activate を mise 1 本に集約。
+# direnv / nvm / pyenv は不要。OS 非依存 (mac/Linux/WSL ネイティブ)、低ストレージ
+# (uv/pnpm は content-addressed store から hardlink → 同一依存は実体 1 個)。
+#
+# 言語行は step0-env が 0a-2 の検出結果で埋める。不要な行は削除してよい。
+
+[tools]
+# node   = "22"
+# python = "3.13"
+# pnpm   = "latest"   # node 採用時。content-addressed store で依存を dedup
+# uv     = "latest"   # python 採用時。global cache から hardlink
+
+[env]
+# Python venv を cd で自動 activate (direnv 不要)。python 採用時のみ有効化
+# _.python.venv = { path = ".venv", create = true }
+# DATABASE_URL = "..."   # state tier S0 (PGlite) は file/memory なので通常不要
+
+[tasks.dev]
+description = "開発サーバ起動 (project に合わせて書き換え)"
+run = "echo 'set your dev command'"
+
+# ── 破棄 / ストレージ掃除 (随時) ──────────────────────────────
+# mise prune          # 未使用 runtime を削除
+# uv cache prune       # uv キャッシュ GC (python)
+# pnpm store prune     # pnpm store GC (node)
+# プロジェクト破棄は rm -rf <dir> のみ (.venv/node_modules は hardlink なので実体を巻き込まない)

@@ -1,0 +1,1 @@
+{"ts":"2026-07-02T00:02:00Z","gate":"G6","task_id":"LC-G6","risk":"normal","adjudicator":"human","verdict":"escalate","stop_kind":"blocked","blocked_reason":"missing_capability","rationale":"軍師+opus-max 共に不能 (autonomy.md §4) → state.json.status=paused_context → 次 tick 再起床せず human に起床要求 (executor.md 終端状態表)","_legal_control":true}

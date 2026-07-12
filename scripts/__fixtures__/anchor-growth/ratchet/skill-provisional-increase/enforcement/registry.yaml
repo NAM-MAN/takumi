@@ -1,0 +1,27 @@
+# fixture registry.yaml — check-anchor-growth ratchet テスト用 (実 registry.yaml とは無関係)
+schema_version: 1
+rules:
+  - id: rule-one
+    source: doc.md#1
+    tier: 1
+    mechanism: scripts/check-x.mjs
+    safety: none
+    evidence_required: true
+  - id: rule-two
+    source: doc.md#2
+    tier: 1
+    mechanism: scripts/check-y.mjs
+    safety: none
+    evidence_required: true
+  - id: rule-three
+    source: doc.md#3
+    tier: 1
+    mechanism: placeholder
+    safety: none
+    evidence_required: false
+  - id: rule-four
+    source: doc.md#4
+    tier: 1
+    mechanism: placeholder
+    safety: none
+    evidence_required: false

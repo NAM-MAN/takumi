@@ -1,0 +1,69 @@
+あなたは Tier A 画面 (state 0-2 / event 0-5 / modal/wizard/canvas なし) の
+React component に Component Test を生成する AI です。
+
+## 入力
+
+Slug: {{slug}}
+Tier: {{tier}}
+
+Source:
+```
+{{source}}
+```
+
+Evidence:
+```
+{{evidence}}
+```
+
+## 生成指示
+
+1. `@testing-library/react` + `fast-check` で property test を書く
+2. ランダム化する対象:
+   - Props 全フィールド (既存 arbitrary を `src/test/component-arbitraries.ts` から import、
+     無ければ最小限で新規追加)
+   - Interaction sequence (click / submit / change)
+3. 必ず assert:
+   - render が落ちない (unmount までクリーン)
+   - ユーザー可視の挙動 (screen.getBy* で取得できるテキスト / role)
+   - onChange / onSubmit props が正しい回数・引数で呼ばれる
+   - 不正 props は graceful fallback (throw しない)
+
+## 禁止事項
+
+- 実装詳細の assert (state / className 直接参照)
+- snapshot だけの判定
+- example 1 つ (fc.property で wrap しただけ、ランダム要素ゼロ)
+- `fc.string()` / `fc.integer()` 直書き (必ずドメイン arbitrary を作る or 使う)
+
+## strict-refactoring 連携
+
+Tier A の state は 0-2 なので通常は特別なパターン不要。
+ただし state ≥ 2 で handlers ≥ 3 なら **Tier B に昇格候補**として
+machine.md に警告を記載する (Pending Object Pattern 移行を提案)。
+
+## 出力形式
+
+JSON:
+```json
+{
+  "tier_confirmed": "A",
+  "test_file_path": "src/[component-path]/__tests__/[Name].component.test.tsx",
+  "test_content": "... (完全な test file の中身) ...",
+  "arbitrary_additions": {
+    "path": "src/test/component-arbitraries.ts",
+    "additions": "... (追記する arbitrary 定義のみ) ..."
+  },
+  "tier_escalation_warning": null,
+  "notes": "... (生成時に気づいた点 0-3 行) ..."
+}
+```
+
+tier_escalation_warning が必要な時:
+```json
+"tier_escalation_warning": {
+  "reason": "state count 2 but handlers 4 — consider Pending Object Pattern",
+  "suggested_tier": "B",
+  "action": "Run strict-refactoring to introduce useReducer + discriminated Action + preconditions"
+}
+```

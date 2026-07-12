@@ -1,0 +1,35 @@
+# macOS
+.DS_Store
+
+# Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Node (for any helper tools in the future)
+node_modules/
+npm-debug.log
+yarn-error.log
+pnpm-debug.log
+
+# OS / tmp
+*.log
+.env
+.env.local
+tmp/
+
+# Claude Code 内部ファイル (scheduled_tasks.lock 等)
+.claude/
+
+# takumi (計画・状態・sprint・telemetry・verify-loop の中間成果物)
+.takumi/
+# OSS 公開リポジトリ: 内蔵 backlog は内部 issue を含むため絶対に公開しない (BL-002)。
+# 将来 .takumi/ を選択追跡 (.takumi/*) に変えても backlog だけは追跡対象にしないこと。
+.takumi/backlog/
+
+# verify-loop が吐く Stryker tick artifact (ephemeral、追跡禁止)
+stryker.tick*.config.mjs
+vitest.stryker-*.config.ts
+.stryker-tmp/
+reports/stryker/

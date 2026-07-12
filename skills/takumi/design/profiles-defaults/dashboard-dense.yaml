@@ -1,0 +1,57 @@
+name: "dashboard-dense"
+description: "データ密度高めの管理画面ダッシュボード。sidebar 固定、table/kpi 主体。"
+layout:
+  container: "max-w-[1280px] mx-auto"
+  sidebar: "w-60 fixed"
+  content_padding: "px-6 py-4"
+  grid_unit: 4
+typography:
+  scale_emphasis: "data"
+  table_density: "compact"
+interactions:
+  row_hover: true
+  row_focus_ring: true
+  skeleton_loader: true
+  optimistic_update: contract-derived   # 既定 optimistic。pessimistic は I6+入力喪失軸のみ。surface-archetypes (f) / data-access-protocol.md
+primary_patterns:
+  - "sidebar-nav"
+  - "data-table"
+  - "tabs"
+  - "kpi-cards"
+required_components:
+  - "DataTable"
+  - "Sidebar"
+  - "Tabs"
+  - "KpiCard"
+layout_invariants:
+  hard:
+    - "container は max-w-[1280px] mx-auto"
+    - "sidebar は w-60 fixed、overflow-y-auto"
+    - "data row は clickable で focus-visible ring あり"
+  soft:
+    - "spacing は 4px grid に従う"
+    - "data row height は 32/40/48 のいずれか"
+    - "KPI card padding は p-4 / p-6"
+ref_archetypes_fit:        # brand 名は seed でなく fit メタ。原理写像は craft-layer.md principle dictionary 経由
+  - "freee"
+  - "SmartHR"
+  - "kintone"
+  - "Money Forward"
+
+# craft 層 (craft-layer.md / craft-tokens.md / jp-typography.md)
+locale_profile: "ja-JP"    # ja-JP | en-US | mixed
+craft:                     # principle dictionary (brand 名でなく原理 enum で seed)
+  density: "high"
+  contrast_strategy: "restrained"
+  motion: "subtle"
+  surface_depth: "flat+hairline"
+  accent_discipline: "single-accent"
+  type_personality: "technical"
+  color_system: "oklch-ramp-radix12"   # craft-tokens.md §1
+  jp_typography: true                   # jp-typography.md base layer を emit
+craft_invariants:
+  soft:                                 # AI-slop blocklist (craft-layer.md §5)
+    - "no_default_ai_font"
+    - "no_single_box_shadow"
+    - "pure_gray_without_intent"
+    - "unjustified_component_count"

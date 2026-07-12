@@ -1,0 +1,3 @@
+{"ts":"2026-06-27T00:00:00Z","gate":"G1","task_id":"T-1","risk":"critical","adjudicator":"human","verdict":"escalate","confidence":"high","stop_kind":"dossier","rationale":"plan critical AC、human 承認"}
+{"ts":"2026-06-27T00:01:00Z","gate":"G3","task_id":"T-2","risk":"normal","adjudicator":"gunshi","verdict":"proceed","confidence":"medium","stop_kind":"none","rationale":"lint repair ok、無人 proceed"}
+{"ts":"2026-06-27T00:02:00Z","gate":"G6","task_id":"T-3","risk":"normal","adjudicator":"human","verdict":"escalate","stop_kind":"blocked","blocked_reason":"missing_input","rationale":"要件未取得"}

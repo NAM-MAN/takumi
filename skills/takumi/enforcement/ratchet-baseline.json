@@ -1,0 +1,444 @@
+{
+  "generated_at": "2026-07-02T04:48:51.805Z",
+  "files": {
+    ".takumi/plans/ddp-data-access-discipline.md": {
+      "anchored_sections": 0,
+      "total_sections": 18
+    },
+    ".takumi/plans/junshi-discovery.md": {
+      "anchored_sections": 0,
+      "total_sections": 4
+    },
+    "SKILL.md": {
+      "anchored_sections": 0,
+      "total_sections": 31
+    },
+    "backlog/acceptance.md": {
+      "anchored_sections": 0,
+      "total_sections": 2
+    },
+    "backlog/ai-move-sync.md": {
+      "anchored_sections": 0,
+      "total_sections": 9
+    },
+    "backlog/auto-detect.md": {
+      "anchored_sections": 0,
+      "total_sections": 10
+    },
+    "backlog/bootstrap.md": {
+      "anchored_sections": 0,
+      "total_sections": 5
+    },
+    "backlog/migration.md": {
+      "anchored_sections": 0,
+      "total_sections": 10
+    },
+    "backlog/offer-policy.md": {
+      "anchored_sections": 0,
+      "total_sections": 8
+    },
+    "backlog/schema-frontmatter.md": {
+      "anchored_sections": 0,
+      "total_sections": 7
+    },
+    "backlog/schema-project-yaml.md": {
+      "anchored_sections": 0,
+      "total_sections": 8
+    },
+    "backlog-mode.md": {
+      "anchored_sections": 0,
+      "total_sections": 7
+    },
+    "contract/contract-spine.md": {
+      "anchored_sections": 10,
+      "total_sections": 16
+    },
+    "contract/data-access-protocol.md": {
+      "anchored_sections": 9,
+      "total_sections": 18
+    },
+    "contract/domain-data-primitives.md": {
+      "anchored_sections": 0,
+      "total_sections": 15
+    },
+    "contract/surface-archetypes.md": {
+      "anchored_sections": 0,
+      "total_sections": 16
+    },
+    "design/README.md": {
+      "anchored_sections": 0,
+      "total_sections": 14
+    },
+    "design/craft-layer.md": {
+      "anchored_sections": 0,
+      "total_sections": 8
+    },
+    "design/craft-tokens.md": {
+      "anchored_sections": 0,
+      "total_sections": 16
+    },
+    "design/derivation-pipeline.md": {
+      "anchored_sections": 0,
+      "total_sections": 7
+    },
+    "design/jp-typography.md": {
+      "anchored_sections": 0,
+      "total_sections": 12
+    },
+    "design/l7-invariant.md": {
+      "anchored_sections": 0,
+      "total_sections": 14
+    },
+    "design/layout-primitives.md": {
+      "anchored_sections": 0,
+      "total_sections": 9
+    },
+    "design/phases-1-3.md": {
+      "anchored_sections": 0,
+      "total_sections": 14
+    },
+    "design/phases-4-6.md": {
+      "anchored_sections": 0,
+      "total_sections": 14
+    },
+    "design/phases.md": {
+      "anchored_sections": 0,
+      "total_sections": 3
+    },
+    "design/runtime.md": {
+      "anchored_sections": 0,
+      "total_sections": 18
+    },
+    "design/taste-oracle.md": {
+      "anchored_sections": 0,
+      "total_sections": 9
+    },
+    "dispatch/autonomy.md": {
+      "anchored_sections": 3,
+      "total_sections": 11
+    },
+    "dispatch/executor.md": {
+      "anchored_sections": 14,
+      "total_sections": 29
+    },
+    "dispatch/gunshi-invocation.md": {
+      "anchored_sections": 0,
+      "total_sections": 15
+    },
+    "dispatch/loop-invariant.md": {
+      "anchored_sections": 4,
+      "total_sections": 4
+    },
+    "dispatch/routing-mode.md": {
+      "anchored_sections": 0,
+      "total_sections": 12
+    },
+    "dispatch/wave-dag.md": {
+      "anchored_sections": 0,
+      "total_sections": 9
+    },
+    "enforcement/README.md": {
+      "anchored_sections": 0,
+      "total_sections": 15
+    },
+    "enforcement/dsl.md": {
+      "anchored_sections": 0,
+      "total_sections": 4
+    },
+    "enforcement/replay/README.md": {
+      "anchored_sections": 0,
+      "total_sections": 4
+    },
+    "enforcement/reviewers/README.md": {
+      "anchored_sections": 0,
+      "total_sections": 6
+    },
+    "enforcement/reviewers/oracle.md": {
+      "anchored_sections": 0,
+      "total_sections": 4
+    },
+    "enforcement/reviewers/plan-contract.md": {
+      "anchored_sections": 0,
+      "total_sections": 4
+    },
+    "env-harness-defaults/README.md": {
+      "anchored_sections": 0,
+      "total_sections": 3
+    },
+    "env-harness-defaults/db-pglite.md": {
+      "anchored_sections": 0,
+      "total_sections": 4
+    },
+    "integrations.md": {
+      "anchored_sections": 0,
+      "total_sections": 10
+    },
+    "junshi/README.md": {
+      "anchored_sections": 0,
+      "total_sections": 8
+    },
+    "junshi/graduation.md": {
+      "anchored_sections": 0,
+      "total_sections": 9
+    },
+    "junshi/modes.md": {
+      "anchored_sections": 0,
+      "total_sections": 12
+    },
+    "junshi/oracles.md": {
+      "anchored_sections": 0,
+      "total_sections": 22
+    },
+    "junshi/pilot.md": {
+      "anchored_sections": 0,
+      "total_sections": 6
+    },
+    "junshi/runtime.md": {
+      "anchored_sections": 0,
+      "total_sections": 13
+    },
+    "natural-language.md": {
+      "anchored_sections": 0,
+      "total_sections": 16
+    },
+    "plan-template.md": {
+      "anchored_sections": 2,
+      "total_sections": 5
+    },
+    "probe/README.md": {
+      "anchored_sections": 0,
+      "total_sections": 10
+    },
+    "probe/delegation.md": {
+      "anchored_sections": 0,
+      "total_sections": 3
+    },
+    "probe/discover.md": {
+      "anchored_sections": 0,
+      "total_sections": 16
+    },
+    "probe/roles/perf.md": {
+      "anchored_sections": 0,
+      "total_sections": 12
+    },
+    "probe/runtime.md": {
+      "anchored_sections": 0,
+      "total_sections": 17
+    },
+    "probe/triage.md": {
+      "anchored_sections": 0,
+      "total_sections": 16
+    },
+    "qbc.md": {
+      "anchored_sections": 0,
+      "total_sections": 7
+    },
+    "sprint/3lane-discovery.md": {
+      "anchored_sections": 0,
+      "total_sections": 16
+    },
+    "sprint/self-multiplying.md": {
+      "anchored_sections": 0,
+      "total_sections": 10
+    },
+    "sprint/sprint-mode.md": {
+      "anchored_sections": 0,
+      "total_sections": 31
+    },
+    "sprint/wave-formula.md": {
+      "anchored_sections": 0,
+      "total_sections": 11
+    },
+    "step0-bootstrap.md": {
+      "anchored_sections": 0,
+      "total_sections": 8
+    },
+    "step0-env.md": {
+      "anchored_sections": 0,
+      "total_sections": 8
+    },
+    "step0-gunshi-detect.md": {
+      "anchored_sections": 0,
+      "total_sections": 4
+    },
+    "strict-refactoring/README.md": {
+      "anchored_sections": 0,
+      "total_sections": 8
+    },
+    "strict-refactoring/ai-brevity.md": {
+      "anchored_sections": 0,
+      "total_sections": 8
+    },
+    "strict-refactoring/behavior-carrier.md": {
+      "anchored_sections": 0,
+      "total_sections": 29
+    },
+    "strict-refactoring/guide.md": {
+      "anchored_sections": 0,
+      "total_sections": 21
+    },
+    "strict-refactoring/immutable-first.md": {
+      "anchored_sections": 0,
+      "total_sections": 21
+    },
+    "strict-refactoring/language-relaxations.md": {
+      "anchored_sections": 0,
+      "total_sections": 10
+    },
+    "strict-refactoring/profiles.md": {
+      "anchored_sections": 0,
+      "total_sections": 9
+    },
+    "strict-refactoring/review-checklist.md": {
+      "anchored_sections": 0,
+      "total_sections": 12
+    },
+    "strict-refactoring/rules-core.md": {
+      "anchored_sections": 0,
+      "total_sections": 7
+    },
+    "strict-refactoring/rules-heuristics.md": {
+      "anchored_sections": 0,
+      "total_sections": 5
+    },
+    "strict-refactoring/rules-required.md": {
+      "anchored_sections": 0,
+      "total_sections": 5
+    },
+    "strict-refactoring/rules-ui-state.md": {
+      "anchored_sections": 0,
+      "total_sections": 20
+    },
+    "strict-refactoring/smd.md": {
+      "anchored_sections": 0,
+      "total_sections": 14
+    },
+    "strict-refactoring/verify-contracts.md": {
+      "anchored_sections": 0,
+      "total_sections": 10
+    },
+    "sweep/README.md": {
+      "anchored_sections": 0,
+      "total_sections": 11
+    },
+    "sweep/integration-playbook.md": {
+      "anchored_sections": 0,
+      "total_sections": 24
+    },
+    "sweep/quality-model.md": {
+      "anchored_sections": 0,
+      "total_sections": 14
+    },
+    "sweep/reconcile.md": {
+      "anchored_sections": 0,
+      "total_sections": 6
+    },
+    "sweep/runtime.md": {
+      "anchored_sections": 0,
+      "total_sections": 12
+    },
+    "telemetry/telemetry-report.md": {
+      "anchored_sections": 0,
+      "total_sections": 12
+    },
+    "telemetry/telemetry-schema.md": {
+      "anchored_sections": 0,
+      "total_sections": 9
+    },
+    "telemetry/telemetry-spec.md": {
+      "anchored_sections": 0,
+      "total_sections": 13
+    },
+    "templates/backlog-readme.md": {
+      "anchored_sections": 0,
+      "total_sections": 7
+    },
+    "test-strategy.md": {
+      "anchored_sections": 0,
+      "total_sections": 15
+    },
+    "toishi-integration.md": {
+      "anchored_sections": 0,
+      "total_sections": 31
+    },
+    "verify/README.md": {
+      "anchored_sections": 0,
+      "total_sections": 17
+    },
+    "verify/ai-review.md": {
+      "anchored_sections": 0,
+      "total_sections": 8
+    },
+    "verify/component-test.md": {
+      "anchored_sections": 0,
+      "total_sections": 19
+    },
+    "verify/compression-vitals.md": {
+      "anchored_sections": 0,
+      "total_sections": 14
+    },
+    "verify/compression.md": {
+      "anchored_sections": 0,
+      "total_sections": 24
+    },
+    "verify/differential.md": {
+      "anchored_sections": 0,
+      "total_sections": 15
+    },
+    "verify/loop.md": {
+      "anchored_sections": 0,
+      "total_sections": 16
+    },
+    "verify/machine-generator.md": {
+      "anchored_sections": 0,
+      "total_sections": 20
+    },
+    "verify/model-based.md": {
+      "anchored_sections": 0,
+      "total_sections": 27
+    },
+    "verify/mutation-speed.md": {
+      "anchored_sections": 0,
+      "total_sections": 13
+    },
+    "verify/mutation.md": {
+      "anchored_sections": 0,
+      "total_sections": 18
+    },
+    "verify/property-based.md": {
+      "anchored_sections": 0,
+      "total_sections": 13
+    },
+    "verify/runtime.md": {
+      "anchored_sections": 0,
+      "total_sections": 6
+    },
+    "verify/smoke-e2e.md": {
+      "anchored_sections": 0,
+      "total_sections": 13
+    },
+    "verify/spec-tests.md": {
+      "anchored_sections": 0,
+      "total_sections": 19
+    },
+    "verify/type-discipline.md": {
+      "anchored_sections": 0,
+      "total_sections": 6
+    },
+    "verify-loop/README.md": {
+      "anchored_sections": 0,
+      "total_sections": 9
+    },
+    "verify-loop/runtime.md": {
+      "anchored_sections": 0,
+      "total_sections": 10
+    },
+    "verify-loop/seed-state.md": {
+      "anchored_sections": 0,
+      "total_sections": 4
+    }
+  },
+  "provisional_count": 20,
+  "total_rules": 59,
+  "kernel_lines": 24
+}

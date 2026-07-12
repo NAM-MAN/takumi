@@ -1,0 +1,89 @@
+Tier B 画面 (state 3-8 / event 4-10) に **Pending Object Pattern** 本番コード + fc.commands テストを生成する。
+
+## 入力
+Slug: {{slug}}  Tier: {{tier}}
+Source:
+```
+{{source}}
+```
+Evidence: {{evidence}}
+
+## strict-refactoring 準拠 (rule 16-18)
+
+本番コードは **useReducer + discriminated Action + `actionPreconditions` export**。
+既存が useState 直書きなら strict-refactoring を呼んで移行が先。
+
+### 本番テンプレート
+```ts
+// src/features/[feature]/reducer.ts
+export type State = { /* 3-8 フィールド */ }
+export type Action = { type: "ACTION1"; ... } | { type: "ACTION2"; ... }
+
+// 【必須 export】 test が再利用する
+export const actionPreconditions: Record<Action["type"], (s: State) => boolean> = {
+  ACTION1: (s) => /* ... */,
+  ACTION2: (s) => /* ... */,
+}
+
+export function reducer(state: State, action: Action): State {
+  if (!actionPreconditions[action.type](state)) {
+    throw new Error(`Invalid transition: ${action.type}`)
+  }
+  switch (action.type) { /* ... */ }
+}
+```
+
+### テストテンプレート
+```ts
+import { actionPreconditions, reducer, type State } from "../reducer"
+
+class Action1Command implements fc.Command<State, State> {
+  constructor(readonly payload: ...) {}
+  check(m: Readonly<State>) { return actionPreconditions.ACTION1(m) }  // production 再利用
+  run(m: State, r: State) {
+    const next = reducer(m, { type: "ACTION1", payload: this.payload })
+    Object.assign(m, next); Object.assign(r, next)
+  }
+  toString = () => `action1(${JSON.stringify(this.payload)})`
+}
+
+test("reducer: invariants for any sequence", () => {
+  fc.assert(fc.property(fc.commands([
+    ...
+  ], { maxCommands: 50 }), (cmds) => {
+    fc.modelRun(() => ({ model: structuredClone(initial), real: structuredClone(initial) }), cmds)
+  }), { numRuns: 100 })
+})
+```
+
+## 必須
+- 本番の `actionPreconditions` を test の `check` で再利用 (drift 防止)
+- 各 Action に 1 対 1 対応する Command class
+- fc.modelRun の setup は毎回まっさら
+- XState 使用禁止 (Tier B は plain TS のみ)
+- 共通パターンは `.takumi/machines/shared/` を参照
+
+## 禁止
+- test 用に別 model を作る (production の reducer を直接使え)
+- Command.check に precondition 直書き (必ず production から import)
+- numRuns < 100
+
+## Tier 昇格検知
+以下の場合、`tier_escalation_warning` を出力:
+- state > 8
+- action precondition の分岐が 3 超
+- parallel region (独立軸) が必要
+
+## 出力形式
+```json
+{
+  "tier_confirmed": "B",
+  "production_changes": [
+    { "path": "src/features/.../reducer.ts", "action": "create|update", "content": "..." }
+  ],
+  "test_file_path": "src/features/.../__tests__/reducer.model.test.ts",
+  "test_content": "...",
+  "tier_escalation_warning": null,
+  "notes": "..."
+}
+```

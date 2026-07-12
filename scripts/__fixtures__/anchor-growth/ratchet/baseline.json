@@ -1,0 +1,16 @@
+{
+  "generated_at": "2026-07-02T04:48:11.204Z",
+  "files": {
+    "dispatch/loop-invariant.md": {
+      "anchored_sections": 0,
+      "total_sections": 0
+    },
+    "doc.md": {
+      "anchored_sections": 2,
+      "total_sections": 4
+    }
+  },
+  "provisional_count": 1,
+  "total_rules": 3,
+  "kernel_lines": 24
+}

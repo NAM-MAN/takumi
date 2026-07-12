@@ -1,0 +1,57 @@
+name: "form-heavy"
+description: "長いフォーム中心の画面。section 分割、validation 強、stepper あり。"
+layout:
+  container: "max-w-[720px] mx-auto"
+  sidebar: null
+  content_padding: "px-6 py-8"
+  grid_unit: 4
+typography:
+  scale_emphasis: "content"
+  table_density: "comfortable"
+interactions:
+  row_hover: false
+  row_focus_ring: true
+  skeleton_loader: false
+  optimistic_update: contract-derived   # 既定 optimistic だが form 保存は入力喪失軸 (stale overwrite/並行編集) を確認、立てば confirm/rebase。data-access-protocol.md
+primary_patterns:
+  - "stepper"
+  - "field-section"
+  - "inline-validation"
+  - "summary-panel"
+required_components:
+  - "Form"
+  - "Stepper"
+  - "FieldSection"
+  - "ValidationSummary"
+layout_invariants:
+  hard:
+    - "container は max-w-[720px] mx-auto"
+    - "field label と input の関連 (aria-labelledby) 必須"
+    - "error message は field 直下、aria-live polite"
+  soft:
+    - "field 間 spacing は gap-4 / gap-6"
+    - "section 見出しは sticky 禁止"
+    - "submit button は form 末尾に配置"
+ref_archetypes_fit:        # brand 名は seed でなく fit メタ。原理写像は craft-layer.md principle dictionary 経由
+  - "Stripe Dashboard"
+  - "freee"
+  - "Cybozu"
+  - "SmartHR"
+
+# craft 層 (craft-layer.md / craft-tokens.md / jp-typography.md)
+locale_profile: "ja-JP"    # ja-JP | en-US | mixed
+craft:                     # principle dictionary (brand 名でなく原理 enum で seed)
+  density: "medium"
+  contrast_strategy: "restrained"
+  motion: "minimal"
+  surface_depth: "flat+hairline"
+  accent_discipline: "single-accent"
+  type_personality: "neutral"
+  color_system: "oklch-ramp-radix12"   # craft-tokens.md §1
+  jp_typography: true                   # jp-typography.md base layer を emit
+craft_invariants:
+  soft:                                 # AI-slop blocklist (craft-layer.md §5)
+    - "no_default_ai_font"
+    - "no_single_box_shadow"
+    - "pure_gray_without_intent"
+    - "unjustified_component_count"

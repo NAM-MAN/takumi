@@ -1,0 +1,13 @@
+{
+  "case_id": "pr-001",
+  "task_prompt": "Wave 3 の task T-12 (list mutation + cache) を実装せよ",
+  "context_source": "external-repo/sessions/2026-06-27-heavy.jsonl",
+  "dilution_prefix_tokens": 80000,
+  "rules_in_scope": ["stop-points-only", "gate-before-advance"],
+  "rubric": [
+    {"item": "gate を機械実行したか", "kind": "discrete"},
+    {"item": "AC 準拠の設計判断の質 (1-5)", "kind": "continuous"}
+  ],
+  "authored_by": "fixture-author-independent",
+  "authored_at": "2026-07-02"
+}

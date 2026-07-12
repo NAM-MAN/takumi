@@ -1,0 +1,4 @@
+{"ts":"2026-06-27T01:00:00Z","gate":"G1","task_id":"B-1","risk":"critical","adjudicator":"human","verdict":"escalate","stop_kind":"bare","rationale":"いいですか?だけ"}
+{"ts":"2026-06-27T01:01:00Z","gate":"G2","task_id":"B-2","risk":"normal","adjudicator":"human","verdict":"escalate","stop_kind":"dossier","confidence":"high","rationale":"G2 は停止点でない=無人なのに確認"}
+{"ts":"2026-06-27T01:02:00Z","gate":"G3","task_id":"B-3","risk":"normal","adjudicator":"human","verdict":"escalate","stop_kind":"blocked","blocked_reason":"i_just_feel_like_asking","rationale":"不正 blocked_reason"}
+{"ts":"2026-06-27T01:03:00Z","gate":"G1","task_id":"B-4","risk":"critical","adjudicator":"human","verdict":"escalate","stop_kind":"dossier","rationale":"confidence 欠落=推奨に責任なし"}

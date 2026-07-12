@@ -1,0 +1,1 @@
+{"ts":"2026-07-02T00:01:00Z","gate":"G3","task_id":"LC-G3","risk":"critical","adjudicator":"human","verdict":"escalate","confidence":"high","stop_kind":"dossier","rationale":"human floor 不可逆操作 (.github/workflows 変更で deploy 挙動が変わる、autonomy.md §2 Layer2 deterministic override、rollback 手順未定義=fail-closed)","_legal_control":true}

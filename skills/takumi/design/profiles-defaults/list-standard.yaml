@@ -1,0 +1,57 @@
+name: "list-standard"
+description: "list + detail の王道画面。カード or table、pagination 中心。"
+layout:
+  container: "max-w-[1080px] mx-auto"
+  sidebar: null
+  content_padding: "px-6 py-8"
+  grid_unit: 4
+typography:
+  scale_emphasis: "content"
+  table_density: "standard"
+interactions:
+  row_hover: true
+  row_focus_ring: true
+  skeleton_loader: true
+  optimistic_update: contract-derived   # 既定 optimistic。pessimistic は I6+入力喪失軸のみ。surface-archetypes (f) / data-access-protocol.md
+primary_patterns:
+  - "list-view"
+  - "filter-bar"
+  - "pagination"
+  - "detail-panel"
+required_components:
+  - "List"
+  - "Pagination"
+  - "Filter"
+  - "Detail"
+layout_invariants:
+  hard:
+    - "container は max-w-[1080px] mx-auto"
+    - "list 行は clickable、focus-visible ring あり"
+    - "pagination は list 直下に配置、sticky 禁止"
+  soft:
+    - "spacing は 4px grid に従う"
+    - "list card は gap-2 / gap-3"
+    - "filter は上部横 1 行、超過時は collapse"
+ref_archetypes_fit:        # brand 名は seed でなく fit メタ。原理写像は craft-layer.md principle dictionary 経由
+  - "Notion"
+  - "Linear"
+  - "Asana"
+  - "Trello"
+
+# craft 層 (craft-layer.md / craft-tokens.md / jp-typography.md)
+locale_profile: "ja-JP"    # ja-JP | en-US | mixed
+craft:                     # principle dictionary (brand 名でなく原理 enum で seed)
+  density: "medium"
+  contrast_strategy: "balanced"
+  motion: "subtle"
+  surface_depth: "flat+hairline"
+  accent_discipline: "single-accent"
+  type_personality: "neutral"
+  color_system: "oklch-ramp-radix12"   # craft-tokens.md §1
+  jp_typography: true                   # jp-typography.md base layer を emit
+craft_invariants:
+  soft:                                 # AI-slop blocklist (craft-layer.md §5)
+    - "no_default_ai_font"
+    - "no_single_box_shadow"
+    - "pure_gray_without_intent"
+    - "unjustified_component_count"

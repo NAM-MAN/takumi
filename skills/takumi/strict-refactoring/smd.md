@@ -1,0 +1,176 @@
+# SMD — Surface Minimization Discipline (Rule 16 実装 recipe)
+
+`rules-heuristics.md` の **Rule 16** を実運用に落とすための recipe。**責務 / 品質 / 検知能力を落とさずに表面積を削る**。test 側 MSS (`verify/compression.md`) の production 版だが、意味が決定的に反転する点がある (後述)。
+
+> [!IMPORTANT]
+> 「LoC が短いほど良い」は**偽**。production は変更容易性・局所性・事故率を落とさずに **public exports / branching / dependency edges / config knobs** を減らすのが正しい。LoC は**指標でなく副産物**。
+
+---
+
+## 1. SHARPEN / PRUNE / ADD — test MSS との差分
+
+| force | production code での意味 | test MSS との差分 |
+|---|---|---|
+| **SHARPEN** | 責務を保ったまま密度 ↑ | 同じ (assertion 鋭化 → 分岐正規化・defensive 型化) |
+| **PRUNE** | 観測上不要なものを削除 | 同じ (subsumed test → dead export / branch) |
+| **ADD** | **削除の前提条件を先に足す** | **反転**: test MSS の ADD は「新仕様追加」、production の ADD は「PRUNE のために型制約 / contract test / lint rule / boundary を置く」 |
+
+### SHARPEN 具体例
+
+- 分岐正規化 (ネスト if → early return / guard)
+- 重複 validation / logging / authz の統合 (**同一責務かつ rule-of-three 満たす**場合のみ)
+- 型で代替可能な runtime check の型化 (`typeof x === 'string'` → `x: string`、ただし外部境界は除外)
+- defensive コメントで説明されている invariant を型制約に置換
+
+### PRUNE 具体例
+
+- dead export (外部 call sites = 0、知られた動的 import なし)
+- dead branch (coverage 0、Stryker `NoCoverage`)
+- 恒久 on / off の feature flag (TTL 切れ、owner 確定)
+- 使われない error subtype (throw 先が区別して catch していない)
+- 重複 DTO / mapper (同一 shape + 同一責務)
+- 薄い forwarding layer (1 行 delegate)
+
+### ADD 具体例 (必要な時だけ)
+
+- PRUNE 後に型制約 / contract test で逆戻り防止
+- lint rule 追加 (例: `no-unused-exports`) で再発を機械的に止める
+- dependency boundary 追加で再発範囲を制限
+
+**ADD の net LoC は PRUNE の削減 LoC を上回ってはならない**。上回るなら ADD しない = PRUNE もしない。
+
+---
+
+## 2. 必須 Gate (hard、全件通過必須)
+
+PRUNE は 1 件 1 commit、**並列削除禁止**。各件で以下を順に確認:
+
+1. **survived + no-coverage count ≤ baseline** — mutation score 絶対値は分母変動で誤発火する (PRUNE で killed mutant が消えると比率が下がる)。survived / no-cov 数の方が信頼できる。
+2. **public API 署名不変** — 対象 unit が export するとき発火。grep 0 件 + 動的 import 確認 + plugin アーキテクチャ無しを確定してから承認。
+3. **feature flag behavioral invariant 不変** — flag 参照を別 helper に隠す抜け穴があるため、direct reference 数ではなく **behavior** を見る (flag を toggle したときの挙動を test で固定し、PRUNE 前後で同じ挙動か確認)。
+4. **tests pass** — 全 suite green。
+5. **新規 no-cov の説明義務** — 変更行に新しい no-coverage mutant が出たら、「**テストを足す or defensive を削る**」の二択に倒す。放置は禁止 (可視化した以上、責任を取る)。
+
+### 警告層 (soft、記録のみ)
+
+- mutation score 絶対値 (経営指標としては便利だが gate には不適)
+- cyclomatic complexity / fan-in-out
+- perf non-regression (SHARPEN 系で alloc が増えないか、benchmark があれば)
+
+---
+
+## 3. 失敗モード名付き危険分類 (適用前に必ず照合)
+
+抽象標語ではなく **failure mode label** として記憶する。レビュー時はラベルで指摘可能。
+
+| ラベル | 症状 | なぜ危険か |
+|---|---|---|
+| **Premature DRY Trap** | 2 callsites のみで共通化 | 3 箇所目で条件分岐を追加して結局 LoC 増 + 可読性減 (Sandi Metz: "duplication is far cheaper than the wrong abstraction") |
+| **Lifecycle Confusion** | 形は同じだが lifecycle / ownership が違う処理の DRY | 一方の lifecycle が変わった時にもう一方が壊れる。例: `normalizeUserInput` と `normalizeCsvCell` を統合して NUL バイト処理が漏れる |
+| **Silent Contract Violation** | 空 catch / defensive check を「無意味」として削除 | 上位が throw を期待しない契約。prod で静かに 500 化 |
+| **Invisible Consumer Breakage** | 「誰も呼んでない」export を grep 1 発で削除 | plugin / reflection / 動的 import / 外部 SDK consumer は grep に映らない。semver patch で破壊事故 |
+| **Unbounded Rollout Risk** | rollout 100% 見える feature flag を撤去 | staging / 古い mobile client / 内部 admin が 3 ヶ月後に踏む。flag は TTL + owner で管理 |
+| **Short-circuit Breakage** | 3 段 fallback を `candidates.find()` に統合 | 元は短絡評価で lookup コスト最小、統合後は全 candidate eager eval。DB / API 負荷に注意 |
+| **Semantic Collapse** | 似て非なる概念 (`normalizeState` / `normalizeCardinality` 等) を DRY | 名前が似ているだけで別概念。統合は意味論を潰す |
+
+---
+
+## 4. PRUNE 安全手順
+
+```
+候補特定 → 1 件削除 → tests pass? → Stryker incremental → gate 5 本全通過? → commit → 次の候補へ
+                                                           │
+                                                      NG なら revert + 失敗モードラベル記録
+```
+
+### 4.1 Stryker 引き抜きで gate 確認 (JS/TS primary tier)
+
+```bash
+pnpm stryker:incremental --mutate <target-file>
+# .stryker-tmp/incremental.json を読む
+python3 -c "
+import json
+with open('.stryker-tmp/incremental.json') as f: d=json.load(f)
+m = d['files']['<target-file>']['mutants']
+survived = [x for x in m if x['status']=='Survived']
+nc = [x for x in m if x['status']=='NoCoverage']
+print(f'survived={len(survived)} no_cov={len(nc)}')
+"
+```
+
+baseline と比較、`survived + no_cov` が不変または減少なら gate 1 通過。
+
+### 4.2 敵対レビュー (PRUNE 候補が 3 件以上なら必須)
+
+軍師 (GPT-5.x) に敵対レビュー依頼:
+
+<!-- stdin heredoc / `tk_timeout 600` / 5.5 default / prompt 1.5KB 上限 (詳細: `gunshi-invocation.md`「invocation hardening v2」)。 -->
+```bash
+tk_timeout 600 codex exec -m gpt-5.5 -s read-only --skip-git-repo-check -C "$(pwd)" - <<'PROMPT' 2>&1 | tail -100
+以下の PRUNE 候補を敵対的にレビュー。上記 7 失敗モード
+(Premature DRY Trap / Lifecycle Confusion / Silent Contract Violation /
+Invisible Consumer Breakage / Unbounded Rollout Risk / Short-circuit Breakage /
+Semantic Collapse) のいずれかに該当するか判定せよ。
+候補: {...}
+PROMPT
+```
+
+---
+
+## 5. 適用効果の目安 (pure logic unit での典型実測値)
+
+1 unit の SHARPEN + PRUNE を fully 適用した時の目安:
+
+- **LoC 減**: 10-20% (dead export / untracked 残骸 / 重複 defensive の helper 集約で)
+- **survived mutant 数**: 不変または減少 (rule-of-N DRY 集約で重複 defensive が 1 helper に集約 → テスト密度が N 倍に → 未検知 mutant が killed に変わる副作用)
+- **test runtime**: Set 構築・flatMap 化で 30-50% 減 (手書きループより JIT 最適化が効く)
+- **DRY reject 率**: 危険リスト 5-7 pattern のうち 2-3 件が発動、実コードで守られる
+
+必須 gate 5 本通過を条件に、上記を safe に達成可能。
+
+---
+
+## 6. ミクロ Rule 17 / 18 / 20 との関係
+
+SMD は **macro** (何を削るか)。ミクロ (どう書くか) は同じ "avoid mutation" 原則の 3 レイヤー:
+
+- **Rule 17** — Declarative Collection Transform (処理)
+- **Rule 18** — Immutable Construction (構築)
+- **Rule 20** — Binding Immutability (束縛、const by default)
+
+詳細と実測傾向は **`immutable-first.md`**。両者衝突時は **Rule 16 優先** — 宣言的化で一時配列 / fallback / 可読性負債が増えるなら退ける。
+
+---
+
+## 7. Rot Detection 適用条件
+
+Rule 16 の一種として「コメント・識別子・export が dead な世界状態を参照」(Stale Reference) の自動検出を検討したが、**active project では候補ゼロ**が通常の結果:
+
+- Sprint / ADR 管理が機能している project では `Wave N` / `R\d+ M-\d+` 参照は**生きた design doc tracking** (削除すると検索性が落ちる)
+- `.bak` / `.old` ファイルは通常 cleanup 済 (残っていたら即 PRUNE 候補)
+- speculative YAGNI export は既存失敗モード **Invisible Consumer Breakage** で既にカバー
+
+**有効性は project の活性度に依存**:
+
+- Active project (sprint 制度・ADR 運用あり) → false positive 支配、grep 自動検出は**逆効果**
+- Abandoned / legacy project → 効く可能性あり
+
+SMD の新失敗モード追加は見送り。ただし grep パターンは tool として保持 (判断を伴って使う):
+
+```bash
+# Rot candidate scan (use with judgment, high false positive in active projects)
+grep -rnE "if .* ever|just in case|for later|as per .* recommend" src/ --include="*.ts"
+find src/ -name "*.bak" -o -name "*.old" -o -name "*.orig"
+```
+
+---
+
+## 関連リソース
+
+| file | 用途 |
+|---|---|
+| `rules-heuristics.md` (同ディレクトリ) | Rule 16 含む L2 heuristics の目次 |
+| `immutable-first.md` (同ディレクトリ) | Rule 17 / 18 / 20 / 17-D の implementation recipe と実測傾向 |
+| `review-checklist.md` (同ディレクトリ) | profile 別の hard/soft 適用マトリクス |
+| `../verify/compression.md` | test 側 MSS (production 版の対比元) |
+| `../verify/mutation.md` | Stryker 設定、subsumption 解析の JSON schema |

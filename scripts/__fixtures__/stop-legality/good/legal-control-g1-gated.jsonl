@@ -1,0 +1,1 @@
+{"ts":"2026-07-02T00:00:00Z","gate":"G1","task_id":"LC-G1","risk":"normal","adjudicator":"human","verdict":"escalate","confidence":"medium","stop_kind":"dossier","rationale":"autonomy.level=gated (計画だけ確認したい運用、autonomy.md §5 表: gated は G1 human 1回だけ、risk=normal でも人間停止が正しい)","_legal_control":true}

@@ -1,0 +1,10 @@
+{
+  "case_id": "pr-bad",
+  "task_prompt": "x",
+  "context_source": "y",
+  "dilution_prefix_tokens": 1000,
+  "rules_in_scope": ["stop-points-only"],
+  "rubric": [{"item": "gate 実行", "kind": "discrete"}],
+  "authored_by": "a",
+  "authored_at": "2026-07-02"
+}

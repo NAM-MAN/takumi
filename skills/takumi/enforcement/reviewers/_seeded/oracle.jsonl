@@ -1,0 +1,7 @@
+{"id":"mut-1","kind":"bad","must":"catch","expect_anchor":"oracle-immutability","diff":"function setName(u, name) {\n-  return { ...u, name }\n+  u.name = name\n+  return u\n}"}
+{"id":"swallow-1","kind":"bad","must":"catch","expect_anchor":"oracle-error","diff":"async function save(x) {\n   try { await db.write(x) }\n-  catch (e) { logger.error(e); throw new AppError('save failed') }\n+  catch (e) {}\n}"}
+{"id":"scope-1","kind":"bad","must":"catch","expect_anchor":"oracle-scope","diff":"// task: add email validation to signup\n+function validateEmail(s){return /.+@.+/.test(s)}\n+// unrelated: also rewrote billing rounding\n+export function round(n){return Math.floor(n)}"}
+{"id":"secret-1","kind":"bad","must":"catch","expect_anchor":"oracle-security","diff":"-const key = process.env.STRIPE_KEY\n+const key = 'sk_live_51HxAbC9d0eFgHiJk'"}
+{"id":"bound-1","kind":"bad","must":"catch","expect_anchor":"oracle-correctness","diff":"function nth(arr, i) {\n-  if (i < 0 || i >= arr.length) throw new RangeError()\n   return arr[i]\n }"}
+{"id":"clean-1","kind":"clean","must":"pass","diff":"function setName(u, name) {\n   return { ...u, name }\n }"}
+{"id":"clean-2","kind":"clean","must":"pass","diff":"async function save(x) {\n   try { return await db.write(x) }\n   catch (e) { logger.error('save failed', e); throw new AppError('保存に失敗しました') }\n }"}

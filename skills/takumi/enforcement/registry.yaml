@@ -1,0 +1,476 @@
+# enforcement-coverage registry — rule → 強制機構の single source of truth
+# 全 RULE anchor (<!-- RULE: id T#:mechanism -->) は必ずここに 1 entry を持つ。
+# check-enforcement-coverage.mjs が双方向 orphan-zero で gate (M9 同型)。
+# 設計: memory/gate_loop_context_redesign_2026_06_03.md / enforcement/README.md
+schema_version: 1
+created: 2026-06-03
+
+# 軍師 codex gpt-5.5 バチバチ 2round 確定の閾値 (Wave 6 pilot GO/NO-GO の機械基準)
+thresholds:
+  evidence_required_false_ratio_max: 0.20   # 暫定RULE(evidence無)比率の上限 (軍師 1a)
+  reviewer_quorum_normal: "2of2"            # 通常 T2 は 2 reviewer 一致で live
+  reviewer_quorum_safety: "3of2"            # safety/高リスクは 3 中 2 quorum 必須
+  reviewer_agreement_min_safety: 0.90       # 直近 50 件 agreement
+  reviewer_seeded_pass_min: 0.95            # seeded違反スイート pass しないと live にしない
+  agreement_advisory_below: 0.85            # 揺れ <0.85 → advisory 降格
+  agreement_human_below: 0.80               # <0.80 → human-only
+
+# safety 分類は LLM 禁止 (軍師 #3)
+safety_policy:
+  classification_by: human                  # safety 値は人間承認必須
+  unclassified: fail-closed                 # 未分類は止める
+  t2_solo_forbidden: true                   # safety は T1 or human、T2 単独禁止
+  # safety ∈ {none, irreversible, security, data_loss}。autonomy.md §2 Layer2 path と一致
+
+# coverage policy (2026-06-27 W0 指標現実化、軍師 codex gpt-5.5 Q4-2)
+# 「全 section を RULE 化する」は明示的に NON-GOAL。希薄化に効くのは網羅率でなく
+# 「事故実績 + safety + 高リスク」だけを機構化すること。進捗 KPI は section 網羅率でなく
+# enforced rule 数 (evidence_required:true ∧ mechanism live) で測る。placeholder は捨てず
+# 保持するが「未実装」として enforced とは別カウント (enforced と誤認させない)。
+coverage_policy:
+  full_section_anchoring: non-goal          # 1302 section 全 RULE 化は追わない (軍師 Q4-2)
+  enforce_scope: [accident-proven, safety, high-risk]  # 機構化する対象の限定
+  kpi: enforced_rule_count                  # 進捗は live enforced rule 数で測る (網羅率でない)
+  provisional_policy: keep-uncounted        # placeholder は保持・但し enforced と別カウント
+
+# seed entries (census top-priority + safety)。scope は coverage_policy.enforce_scope に限定
+rules:
+  # --- T3 kernel (毎 Wave 再アンカー) ---
+  - id: stop-points-only
+    source: dispatch/loop-invariant.md#1
+    tier: 3
+    mechanism: kernel-reanchor
+    applies_when: always
+    safety: none
+    evidence_required: true
+  - id: gate-before-advance              # W1 2026-06-27: 観測失敗「gate飛ばし」直撃の kernel 不変条件
+    source: dispatch/loop-invariant.md#2
+    tier: 3
+    mechanism: kernel-reanchor          # 規則は再アンカー、発火rule算出/T1·T2手順は executor.md §3 (JIT)
+    applies_when: always
+    safety: none
+    evidence_required: true
+  - id: thin-orchestrator
+    source: dispatch/loop-invariant.md#3
+    tier: 3
+    mechanism: kernel-reanchor
+    applies_when: always
+    safety: none
+    evidence_required: true
+  - id: g6-context-pause
+    source: dispatch/autonomy.md#G6
+    tier: 3
+    mechanism: kernel-reanchor          # context 残量は disk 不可視 → T3 必須 (census surprise#5)
+    applies_when: always
+    safety: none
+    evidence_required: true
+
+  # --- T1 deterministic (script/lint/CI) ---
+  - id: layer2-irreversible-path-override
+    source: dispatch/autonomy.md#2
+    tier: 1
+    mechanism: scripts/check-irreversible-paths.mjs   # 実装+動作確認済 (Wave 3、TEST 1/2 pass)
+    applies_when: "diff.changed_paths != null"
+    safety: irreversible
+    evidence_required: true               # script live
+  - id: paused-human-before-wakeup
+    source: dispatch/executor.md#Step4
+    tier: 1
+    mechanism: scripts/check-loop-terminal.mjs        # 実装+テスト済 (誤完了/stop_reason欠落検出)
+    applies_when: "loop == true"
+    safety: irreversible
+    evidence_required: true
+  - id: autonomy-decision-append-only
+    source: dispatch/autonomy.md#6
+    tier: 1
+    mechanism: scripts/check-append-only.mjs          # 実装+テスト済 (git baseline prefix 検査、改竄/切詰検出)
+    applies_when: "autonomy.level != manual"
+    safety: irreversible
+    evidence_required: true
+  - id: ddp-d1-silent-catch
+    source: contract/data-access-protocol.md#J
+    tier: 1
+    mechanism: templates/ddp-lint.mjs#D1              # 既存
+    applies_when: "task.data_access != null"
+    safety: data_loss
+    evidence_required: true
+  - id: ddp-d5-stringify-key
+    source: contract/data-access-protocol.md#J
+    tier: 1
+    mechanism: templates/ddp-lint.mjs#D5              # 既存
+    applies_when: "task.data_access != null"
+    safety: none
+    evidence_required: true
+  - id: boundary-lint-r3
+    source: contract/domain-data-primitives.md#R3
+    tier: 1
+    mechanism: dependency-cruiser                     # 既存 (Wave 着手時生成)
+    applies_when: "task.domain_slice != null"
+    safety: none
+    evidence_required: true
+  - id: m9-orphan-zero
+    source: contract/contract-spine.md#M9
+    tier: 1
+    mechanism: scripts/spec-graph.mjs                 # 実装+fixture検証済 (Wave 3、双方向 orphan)
+    applies_when: "task.surface_ref != null"
+    safety: none
+    evidence_required: true
+  - id: ac-coverage-gate
+    source: dispatch/executor.md#Step2-F0
+    tier: 1
+    mechanism: scripts/spec-graph.mjs#coverage        # 実装+fixture検証済 (executable∧covered_by空=hard)
+    applies_when: "task.surface_ref != null"
+    safety: none
+    evidence_required: true
+  - id: telemetry-event-schema
+    source: telemetry/telemetry-spec.md#4
+    tier: 1
+    mechanism: scripts/validate-telemetry.mjs         # 実装+テスト済 (jsonl event schema 検証、census surprise#3)
+    applies_when: always
+    safety: none
+    evidence_required: true
+  - id: md-ref-integrity
+    source: docs/CONTRIBUTING/skill-contract.md
+    tier: 1
+    mechanism: scripts/check-md-refs.mjs              # 既存
+    applies_when: always
+    safety: none
+    evidence_required: true
+  - id: toishi-g15-fail-closed
+    source: toishi-integration.md#G1.5
+    tier: 1
+    mechanism: scripts/check-toishi-snapshot.mjs      # 実装+fixture 4case 済 (dilution-100 W0.1): snapshot不在∧Wave進行痕跡 = fail
+    applies_when: "requirements.source == toishi"
+    safety: irreversible
+    evidence_required: true
+
+  # --- T2 isolated-judgment (専用 reviewer subagent) ---
+  - id: oracle-review-f
+    source: dispatch/executor.md#3-F
+    tier: 2
+    mechanism: enforcement/reviewers/oracle.md        # prompt+seeded 済、seeded 7/7 pass で live (Wave 4)
+    applies_when: always
+    safety: none
+    evidence_required: true                           # seeded-go-live: 5 bad catch + 2 clean pass
+  - id: contract-conformance-h
+    source: dispatch/executor.md#3-H
+    tier: 2
+    mechanism: enforcement/reviewers/contract-conformance.md  # 未作成
+    applies_when: "task.domain_slice != null"
+    safety: none
+    evidence_required: false
+  - id: craft-h1-h6
+    source: contract/contract-spine.md#H1-H6
+    tier: 2
+    mechanism: enforcement/reviewers/craft.md         # 未作成、quorum=safety なら 3of2
+    applies_when: "surface.tags.UI in [human-UI, machine+human]"
+    safety: none
+    evidence_required: false
+  - id: ac-quality-c
+    source: contract/contract-spine.md#C
+    tier: 2
+    mechanism: enforcement/reviewers/ac-quality.md    # advisory、未作成
+    applies_when: "task.surface_ref != null"
+    safety: none
+    evidence_required: false
+
+  # --- T1 harness gate (CLAUDE.md 禁止 + Layer2 hook、.claude/settings.json は gitignore 済 local) ---
+  - id: forbid-edit-distributed-skill
+    source: CLAUDE.md#禁止
+    tier: 1
+    mechanism: .claude/settings.json#deny             # ~/.claude/skills/takumi 編集を harness deny
+    applies_when: always
+    safety: none
+    evidence_required: true
+  - id: no-autonomous-git-push
+    source: CLAUDE.md#禁止
+    tier: 1
+    mechanism: .claude/settings.json#ask              # git push は human 承認 (ask)
+    applies_when: always
+    safety: irreversible
+    evidence_required: true
+  - id: layer2-hook-guard
+    source: dispatch/autonomy.md#2
+    tier: 1
+    mechanism: scripts/hook-irreversible-guard.mjs    # PreToolUse: 不可逆 Edit/Write を ask (TEST A-D pass)
+    applies_when: always
+    safety: irreversible
+    evidence_required: true
+
+  # --- WS-B 決裁ドシエ (停止の質、責任逃れ撲滅。T3 kernel + jsonl 監査) ---
+  - id: decision-dossier-required
+    source: dispatch/loop-invariant.md#4
+    tier: 3
+    mechanism: kernel-reanchor                         # 毎 Wave 再アンカー (loop-invariant)
+    applies_when: always
+    safety: none
+    evidence_required: true
+  - id: decision-dossier-schema
+    source: dispatch/autonomy.md#3.5
+    tier: 3
+    mechanism: kernel-reanchor                         # schema source、jsonl stop_kind で監査
+    applies_when: always
+    safety: none
+    evidence_required: true
+  - id: loop-stop-predicate
+    source: dispatch/executor.md#Step4
+    tier: 1
+    mechanism: scripts/check-loop-terminal.mjs         # WS-C: 実装+テスト済 (state.json 機械述語整合)
+    applies_when: "loop == true"
+    safety: irreversible
+    evidence_required: true
+  # W2 (2026-06-27): 決裁ドシエ/停止合法性を T3 kernel から **T1 deterministic 監査**へ昇格。
+  # 観測 accident「無人なのに確認」「裸 yes/no」「続けますか?」を telemetry jsonl から fail させる。
+  - id: stop-legality-audit
+    source: dispatch/autonomy.md#3.5
+    tier: 1
+    mechanism: scripts/check-stop-legality.mjs         # 実装+seeded fixture 済 (good PASS / bad 5 violation FAIL)
+    applies_when: "autonomy.level != manual"
+    safety: none
+    evidence_required: true
+  - id: wave-boundary-no-ask
+    source: dispatch/loop-invariant.md#1
+    tier: 1
+    mechanism: scripts/check-stop-legality.mjs         # wave_boundary.asked_continue=true を fail (続けますか? 禁止)
+    applies_when: "autonomy.level != manual"
+    safety: none
+    evidence_required: true
+
+  # --- bootstrap anchoring: autonomy.md safety core (controlled、高優先ファイルから) ---
+  - id: human-floor-irreversible
+    source: dispatch/autonomy.md#2
+    tier: 1
+    mechanism: scripts/check-irreversible-paths.mjs    # 不可逆判定の決定的 floor (live)
+    applies_when: always
+    safety: irreversible
+    evidence_required: true
+  - id: gate-classification
+    source: dispatch/autonomy.md#1
+    tier: 3
+    mechanism: kernel-reanchor                         # gate 分類は判断時に再アンカー
+    applies_when: always
+    safety: none
+    evidence_required: true
+
+  # --- bootstrap: executor.md 正規セクション (subagent 一括 anchor、2026-06-03 tick) ---
+  - id: codegen-exception-rule
+    source: dispatch/executor.md#棟梁-直接-code-gen-の例外規則
+    tier: 2
+    mechanism: enforcement/reviewers/oracle.md
+    applies_when: always
+    safety: none
+    evidence_required: false
+  - id: opus-delegation-policy
+    source: dispatch/executor.md#Opus-4.8-delegation-policy
+    tier: 3
+    mechanism: kernel-reanchor
+    applies_when: always
+    safety: none
+    evidence_required: false
+  - id: three-mode-routing
+    source: dispatch/executor.md#3-mode-capacity-aware-routing
+    tier: 3
+    mechanism: kernel-reanchor
+    applies_when: always
+    safety: none
+    evidence_required: false
+  - id: wave-gate-pipeline
+    source: dispatch/executor.md#3-検証-Wave-gate
+    tier: 1
+    mechanism: templates/ddp-lint.mjs
+    applies_when: always
+    safety: none
+    evidence_required: true
+  - id: auto-continue-stop-contract
+    source: dispatch/executor.md#6-自動継続-停止点契約
+    tier: 3
+    mechanism: kernel-reanchor
+    applies_when: "autonomy.level != manual"
+    safety: none
+    evidence_required: true
+  - id: per-wave-junshi-gate
+    source: dispatch/executor.md#7-per-Wave-巡視-hook
+    tier: 2
+    mechanism: enforcement/reviewers/oracle.md
+    applies_when: "surface.behavioral == true"
+    safety: none
+    evidence_required: false
+  - id: final-verification-step
+    source: dispatch/executor.md#Step2
+    tier: 1
+    mechanism: scripts/spec-graph.mjs
+    applies_when: "task.surface_ref != null"
+    safety: none
+    evidence_required: true
+  - id: supervised-completion-loop
+    source: dispatch/executor.md#Step4
+    tier: 1
+    mechanism: scripts/check-loop-terminal.mjs         # 実装+テスト済
+    applies_when: "loop == true"
+    safety: irreversible
+    evidence_required: true
+  - id: context-protection-pause
+    source: dispatch/executor.md#コンテキスト保護
+    tier: 3
+    mechanism: kernel-reanchor
+    applies_when: always
+    safety: none
+    evidence_required: true
+
+  # --- bootstrap: contract-spine.md 正規セクション (subagent 一括 anchor、2026-06-03 tick) ---
+  - id: top-contract-i-t-completeness
+    source: contract/contract-spine.md#構造物-1-TopContract
+    tier: 2
+    mechanism: enforcement/reviewers/contract-conformance.md
+    applies_when: "task.surface_ref != null"
+    safety: none
+    evidence_required: false
+  - id: tier0-contract-immutable
+    source: contract/contract-spine.md#仕様ライフサイクル
+    tier: 1
+    mechanism: scripts/spec-graph.mjs#tier0-guard     # 実装+fixture 4対 済 (dilution-100 W0.2): 無承認 Tier0 変更 fail、承認は tier0_change_approved_by
+    applies_when: "task.surface_ref != null"
+    safety: irreversible
+    evidence_required: true
+  - id: consistency-matrix-m1-m12
+    source: contract/contract-spine.md#機械判定-12-対
+    tier: 1
+    mechanism: scripts/spec-graph.mjs#consistency-pairs
+    applies_when: "task.surface_ref != null"
+    safety: none
+    evidence_required: true
+  - id: surface-tags-complete
+    source: contract/contract-spine.md#6-軸タグ
+    tier: 1
+    mechanism: scripts/spec-graph.mjs#tags-validator
+    applies_when: "task.surface_ref != null"
+    safety: none
+    evidence_required: false
+  - id: surface-frontmatter-valid
+    source: contract/contract-spine.md#surface-frontmatter-schema
+    tier: 1
+    mechanism: scripts/spec-graph.mjs#frontmatter-schema
+    applies_when: "task.surface_ref != null"
+    safety: none
+    evidence_required: false
+
+  # --- bootstrap: data-access-protocol.md (DDP D2/D6/D7/D8 + tier/楽観/cache、2026-06-03 tick) ---
+  - id: ddp-da-tier-escalation
+    source: contract/data-access-protocol.md#tier-表
+    tier: 1
+    mechanism: ddp-lint-todo-static
+    applies_when: "task.data_access != null"
+    safety: none
+    evidence_required: false
+  - id: ddp-d7-no-overengineering
+    source: contract/data-access-protocol.md#DA-0
+    tier: 1
+    mechanism: templates/ddp-lint.mjs
+    applies_when: "task.data_access != null"
+    safety: none
+    evidence_required: false
+  - id: ddp-optimistic-default
+    source: contract/data-access-protocol.md#DA-0
+    tier: 1
+    mechanism: ddp-lint-todo-static
+    applies_when: "task.data_access != null"
+    safety: none
+    evidence_required: false
+  - id: ddp-d2-list-invalidation
+    source: contract/data-access-protocol.md#DA-0
+    tier: 1
+    mechanism: templates/ddp-lint.mjs#D2              # 実装+fixture 済 (dilution-100 W0.3、内部 R3): list-affecting mutation に invalidation シグナル無し = fail (narrow)
+    applies_when: "task.data_access != null"
+    safety: data_loss
+    evidence_required: true
+  - id: ddp-canonical-ast-key
+    source: contract/data-access-protocol.md#canonical-ast-key
+    tier: 1
+    mechanism: ddp-lint-todo-static
+    applies_when: "task.data_access != null"
+    safety: none
+    evidence_required: false
+  - id: ddp-store-scope-discipline
+    source: contract/data-access-protocol.md#正規化-store
+    tier: 1
+    mechanism: ddp-lint-todo-static
+    applies_when: "task.data_access != null"
+    safety: none
+    evidence_required: false
+  - id: ddp-connection-invalidation
+    source: contract/data-access-protocol.md#connection-invalidation
+    tier: 1
+    mechanism: templates/ddp-lint.mjs#D8-connection   # 実装+fixture 済 (dilution-100 W0.3、内部 R4): connection cache 書込に明示 invalidation 無し = fail (narrow)
+    applies_when: "task.data_access != null"
+    safety: data_loss
+    evidence_required: true
+  - id: ddp-d6-contract-narrowing
+    source: contract/data-access-protocol.md#契約由来-vs-宣言上書き
+    tier: 1
+    mechanism: ddp-lint-todo-static
+    applies_when: "task.data_access != null"
+    safety: none
+    evidence_required: false
+  - id: ddp-optimistic-discipline
+    source: contract/data-access-protocol.md#楽観-ui-既定
+    tier: 2
+    mechanism: enforcement/reviewers/ddp-advisory.md
+    applies_when: "task.data_access != null"
+    safety: none
+    evidence_required: false
+  - id: ddp-gate-table
+    source: contract/data-access-protocol.md#強制ルール
+    tier: 1
+    mechanism: templates/ddp-lint.mjs
+    applies_when: "task.data_access != null"
+    safety: none
+    evidence_required: false
+
+  # --- BL-008 plan-contract gate (薄い計画=誤実装を潰す。T1 ∩ T2 の AND、Wave 着手前) ---
+  # 設計: .takumi/drafts/bl008-direction-decision.md (軍師 codex gpt-5.5 反証反映)
+  # --- dilution-100 P1/P2': 二層供給 + handoff + respawn (executor.md、W4) ---
+  - id: two-layer-supply
+    source: dispatch/executor.md#2.2-二層供給
+    tier: 1
+    mechanism: scripts/rule-compiler.mjs              # card 実在 + mode card 1枚 ≤20行 は compiler --verify が担保。prose 選定は運用 (T3 併用)
+    applies_when: always
+    safety: none
+    evidence_required: false
+  - id: wave-handoff-artifact
+    source: dispatch/executor.md#4.-記録-+-Wave-handoff-artifact
+    tier: 1
+    mechanism: scripts/check-plan-contract.mjs        # handoff 存在/行数 check は follow-up、当面 T3 運用
+    applies_when: always
+    safety: none
+    evidence_required: false
+  - id: parent-checkpoint-respawn
+    source: dispatch/executor.md#親の-checkpoint-respawn
+    tier: 3
+    mechanism: kernel-reanchor                        # 5 Wave 毎 checkpoint は T3 (context 残量は disk 不可視、g6-context-pause と同型)
+    applies_when: "autonomy.level != manual"
+    safety: none
+    evidence_required: true
+
+  # --- dilution-100 P3: plan gate 行 (rule → plan compile、ref-only) ---
+  - id: plan-gate-lines
+    source: plan-template.md#plan-gate-行
+    tier: 1
+    mechanism: scripts/check-plan-contract.mjs        # 実装+fixture 済 (dilution-100 W3.2): schema/forward+reverse-orphan/上限/ref-only、good3+bad6+既存36 regression0
+    applies_when: "plan.tasks != null"
+    safety: none
+    evidence_required: true
+
+  - id: plan-contract-density
+    source: plan-template.md#薄い計画-gate
+    tier: 1
+    mechanism: scripts/check-plan-contract.mjs        # advisory pre-filter (軍師 ADOPT-narrow、単独 block 禁止)。thin 100% fail / dense 14%
+    applies_when: "plan.tasks != null"
+    safety: none
+    evidence_required: true
+  - id: plan-contract-misimpl-oracle
+    source: dispatch/executor.md#2.5-plan-contract-gate
+    tier: 2
+    mechanism: enforcement/reviewers/plan-contract.md  # blocking authority。seeded 7/7 go-live (5 bad catch + 2 clean pass、Wave 2)
+    applies_when: "plan.tasks != null"
+    safety: none
+    evidence_required: true                            # T1∩T2 AND で block (FP 中和)

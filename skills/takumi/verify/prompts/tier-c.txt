@@ -1,0 +1,109 @@
+Tier C 画面 (state 9-20 / hierarchical / parallel) に XState machine + @xstate/test を生成する。
+
+## 入力
+Slug: {{slug}}  Tier: {{tier}}
+Source:
+```
+{{source}}
+```
+Evidence: {{evidence}}
+Runtime trace (あれば): {{runtime}}
+Intent (あれば): {{intent}}
+
+## 重要な原則
+
+- XState は **test-only**。production コードは触らない
+- devDependencies に xstate / @xstate/test を追加提案 (production 未導入の場合)
+- machine は `.takumi/machines/<slug>/` に生成物として分離 (手修正禁止)
+- intent.md があれば優先。無ければ AST + Runtime の 2 view で生成
+
+## 生成ファイル
+
+### 1. machine.ts
+
+```ts
+// .takumi/machines/<slug>/machine.ts
+import { createMachine } from "xstate"
+
+export const <slug>Machine = createMachine({
+  id: "<slug>",
+  initial: "...",
+  states: {
+    // hierarchical: mode/status 系 enum はネスト
+    // parallel: 独立軸 (modal × main など) は parallel regions
+    // invoke: 共有 async / form / modal machine を import
+  },
+}, {
+  guards: { /* precondition 関数 */ },
+  actions: { /* side effect */ },
+})
+```
+
+### 2. paths.test.ts
+
+```ts
+// .takumi/machines/<slug>/paths.test.ts
+import { createTestModel } from "@xstate/test"
+import { <slug>Machine } from "./machine"
+
+const model = createTestModel(<slug>Machine)
+
+describe("<slug> paths", () => {
+  model.getShortestPaths().forEach((path) => {
+    test(path.description, async () => {
+      await path.test({
+        states: {
+          // 各 state で DOM 観測 (page.url / page.locator 等)
+        },
+        events: {
+          // 各 event で実操作 (page.click / page.fill)
+        },
+      })
+    })
+  })
+})
+```
+
+### 3. machine.md
+
+```markdown
+# <slug> machine (AI 生成、人間レビュー前提)
+
+## 推定された state machine
+[machine.ts へのリンク]
+
+## 不確実な遷移 (人間レビュー必要)
+- ⚠️ loading → error が AST 未確認だが Runtime で発生
+- ⚠️ ...
+
+## 共有マシンから invoke したもの
+- asyncMachine: fetch フロー
+- modalMachine: 確認 dialog
+```
+
+## 必須ルール
+
+- parallel regions は独立軸のみ (結合した状態は hierarchical に)
+- guard 関数は名前付き、precondition と一致
+- 1 machine で state > 40 を検出したら分割提案 ("split_suggestion" を出力)
+- production コードは一切変更しない
+- devDependencies が未導入なら `devDependencies_additions` を出力
+
+## 出力形式
+```json
+{
+  "tier_confirmed": "C",
+  "machine_file": { "path": "...", "content": "..." },
+  "paths_test_file": { "path": "...", "content": "..." },
+  "machine_md_file": { "path": "...", "content": "..." },
+  "devDependencies_additions": ["xstate@^5.0.0", "@xstate/test@^1.0.0"],
+  "split_suggestion": null,
+  "uncertain_transitions": ["...", "..."],
+  "notes": "..."
+}
+```
+
+split_suggestion 例:
+```json
+{ "reason": "50+ states", "sub_machines": ["<slug>-core", "<slug>-modal"] }
+```
