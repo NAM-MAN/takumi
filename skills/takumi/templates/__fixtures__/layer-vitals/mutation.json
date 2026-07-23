@@ -1,0 +1,73 @@
+{
+  "schemaVersion": "1.0",
+  "_comment": "FIXTURE ONLY — layer-vitals の検出確認用。Stryker json reporter 形式の最小サンプル。",
+  "files": {
+    "src/domain/pricing.ts": {
+      "language": "typescript",
+      "mutants": [
+        {
+          "id": "m1",
+          "mutatorName": "ArithmeticOperator",
+          "status": "Killed",
+          "killedBy": ["t-unit-1", "t-e2e-2"],
+          "coveredBy": ["t-unit-1", "t-e2e-2"],
+          "_expect": "ok — 期待層 L1 で殺せている"
+        },
+        {
+          "id": "m2",
+          "mutatorName": "EqualityOperator",
+          "status": "Killed",
+          "killedBy": ["t-model-1"],
+          "coveredBy": ["t-model-1"],
+          "_expect": "layer-escape — 期待 L1 なのに L3 でしか殺せていない (justify 済)"
+        },
+        {
+          "id": "m3",
+          "mutatorName": "ConditionalExpression",
+          "status": "NoCoverage",
+          "coveredBy": [],
+          "_expect": "no-coverage"
+        },
+        {
+          "id": "m4",
+          "mutatorName": "StringLiteral",
+          "status": "CompileError",
+          "_expect": "type-killed — 型 (L0) が無料で落とした"
+        },
+        {
+          "id": "m5",
+          "mutatorName": "BooleanLiteral",
+          "status": "Killed",
+          "killedBy": ["t-e2e-1"],
+          "coveredBy": ["t-e2e-1"],
+          "_expect": "layer-escape — L5 でしか殺せていない"
+        },
+        {
+          "id": "m6",
+          "mutatorName": "ArrayDeclaration",
+          "status": "Killed",
+          "killedBy": ["t-unit-1", "t-model-2"],
+          "coveredBy": ["t-unit-1", "t-model-2"],
+          "_expect": "ok — ただし t-model-2 は unique_kills=0 で redundant-guard 候補"
+        }
+      ]
+    }
+  },
+  "testFiles": {
+    "test/unit/pricing.test.ts": {
+      "tests": [{ "id": "t-unit-1", "name": "pricing は数量割引の境界で合計を返すべき" }]
+    },
+    "test/model/flow.model.test.ts": {
+      "tests": [
+        { "id": "t-model-1", "name": "見積フローは承認後に金額を変更できないべき" },
+        { "id": "t-model-2", "name": "見積フローは初期状態で空の明細を返すべき" }
+      ]
+    },
+    "e2e/checkout.e2e.ts": {
+      "tests": [
+        { "id": "t-e2e-1", "name": "利用者が決済すると注文確定が表示されるべき" },
+        { "id": "t-e2e-2", "name": "利用者が明細を追加すると合計が更新されるべき" }
+      ]
+    }
+  }
+}
