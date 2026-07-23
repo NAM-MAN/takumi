@@ -92,6 +92,8 @@ primitive 名を 10 超に増やすより、**各 primitive に防御 CSS を焼
 | `style_pass_layout_leak` | Phase B (skin) に layout utility 混入 |
 
 機械的に AST/class で検出可能。build 時に即失敗。
+**実体は `templates/design-lint.mjs`** (L4/L6/L7/L8/L9/L10 として実装。`no_raw_positioning` は
+原文どおり escape hatch 宣言外のみを対象にし、`escape_owner:` 宣言があるファイルでは発火しない)。
 
 ---
 

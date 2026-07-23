@@ -60,6 +60,8 @@ profile を問わず全 project で必須。詳細は **`rules-required.md`**。
 | `ai-brevity.md` (同ディレクトリ) | 生成時の冗長を断つ横断規律 (Rule 16 の姉妹、token 経済) |
 | `immutable-first.md` (同ディレクトリ) | Rule 17/18/20 (Immutable First: how to write statements) の実装 recipe |
 | `behavior-carrier.md` (同ディレクトリ) | Rule 19/21 + 17-D (how to structure operations) の実装 recipe |
+| **`carrier-consistency.md`** (同ディレクトリ) | **Rule 19/21 の機械検査 (carrier 二重化 / 層別分布 / new debt)** |
+| **`code-vitals.md`** (同ディレクトリ) | **コード形状の report (LOC / 関数長分布 / 表面積)。gate にしない** |
 | `rules-ui-state.md` (同ディレクトリ) | L3 (React UI state) |
 | `profiles.md` (同ディレクトリ) | 5 profile の詳細、適用条件 |
 | `verify-contracts.md` (同ディレクトリ) | Tier → verify archetype 対応 |

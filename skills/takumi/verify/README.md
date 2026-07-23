@@ -69,6 +69,25 @@ Q4 は single threshold では判定不能。以下の**複数シグナル合算
 >
 > Q4 (張子の虎) への逃避を構造的に封じ、Q3 → Q2 → Q1 の **質重視経路** を強制する。既存コードが Q4 にいる場合は、追加ではなく既存の mutation-kill による refactor で Q1 に救出する。
 
+### KPI は 4 本まで — 総量でなく差分で持つ <!-- ADVISORY: 方針記述。差分 KPI の算出 script は未実装 (現状の機構は mutation gate のみ) -->
+
+4 象限 (量 × 鋭さ) は維持する。そのうえで KPI に足してよいのは 2 本だけで、いずれも **総量でなく変更差分**で測る:
+
+| KPI | 持ち方 | なぜ差分か |
+|---|---|---|
+| coverage | 補助指標 | 従来どおり |
+| mutation score | floor | 従来どおり |
+| **変更行の survived + uncovered changed lines** | PR ごと 0 を目標 | 総量の絶対件数は「mutate 対象面積を減らす」と改善して見える (ロジックを設定/DSL/SQL/外部へ逃がす、generated 扱いにする、mutator 除外を増やす)。かつ新機能追加が常に不利になる。差分スコープなら逃がし先も diff に現れる |
+| **unsafe boundary 数** | ratchet (単調非増加) | `any`/`as`/`!` の**件数**は型逃げを局所から境界へ押し込むだけで改善する。数えるのは「外部入力が validation を経ずドメイン型に入る箇所」 |
+
+**KPI にしないもの**: LOC / 関数長分布 / 層効率 / 二重管理率 / export 表面積 / 複雑度。
+率にすると gaming されるため、これらは report (`cost-balance.md` / `double-management.md` /
+`../strict-refactoring/code-vitals.md`) として持ち、**PR で悪化した項目だけ**を提示する。
+
+> [!NOTE]
+> 面積削減 gaming の監査として、mutant 総数と mutator 除外リストの diff を KPI と並べて記録する。
+> 「変更行の未検出がゼロなのに mutant 総数が急減した」は面積を動かしたサインになる。
+
 ---
 
 ## 目次

@@ -143,6 +143,10 @@ tier_graduation_proposed:
 
 これらは `refactor_review_completed.advisory[]` に含めて report のみ。
 
+> **計測実体** (2 script、いずれも report / 一部 hard):
+> - `code-vitals.md` → 関数長分布 (`≤7 行率` + B3 カウンタ)・ファイル長・引数個数・ネスト深度・表面積。**gate にしない**
+> - `carrier-consistency.md` → carrier 二重化 (K1、hard) / 層別分布 (K2、report) / Rule 19 候補 (K3、report) / Rule 21 new debt (K4、hard・**新規追加分のみ**)
+
 ---
 
 ## Checklist の運用ルール

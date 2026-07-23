@@ -97,6 +97,12 @@ false positive 率 5% 未満を目安。超過したら rule を見直すか lin
 
 静的解析で機械的に弾く。ビルド時に即失敗、PBT は不要。
 
+> **実体**: `templates/design-lint.mjs` (Node 標準のみ、postcss 不使用)。下表の 5 rule に加え
+> `layout-primitives.md` §5 の 6 rule、`jp-typography.md` の 3 rule、`craft-layer.md` §5 の
+> AI-slop 3 rule (soft) を実装する。判断を含む rule (accent_overuse / centered-stack /
+> dark_not_redesigned / unjustified_component_count / 総合 taste) は **実装しない** (§craft-layer §6 が
+> gate 不可と明示)。`cd <project> && node <takumi>/templates/design-lint.mjs src --strict`
+
 | rule | 内容 |
 |---|---|
 | color_token_only | hex / rgb リテラル禁止、CSS var / tailwind token のみ |

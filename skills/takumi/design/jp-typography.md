@@ -199,3 +199,4 @@ button, .label { line-height: 1.2; }   /* JP metrics: 1.0 は clipping/縦ズレ
 | `craft-tokens.md` (同) | type scale (本書は和文拡張) / spacing rhythm |
 | `phases-1-3.md` (同) | Phase 2 style guide が locale_profile + 本 base layer を emit |
 | `l7-invariant.md` (同) | text overflow / lint |
+| `../templates/design-lint.mjs` | 本書の機械検査実体 (J1 line-height unitless / J2 measure は em で `ch` 禁止 / J3 letter-spacing に palt 併用) |

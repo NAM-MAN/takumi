@@ -317,6 +317,7 @@ After:
 
 | file | 用途 |
 |---|---|
+| **`cost-balance.md`** (同ディレクトリ) | **層 obligation。PRUNE 候補を層×コストで見る。L5 は redundant-guard の対象外 (mutation は L5 の守備範囲を表現できない)** |
 | `spec-tests.md` (同ディレクトリ) | USS + MSS の原則 (§5, §8) |
 | `mutation.md` (同ディレクトリ) | Stryker 設定と reporter 種別 |
 | **`compression-vitals.md`** (同ディレクトリ) | B-stack 詳細 (寿命 ledger + cost-aware PRUNE) |
