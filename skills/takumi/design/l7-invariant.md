@@ -93,7 +93,8 @@ week 単位で集計、閾値超過でのみ fail にする運用。
 
 false positive 率 5% 未満を目安。超過したら rule を見直すか lint に移す。
 
-## lint (eslint / stylelint)
+## lint (eslint / stylelint) <!-- RULE: design-lint-token-only T1:templates/design-lint.mjs -->
+<!-- scope:UI surface の className / CSS 宣言 / shall:色・タイポ・radius は token 参照のみ、layout の arbitrary 値と escape hatch 宣言外の position:absolute/fixed と裸 1fr と flex 子の min-width:0 欠落を許さない / not:判断を要する rule (accent_overuse・総合 taste・unjustified_component_count) を hard gate にする / applicability:surface.tags.UI in [human-UI, machine+human] / evidence:templates/design-lint.mjs (fixture 検証済、good 0 / bad 16 rule) -->
 
 静的解析で機械的に弾く。ビルド時に即失敗、PBT は不要。
 

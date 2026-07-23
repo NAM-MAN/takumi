@@ -42,7 +42,8 @@ node <takumi>/templates/carrier-lint.mjs src \
 
 ---
 
-## 2. K1 — なぜ「同一動詞 かつ 同一名詞」だけを見るのか
+## 2. K1 — なぜ「同一動詞 かつ 同一名詞」だけを見るのか <!-- RULE: carrier-dual-definition T1:templates/carrier-lint.mjs -->
+<!-- scope:変更された production コードの層内 carrier / shall:同一層 (または同一 file) に同一 (動詞, 名詞) の method 形と function 形が併存しないこと / not:cross-layer の carrier 差を違反として扱う・汎用動詞での照合・理由なしの抑制 / applicability:diff.changed_paths != null / evidence:templates/carrier-lint.mjs (fixture 検証済) -->
 
 carrier 二重化の証拠として強いのは「**同じ概念が 2 つの carrier で実在する**」ことだけ。
 動詞が同じでも名詞が違えば別概念であり、混在ではない。
@@ -103,7 +104,8 @@ Rule 19 違反ではない。違反は「aggregate 自身が persistence/transpo
 
 ---
 
-## 5. K4 — grandfathered を機構で保証する
+## 5. K4 — grandfathered を機構で保証する <!-- RULE: carrier-rule21-new-debt T1:templates/carrier-lint.mjs -->
+<!-- scope:diff の追加行にある型宣言 / shall:XxxService・XxxHandler.handle()・1-method XxxExecutor.execute() を新規に追加しないこと / not:既存宣言を違反として報告する・rename-only PR での一括是正 / applicability:diff.changed_paths != null / evidence:templates/carrier-lint.mjs (fixture 検証済) -->
 
 `git diff` の**追加行**にある宣言だけを対象にする。既存の `XxxService` は何件あっても検出しない。
 基点は `--base`、無指定なら `master` / `main` との merge-base。git が使えなければ K4 は skip する。

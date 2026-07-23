@@ -12,6 +12,35 @@ cp ~/.claude/skills/takumi/design/profiles-defaults/*.yaml .takumi/profiles/desi
 
 project 固有 profile は `.takumi/profiles/` に yaml を追加するだけ (registry 方式)。
 
+### 品質指標ハーネスの project 設定 (全 optional、未宣言で従来動作)
+
+`templates/*.mjs` (carrier-lint / code-vitals / design-lint / layer-vitals / dm-lint) は
+project 側の宣言を第一情報源にする。**宣言が無ければ path から推定し、その結果は advisory 扱い**に
+降格する (分類器の正しさを規範判定に混ぜないため)。宣言は JSON で置く (YAML パーサ依存を持たない):
+
+| file | 使う script | 内容 |
+|---|---|---|
+| `.takumi/profiles/carrier.json` | carrier-lint | `layers` (層 → glob) / `expect` (層 → 既定 carrier) |
+| `.takumi/profiles/code-vitals.json` | code-vitals | `production` / `test` / `generated` / `config` / `docs` の glob |
+| `.takumi/profiles/design-lint.json` | design-lint | `tokenFiles` (hex や生 font-size が正当なファイル) / `ignore` |
+| `.takumi/profiles/layers.json` | layer-vitals | `layers` (L1/L2/L3/L5 → test glob) / `expect` (src glob → 期待層) |
+
+```jsonc
+// .takumi/profiles/carrier.json (例)
+{
+  "layers": {
+    "domain": ["src/domain/**"],
+    "application": ["src/usecases/**"],
+    "infra": ["src/infra/**", "src/repositories/**"],
+    "ui": ["src/components/**", "src/hooks/**"]
+  },
+  "expect": { "domain": "method", "application": "function", "ui": "hook" }
+}
+```
+
+`layer-vitals` の `expect` は verify profile の `layers` 宣言と同義 (`verify/cost-balance.md` §3)。
+両方ある場合は `layers.json` を優先する。
+
 ## .gitignore への追加行
 
 `.takumi/` 配下と verify-loop が生成する ephemeral artifact を登録 (既存行は skip):
