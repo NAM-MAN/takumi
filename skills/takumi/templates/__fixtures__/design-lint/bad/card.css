@@ -1,0 +1,26 @@
+/* FIXTURE ONLY — design-lint の検出確認用。
+   期待: L1 (hex) / L2 (生 font-size) / L5 (生 border-radius) / L8 (裸 1fr) /
+         J1 (line-height を % で指定) / J2 (max-width に ch) / S2 (単層 shadow) / S3 (pure gray) */
+
+.card {
+  background: #ffffff;
+  font-size: 14px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  line-height: 150%;
+  max-width: 65ch;
+}
+
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.card-muted {
+  color: #808080;
+}
+
+.card-title {
+  font-family: Inter, sans-serif;
+  letter-spacing: 0.04em;
+}
