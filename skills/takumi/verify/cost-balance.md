@@ -48,6 +48,19 @@ script 側でも L5 を `redundant-guard` の候補集合から機構的に除�
 
 同じ理由で、`smoke-e2e.md` の「smoke 5 本」は本指標の結果で増減させない。
 
+### L5 以外にも同じ除外が要る test 群
+
+mutation の unique kill で価値を測れないのは L5 だけではない。以下は
+`redundant_guard_exclude` (config、glob) で除外する:
+
+- **契約テスト** (外部 API / schema / public API の shape)
+- **migration テスト** (up/down の可逆性、データ移行)
+- **i18n テスト** (key 完全性 / placeholder arity)
+- **a11y / observability の契約テスト** (role・label・計装の存在)
+
+いずれも「production コードの局所変異」では表現できない不変条件を守っているため、
+`unique_kills = 0` になっても冗長ではない。
+
 ---
 
 ## 3. 循環論証を避ける — `expected_layers` の出所

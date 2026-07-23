@@ -63,10 +63,17 @@ Rule 19 は **layer-local consistency** であり、cross-layer の carrier 差�
 (`behavior-carrier.md` SC4: hook → function → aggregate method の連鎖は正常)。
 そのため K1 は **同一層、または層が未分類でも同一 file** の対だけを見る。
 
-### 既知の限界 (false negative)
+### 既知の限界 (false negative) <!-- ADVISORY: 検出漏れの説明。強制は RULE carrier-dual-definition -->
 
-`OrderRepository.save(order)` と `saveOrder()` は名詞が `orderrepository` と `order` で一致しないため
-検出されない。FP を最優先で抑える設計の代償であり、検出漏れ側に倒している。
+名詞照合は**文字列一致**であり、以下は検出しない。FP を最優先で抑える設計の代償として、
+検出漏れ側に倒している:
+
+- 型名を名詞に使う対 — `OrderRepository.save(order)` と `saveOrder()` (`orderrepository` ≠ `order`)
+- **複数形・語幹・同義語・語順・略語** — `syncUser()` と `synchronizeUsers()`、`Cfg` と `Config`
+- 型 alias / object literal / receiver 変数の型を辿らないため、`const repo = makeRepo()` 経由の method
+
+つまり K1 が拾えるのは「**素朴に同じ語で二重定義されている**」対だけである。
+検出ゼロを「carrier が揃っている証明」として読んではいけない。
 
 ---
 
@@ -89,7 +96,7 @@ Rule 19 は **layer-local consistency** であり、cross-layer の carrier 差�
 
 ---
 
-## 4. K3 — domain 層に限定する理由
+## 4. K3 — domain 層に限定する理由 <!-- ADVISORY: K3 は report (候補列挙)。hard 強制はしない -->
 
 `repo.save(order)` は Rule 12 (Repository = Aggregate Root 単位) の**正しい形**であり、
 Rule 19 違反ではない。違反は「aggregate 自身が persistence/transport/I/O を持つ」場合だけ。
@@ -97,18 +104,36 @@ Rule 19 違反ではない。違反は「aggregate 自身が persistence/transpo
 そのため K3 は二重に絞る:
 
 1. 層が `domain` のときだけ発火する
-2. 型名が `Repository` / `Repo` / `Adapter` / `Client` / `Gateway` / `Store` / `Dao` / `Mapper` /
-   `Api` / `Service` で終わるものは除外する
+2. 型名が `Repository` / `Repo` / `Adapter` / `Client` / `Gateway` / `Store` / `Dao` / `Mapper`
+   で終わるものは除外する (`Service` / `Api` は除外しない。下記「動詞辞書の設計」参照)
 
 層が path 推定の場合は severity を下げ (`low`)、メッセージに「層は path から推定」と明示する。
+
+### 動詞辞書の設計 (FP を避けるため狭く取る) <!-- ADVISORY: K3 は report。強制しない -->
+
+`commit` / `insert` / `delete` は **辞書に入れない**。`Cart.deleteItem()` や `Event.commit()` のような
+domain の collection 操作・集約操作と区別できず FP を生むため。
+辞書は境界を明確に指す語だけに絞る (`save` / `load` / `persist` / `store` / `fetch` / `send` /
+`publish` / `notify` / `upload` / `download` / `print` / `sync` / `flush`)。
+
+逆に、除外接尾辞から `Service` / `Api` は**外してある**。domain 層の `XxxService` は
+Rule 21 の新設禁止対象でもあり、境界を正当に所有する型ではないため。
 
 ---
 
 ## 5. K4 — grandfathered を機構で保証する <!-- RULE: carrier-rule21-new-debt T1:templates/carrier-lint.mjs -->
-<!-- scope:diff の追加行にある型宣言 / shall:XxxService・XxxHandler.handle()・1-method XxxExecutor.execute() を新規に追加しないこと / not:既存宣言を違反として報告する・rename-only PR での一括是正 / applicability:diff.changed_paths != null / evidence:templates/carrier-lint.mjs (fixture 検証済) -->
+<!-- scope:diff の追加行にある型宣言または追加されたメンバー / shall:XxxService・XxxHandler.handle()・1-method XxxExecutor.execute() を新規に追加しないこと / not:既存宣言を違反として報告する・rename-only PR での一括是正 / applicability:diff.changed_paths != null / evidence:templates/carrier-lint.mjs (fixture 検証済) -->
 
 `git diff` の**追加行**にある宣言だけを対象にする。既存の `XxxService` は何件あっても検出しない。
-基点は `--base`、無指定なら `master` / `main` との merge-base。git が使えなければ K4 は skip する。
+基点は `--base`、無指定なら `master` / `main` との merge-base。
+
+宣言行だけを見ると **既存 `XxxHandler` に `handle()` を足す / 既存 class を 1-method 化する**
+差分を取りこぼすため、**メンバーが追加行にある場合も** new debt として扱う。
+rename で `Service` 化した場合は宣言行が変わるので同じく検出される。
+
+> [!CAUTION]
+> git が使えず基点を解決できない場合、K4 は skip される。**gate として使うときは `--strict` を必ず付ける**
+> — `--strict` は typescript 未解決時に exit 2 で落ち、「検査していないのに緑」を防ぐ。
 
 ---
 

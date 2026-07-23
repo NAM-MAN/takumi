@@ -193,7 +193,10 @@ const scan = (file) => {
       push(i, "L8", "high", "grid の裸 1fr。内容最小幅で破裂するため minmax(0, 1fr) にする");
     }
     // L9 require_min_w_0
-    if (/className/.test(line) && /\bflex-(1|auto)\b/.test(line) && !/\bmin-w-0\b/.test(line)) {
+    // className が複数行に分かれる (clsx / テンプレート整形) 場合に FP を出さないよう、
+    // 前後を含む窓で min-w-0 の有無を見る。
+    const classWindow = lines.slice(Math.max(0, i - 1), i + 4).join(" ");
+    if (/className/.test(line) && /\bflex-(1|auto)\b/.test(classWindow) && !/\bmin-w-0\b/.test(classWindow)) {
       push(i, "L9", "high", "flex 子に min-width:0 が無い。min-width:auto 既定で長文/表が親を押し広げる");
     }
     // L10 style_pass_layout_leak (skin 宣言があるファイルのみ)

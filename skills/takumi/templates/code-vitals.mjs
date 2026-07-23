@@ -355,6 +355,16 @@ const analyzeAst = () => {
 
 const ast = ts ? analyzeAst() : null;
 
+const WORSE_IF_UP = [
+  ["production_code_lines", (r) => r.production_code_lines],
+  ["delegation_only", (r) => r.ast?.delegation_only],
+  ["single_callsite_helper", (r) => r.ast?.single_callsite_helper],
+  ["args_3plus", (r) => r.ast?.args_3plus],
+  ["max_nest_depth", (r) => r.ast?.max_nest_depth],
+  ["unreferenced_export_candidates", (r) => r.ast?.unreferenced_export_candidates],
+  ["file_over_800", (r) => r.file_length.over_800],
+];
+
 const HUB_DIR = /(^|\/)(common|shared|utils|util|helpers?|misc)(\/|$)/;
 const report = {
   file_source: fileSource,
@@ -374,8 +384,15 @@ const report = {
 };
 
 // --- 出力 ---
+const worsened = baseline
+  ? WORSE_IF_UP.map(([name, pick]) => ({ name, now: pick(report), before: pick(baseline) })).filter(
+      (d) => typeof d.now === "number" && typeof d.before === "number" && d.now > d.before,
+    )
+  : [];
+
 if (asJson) {
-  console.log(JSON.stringify(report, null, 2));
+  // 悪化項目は JSON にも載せる (機械集計で意図が消えないように)
+  console.log(JSON.stringify({ ...report, worsened }, null, 2));
 } else {
   console.log(`-- V1 LOC (${fileSource === "git" ? "git 管理下" : "FS 走査 (git 不使用)"}) --`);
   for (const [kind, v] of Object.entries(report.loc).sort()) {
@@ -403,18 +420,7 @@ if (asJson) {
 }
 
 // --- baseline 差分: 悪化した項目だけを出す (軍師指摘 (c): 全量サマリは飾りになる) ---
-const WORSE_IF_UP = [
-  ["production_code_lines", (r) => r.production_code_lines],
-  ["delegation_only", (r) => r.ast?.delegation_only],
-  ["single_callsite_helper", (r) => r.ast?.single_callsite_helper],
-  ["args_3plus", (r) => r.ast?.args_3plus],
-  ["max_nest_depth", (r) => r.ast?.max_nest_depth],
-  ["unreferenced_export_candidates", (r) => r.ast?.unreferenced_export_candidates],
-  ["file_over_800", (r) => r.file_length.over_800],
-];
 if (baseline && !asJson) {
-  const worsened = WORSE_IF_UP.map(([name, pick]) => ({ name, now: pick(report), before: pick(baseline) }))
-    .filter((d) => typeof d.now === "number" && typeof d.before === "number" && d.now > d.before);
   console.log(`\n-- baseline 比較 (悪化した項目のみ) --`);
   if (worsened.length === 0) console.log("  悪化なし");
   for (const d of worsened) console.log(`  ⚠ ${d.name}: ${d.before} → ${d.now} (+${d.now - d.before})`);

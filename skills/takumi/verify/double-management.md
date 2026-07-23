@@ -85,7 +85,7 @@ it("heroCopy は審査済み CTA 文言を返すべき", () => {
 
 ---
 
-## 5. 主張規律
+## 5. 主張規律 <!-- ADVISORY: 主張の範囲を限定する記述。強制機構は持たない -->
 
 > 本 script が主張できるのは「**測れる**」ことまで。
 > 「二重管理を減らすと保守コストが下がる」は**未証明**。R1 の precision は
@@ -93,6 +93,9 @@ it("heroCopy は審査済み CTA 文言を返すべき", () => {
 >
 > 既知の限界: 実装式のコピー (`expect(total).toBe(price * qty)`) は現状の R1 では検出しない
 > (literal のみ)。式レベルの tautology 検出は T2 reviewer に残す。
+>
+> **gate として使うときは `--strict` を必ず付ける**。typescript が解決できない環境では R1 が
+> skip されるため、`--strict` は skip を pass にせず exit 2 で落とす (silent green の防止)。
 
 ---
 

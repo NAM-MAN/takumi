@@ -19,10 +19,12 @@
 //     (`repo.save(order)` は Rule 12 の正しい形であり違反ではない)。
 //   K2 の層既定 (expect) は宣言があるときだけ規範判定する。層が unknown の要素は分布にのみ計上し、
 //     規範判定しない (分類器の正しさを指標に混ぜない = 循環論証の回避)。
-//   K4 は grandfathered 規定 (behavior-carrier.md §5) に従い、diff の追加行にある宣言だけを対象にする。
+//   K4 は grandfathered 規定 (behavior-carrier.md §5) に従い、diff の追加行にある宣言 (または
+//     追加されたメンバー) だけを対象にする。既存宣言に触れていない限り報告しない。
 //
 // 依存: Node 標準 + git CLI + 検査対象プロジェクトの既存 typescript のみ (新規ライブラリ導入なし)。
-//   typescript が解決できない場合は AST 系を skip して degrade する (exit 2 にしない)。
+//   typescript が解決できない場合は AST 系を skip する。ただし --strict (gate 実行) では
+//   skip を pass にせず exit 2 で落とす (検査していないのに緑になる silent green の防止)。
 //   既知の制約: TypeScript 7 (Go port) の `typescript` entry は JS compiler API を持たないため
 //   createSourceFile の有無で検証し、無ければ未解決扱いで skip する。TS 5.x が必要。
 // 使い方: cd <project> && node path/to/carrier-lint.mjs src
@@ -139,12 +141,17 @@ const resolveLayer = (file) => {
 
 // --- 語彙 ---
 const VERB_STOPLIST = new Set(["get", "set", "is", "has", "can", "should", "to", "from", "with", "of", "as", "use"]);
+// 境界 (persistence/transport/I/O) を明確に指す動詞だけを入れる。
+// commit / insert / delete は domain の collection 操作 (Cart.deleteItem / Event.commit) と
+// 区別できず FP を生むため **入れない**。
 const BOUNDARY_VERBS = new Set([
   "save", "load", "persist", "store", "fetch", "send", "publish", "notify",
-  "upload", "download", "print", "sync", "flush", "commit", "insert", "delete",
+  "upload", "download", "print", "sync", "flush",
 ]);
-// K3 で除外する型 (これらの型が persistence 動詞を持つのは Rule 12 の正しい形)
-const BOUNDARY_TYPE_SUFFIX = /(Repository|Repo|Adapter|Client|Gateway|Store|Dao|Mapper|Api|Service)$/;
+// K3 で除外する型 (これらの型が persistence 動詞を持つのは Rule 12 の正しい形)。
+// Service / Api は「境界を正当に所有する型」ではない (domain 層の XxxService は Rule 21 の
+// 新設禁止対象でもある) ため除外しない。
+const BOUNDARY_TYPE_SUFFIX = /(Repository|Repo|Adapter|Client|Gateway|Store|Dao|Mapper)$/;
 const TEST_FILE = /(\.(test|spec)\.tsx?$)|(^|\/)__tests__(\/|$)/;
 
 const camelSplit = (s) =>
@@ -320,8 +327,11 @@ const scanFile = (file) => {
   };
 
   const checkNewDebt = (decl, typeName) => {
-    if (!isNewDebt(decl) || allowed(decl, "K4")) return;
     const methods = methodsOf(decl);
+    // 宣言行だけを見ると「既存 XxxHandler に handle() を足す」「既存 class を 1-method 化する」
+    // 差分を取りこぼす。メンバーが追加行にある場合も new debt として扱う。
+    const touched = isNewDebt(decl) || methods.some((m) => isNewDebt(m));
+    if (!touched || allowed(decl, "K4")) return;
     const names = methods.map((m) => m.name.getText(sf));
     const violation = /Service$/.test(typeName)
       ? "XxxService は主語・責務が曖昧"
@@ -417,10 +427,12 @@ const buildDistribution = () => {
 if (!ts) {
   console.error(
     "carrier-lint: typescript が解決できないため AST 検査を skip します (K1-K4 すべて未実行)。\n" +
-      "  検査対象プロジェクト直下 (typescript を持つ cwd) で実行してください。",
+      "  検査対象プロジェクト直下 (typescript を持つ cwd) か --ts <dir> で実行してください。",
   );
   if (asJson) console.log(JSON.stringify({ skipped: true, reason: "typescript-unresolved" }));
-  process.exit(0);
+  // gate 実行 (--strict) では skip を pass にしない。検査していないのに緑になる
+  // (silent green) は「実行された体で通る」最悪の失敗モードなので exit 2 で落とす。
+  process.exit(strict ? 2 : 0);
 }
 
 for (const r of roots) walk(r, scanFile);

@@ -243,7 +243,8 @@ const detectContentLock = () => {
 if (!ts) {
   console.error("dm-lint: typescript(5.x) が解決できないため R1 を skip します (--ts で明示指定できます)");
   if (asJson) console.log(JSON.stringify({ skipped: true }));
-  process.exit(0);
+  // gate 実行 (--strict) では skip を pass にしない (silent green 防止)
+  process.exit(strict ? 2 : 0);
 }
 
 const files = targets.flatMap((t) => walk(t));

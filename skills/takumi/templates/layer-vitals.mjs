@@ -26,7 +26,8 @@
 //
 // 依存: Node 標準のみ。
 // 使い方: node layer-vitals.mjs --mutation reports/mutation/mutation.json --config layers.json
-//   --config <f.json>  { "layers": {"L1": ["test/unit/**"]}, "expect": {"src/domain/**": ["L1"]} }
+//   --config <f.json>  { "layers": {"L1": ["test/unit/**"]}, "expect": {"src/domain/**": ["L1"]},
+//                        "redundant_guard_exclude": ["test/contract/**", "test/i18n/**"] }
 //   --runner <f.json>  vitest --reporter=json の出力 (per-test 実測時間。無ければ covered 数を proxy)
 //   --justify <f>      justification ledger (.json / 単純 .yaml)。`<mutantId>: 理由` 20 字以上で解除
 //   --out <f.jsonl>    obligation の書き出し先 (既定 .takumi/verify-loop/layer-obligations.jsonl)
@@ -203,9 +204,13 @@ const obligations = allMutants
   .filter((o) => ["layer-escape", "no-coverage"].includes(o.classification));
 
 // --- redundant-guard: 高コスト層の test で unique_kill=0 (L5 は構造的に除外) ---
+// L5 と同じ理由で mutation が価値を測れない test 群 (契約 / migration / i18n / a11y /
+// observability) も config で除外できる。既定は空。
+const guardExcludeRes = (config.redundant_guard_exclude ?? []).map(globToRe);
 const redundantGuards = [...testIndex.values()]
   .filter((t) => {
     const rank = LAYER_RANK[t.layer] ?? -1;
+    if (guardExcludeRes.some((re) => re.test(t.file))) return false;
     return rank >= EXPENSIVE_MIN && t.layer !== "L5" && (uniqueKillCount.get(t.id) ?? 0) === 0;
   })
   .map((t) => ({

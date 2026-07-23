@@ -98,6 +98,9 @@ false positive 率 5% 未満を目安。超過したら rule を見直すか lin
 
 静的解析で機械的に弾く。ビルド時に即失敗、PBT は不要。
 
+> **既知の限界**: 行単位の正規表現走査であり、`clsx()` / computed class / CSS-in-JS の生成結果は
+> 検出できない (false negative)。className が複数行に分かれるケースは前後 4 行の窓で判定する。
+>
 > **実体**: `templates/design-lint.mjs` (Node 標準のみ、postcss 不使用)。下表の 5 rule に加え
 > `layout-primitives.md` §5 の 6 rule、`jp-typography.md` の 3 rule、`craft-layer.md` §5 の
 > AI-slop 3 rule (soft) を実装する。判断を含む rule (accent_overuse / centered-stack /
