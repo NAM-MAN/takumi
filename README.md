@@ -1,17 +1,23 @@
 <div align="center">
 
-# takumi
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="assets/takumi-seal-dark.png">
+  <img alt="匠 takumi" src="assets/takumi-seal-light.png" width="88" height="88">
+</picture>
+
+# 匠 takumi
 
 **Claude Code で、あなたの開発チームをまるごと 1 つのコマンドに。**
 
 <p align="center">
-  <a href="LICENSE"><img alt="License: MIT" src="https://img.shields.io/badge/License-MIT-blue.svg"></a>
+  <a href="LICENSE"><img alt="License: MIT" src="https://img.shields.io/badge/License-MIT-8C6D1F"></a>
   <a href="https://docs.claude.com/claude-code"><img alt="Claude Code" src="https://img.shields.io/badge/Claude%20Code-compatible-7C3AED"></a>
   <a href="https://github.com/toishi2/takumi/releases"><img alt="Release" src="https://img.shields.io/github/v/release/toishi2/takumi?color=success"></a>
-  <a href="skills/takumi"><img alt="Modules" src="https://img.shields.io/badge/engine--modules-8-orange"></a>
+  <a href="skills/takumi"><img alt="Modules" src="https://img.shields.io/badge/engine--modules-8-A8842C"></a>
   <br>
-  <img alt="Edition: Core" src="https://img.shields.io/badge/edition-Core-2563EB">
+  <img alt="Edition: Core" src="https://img.shields.io/badge/edition-Core-131211">
   <img alt="Status: Maintained" src="https://img.shields.io/badge/status-maintained-brightgreen">
+  <a href="https://toishi.tech"><img alt="toishi" src="https://img.shields.io/badge/by-toishi-131211"></a>
 </p>
 
 </div>
