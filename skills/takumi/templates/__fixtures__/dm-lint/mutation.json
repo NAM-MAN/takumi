@@ -1,0 +1,22 @@
+{
+  "schemaVersion": "1.0",
+  "_comment": "FIXTURE ONLY — dm-lint R2 (content-lock) の確認用。t-copy-1 は content module の StringLiteral しか殺していない。",
+  "files": {
+    "src/content/copy.ts": {
+      "mutants": [
+        { "id": "c1", "mutatorName": "StringLiteral", "status": "Killed", "killedBy": ["t-copy-1"] },
+        { "id": "c2", "mutatorName": "StringLiteral", "status": "Killed", "killedBy": ["t-copy-1"] }
+      ]
+    },
+    "src/domain/pricing.ts": {
+      "mutants": [
+        { "id": "p1", "mutatorName": "ArithmeticOperator", "status": "Killed", "killedBy": ["t-price-1"] },
+        { "id": "p2", "mutatorName": "StringLiteral", "status": "Killed", "killedBy": ["t-price-1"] }
+      ]
+    }
+  },
+  "testFiles": {
+    "test/copy.test.ts": { "tests": [{ "id": "t-copy-1", "name": "hero は審査済み文言をそのまま返すべき" }] },
+    "test/pricing.test.ts": { "tests": [{ "id": "t-price-1", "name": "pricing は数量割引を適用するべき" }] }
+  }
+}

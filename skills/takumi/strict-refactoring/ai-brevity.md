@@ -101,6 +101,7 @@ SMD の DRY-trap が「**消しすぎ**」の罠なら、これは「**書きす
 
 | file | 用途 |
 |---|---|
+| **`code-vitals.md`** (同ディレクトリ) | **B3 の計測実体。`delegation_only` / `single_callsite_helper` / `mean_callsites` を `≤7 行率` と並置して report する** |
 | `rules-heuristics.md` (同ディレクトリ) | Rule 16 SMD (macro/refactor 時の姉妹) |
 | `smd.md` (同ディレクトリ) | SMD recipe (production 表面積、消しすぎの罠) |
 | `immutable-first.md` (同ディレクトリ) | Rule 17/18/20 (LoC を減らす micro 規律、brevity の土台) |

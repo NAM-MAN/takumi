@@ -57,6 +57,10 @@ PRUNE は 1 件 1 commit、**並列削除禁止**。各件で以下を順に確�
 - cyclomatic complexity / fan-in-out
 - perf non-regression (SHARPEN 系で alloc が増えないか、benchmark があれば)
 
+> **計測実体**: 表面積 (public export 数 / 未参照 export 候補) とネスト深度・引数個数・関数長分布は
+> `code-vitals.md` (`templates/code-vitals.mjs`) が report として出す。**gate にしない**。
+> 未参照 export は Invisible Consumer Breakage (§3) のため候補列挙のみで、削除判断には使わない。
+
 ---
 
 ## 3. 失敗モード名付き危険分類 (適用前に必ず照合)

@@ -1,0 +1,11 @@
+{
+  "_comment": "FIXTURE ONLY — 層マップと期待層の宣言。expect は profile 宣言を第一情報源にするための例。",
+  "layers": {
+    "L1": ["test/unit/**"],
+    "L3": ["test/model/**"],
+    "L5": ["e2e/**"]
+  },
+  "expect": {
+    "src/domain/**": ["L1"]
+  }
+}

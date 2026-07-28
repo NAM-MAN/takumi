@@ -474,3 +474,27 @@ rules:
     applies_when: "plan.tasks != null"
     safety: none
     evidence_required: true                            # T1∩T2 AND で block (FP 中和)
+
+  # --- 品質指標ハーネス (carrier 一貫性 / design lint)。report 系 (code-vitals /
+  # layer-vitals / dm-lint) は enforced にしない = advisory のまま registry に載せない ---
+  - id: carrier-dual-definition
+    source: strict-refactoring/carrier-consistency.md#k1
+    tier: 1
+    mechanism: templates/carrier-lint.mjs#K1           # 実装+fixture 済: TP (Order.save/saveOrder) 検出、FP ガード (list.add/addUser、repo.save) 非検出、good 0 件
+    applies_when: "diff.changed_paths != null"
+    safety: none
+    evidence_required: true
+  - id: carrier-rule21-new-debt
+    source: strict-refactoring/carrier-consistency.md#k4
+    tier: 1
+    mechanism: templates/carrier-lint.mjs#K4           # 実装+fixture 済: git diff 追加行のみ対象 (grandfathered を機構で保証)
+    applies_when: "diff.changed_paths != null"
+    safety: none
+    evidence_required: true
+  - id: design-lint-token-only
+    source: design/l7-invariant.md#lint
+    tier: 1
+    mechanism: templates/design-lint.mjs              # 実装+fixture 済: bad で 16 rule 発火 (21 findings) / good 0 件。判断を要する rule は非実装
+    applies_when: "surface.tags.UI in [human-UI, machine+human]"
+    safety: none
+    evidence_required: true

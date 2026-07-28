@@ -229,6 +229,8 @@ devDependencies に追加:
 | `ai-review.md` | 軍師 cross-model レビュー |
 | `machine-generator.md` | AI 生成 5 stage パイプライン + probe 統合 |
 | `loop.md` | `/loop 10m /verify-loop` — レイヤー A→E を順に mutation 80% へ引き上げる継続ループ |
+| `cost-balance.md` | **層 obligation** — 期待層と実際に殺した最安層の乖離を列挙 (report、L5 は redundant 判定の対象外) |
+| `double-management.md` | **二重管理** — 文言等の実装コピー assertion を候補列挙 (report、除外タグ 6 種) |
 | `examples/scripts/extract-routes.ts` | (参考例) Stage 1: Next.js route 抽出。project 側に cp して改変 |
 | `examples/scripts/score-metrics.ts` | (参考例) Stage 2: Tier 判定 (regex)。project 側に cp して改変 |
 | `examples/scripts/generate.ts` | (参考例) Stage 3-5: AI 生成オーケストレータ。project 側に cp して改変 |

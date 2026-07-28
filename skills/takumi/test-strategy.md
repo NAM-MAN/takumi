@@ -188,7 +188,8 @@ for ac in task.ac_ids:
 |---|---|
 | `SKILL.md` (同ディレクトリ) | /takumi 本体 |
 | `verify-profiles-defaults/*.yaml` (同ディレクトリ) | 5 archetype の default template (bootstrap 時 project にコピー) |
-| `verify/README.md` (同階層配下) | L1-L6 定義・recipe library |
+| `verify/README.md` (同階層配下) | L1-L6 定義・recipe library。**KPI は 4 本 (coverage / mutation score / 変更行の未検出 / unsafe boundary 数) で後 2 者は差分スコープ** |
+| `verify/cost-balance.md` (同階層配下) | profile の `layers` 宣言を expected_layers として消費する層 obligation |
 | `design/README.md` (同階層配下) | takumi の design mode。同じ profile registry 方式、design_profile 側 |
 | `.takumi/profiles/verify/{name}.yaml` | project 側の profile 本体 |
 | `.takumi/verify/testing-matrix.md` | 導出ルール表 (月次保守) |

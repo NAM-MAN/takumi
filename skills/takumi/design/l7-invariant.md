@@ -93,9 +93,19 @@ week 単位で集計、閾値超過でのみ fail にする運用。
 
 false positive 率 5% 未満を目安。超過したら rule を見直すか lint に移す。
 
-## lint (eslint / stylelint)
+## lint (eslint / stylelint) <!-- RULE: design-lint-token-only T1:templates/design-lint.mjs -->
+<!-- scope:UI surface の className / CSS 宣言 / shall:色・タイポ・radius は token 参照のみ、layout の arbitrary 値と escape hatch 宣言外の position:absolute/fixed と裸 1fr と flex 子の min-width:0 欠落を許さない / not:判断を要する rule (accent_overuse・総合 taste・unjustified_component_count) を hard gate にする / applicability:surface.tags.UI in [human-UI, machine+human] / evidence:templates/design-lint.mjs (fixture 検証済、good 0 / bad 16 rule) -->
 
 静的解析で機械的に弾く。ビルド時に即失敗、PBT は不要。
+
+> **既知の限界**: 行単位の正規表現走査であり、`clsx()` / computed class / CSS-in-JS の生成結果は
+> 検出できない (false negative)。className が複数行に分かれるケースは前後 4 行の窓で判定する。
+>
+> **実体**: `templates/design-lint.mjs` (Node 標準のみ、postcss 不使用)。下表の 5 rule に加え
+> `layout-primitives.md` §5 の 6 rule、`jp-typography.md` の 3 rule、`craft-layer.md` §5 の
+> AI-slop 3 rule (soft) を実装する。判断を含む rule (accent_overuse / centered-stack /
+> dark_not_redesigned / unjustified_component_count / 総合 taste) は **実装しない** (§craft-layer §6 が
+> gate 不可と明示)。`cd <project> && node <takumi>/templates/design-lint.mjs src --strict`
 
 | rule | 内容 |
 |---|---|
