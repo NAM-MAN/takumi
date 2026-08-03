@@ -17,6 +17,7 @@
   <br>
   <img alt="Edition: Core" src="https://img.shields.io/badge/edition-Core-131211">
   <img alt="Status: Maintained" src="https://img.shields.io/badge/status-maintained-brightgreen">
+  <a href="https://tsugite.toishi.tech"><img alt="Enterprise: Tsugite" src="https://img.shields.io/badge/Enterprise-Tsugite-A8842C"></a>
   <a href="https://toishi.tech"><img alt="toishi" src="https://img.shields.io/badge/by-toishi-131211"></a>
 </p>
 
@@ -26,9 +27,11 @@
 
 > [!IMPORTANT]
 > **このリポジトリは takumi の Core Edition です。**
-> オープンソース (MIT) で公開しているコア一式で、**継続的にメンテナンスしています** (バグ修正・改善を続けます)。優先サポート・チーム/組織向けの追加機能は **Enterprise Edition** で提供します。
+> オープンソース (MIT) で公開しているコア一式で、**継続的にメンテナンスしています** (バグ修正・改善を続けます)。ここにあるものは、そのまま無償でお使いいただけます。
 >
-> 🏢 **Enterprise Edition の情報は近日公開予定です。** &nbsp;·&nbsp; 🐛 バグ報告・要望・PR は [Issues](../../issues) / [Discussions](../../discussions) へ
+> 🏢 **Enterprise 版は「[Tsugite (継手)](https://tsugite.toishi.tech)」として提供中です。** — Core と同じエンジンに **要件定義から伴走する工程**・**署名検証つきの自動更新**・**組織向けの統制 (承認配信・監査ログ・請求書払い)** を足した商用版。個人は ¥3,278/月 (税込) からカードで即日、組織は請求書払いで。 &nbsp;→&nbsp; **[プランと価格を見る](https://tsugite.toishi.tech/#pricing)** / [無料版との違い](#core-edition-と-enterprise-版-tsugite)
+>
+> 🐛 バグ報告・要望・PR は [Issues](../../issues) / [Discussions](../../discussions) へ
 
 ---
 
@@ -68,6 +71,7 @@
 - [他ハーネスとの違い](#他のハーネスとの違い)
 - [裏側でなにが起こっているか](#裏側でなにが起こっているか)
 - [よくあるご質問](#よくあるご質問)
+- 🏢 [Core Edition と Enterprise 版 Tsugite (提供中)](#core-edition-と-enterprise-版-tsugite)
 
 ---
 
@@ -356,6 +360,13 @@ takumi は内部で、役割に応じて 5 種類の AI エージェントを使
 
 ---
 
+> [!TIP]
+> **ここまでが、無料の Core Edition でできることです。**
+> 「作る前に、何を作るべきかを揉む工程」まで任せたい方・チームで統制して配る必要がある方には、商用版 **[Tsugite (継手)](https://tsugite.toishi.tech)** を提供中です。同じエンジンに要件定義の伴走・署名検証つき自動更新・組織向けの統制を足したもので、導入は 1 コマンド。
+> **→ [Tsugite のプランと価格を見る](https://tsugite.toishi.tech/#pricing)** ・ [違いを表で見る](#core-edition-と-enterprise-版-tsugite)
+
+---
+
 ## 用語集 (はじめての方へ)
 
 takumi の説明に出てくる用語を、その場で引けるようにまとめました。**最初から覚える必要はありません** — 困ったときに戻ってきてください。
@@ -537,6 +548,9 @@ Cursor、Cline、Aider、Continue.dev など、モードや計画の概念自体
 > [!TIP]
 > takumi は Claude Code の上に乗るスキルで、Claude Code 自体を置き換えるものではありません。**むしろ Claude Code の標準機能を前提に、その上で「長時間・大規模・高品質」を実現するための仕組みを積んでいる、と捉えてください。**
 
+> [!NOTE]
+> ここまでの比較はすべて**無料の Core Edition** の話です。**「実装の前」— 何を作るべきかを揉む工程まで含めて任せたい方**には、同じエンジンに要件定義の伴走と組織向けの統制を足した商用版 **[Tsugite](https://tsugite.toishi.tech)** を提供中です → [違いを見る](#core-edition-と-enterprise-版-tsugite)
+
 ---
 
 ## 裏側でなにが起こっているか
@@ -716,6 +730,28 @@ Mutation tier の詳細は [`skills/takumi/verify/mutation.md`](skills/takumi/ve
 Claude Code を一度でも使ったことがあれば十分です。頂点契約・AC-ID・mutation score といった用語を事前に学ぶ必要はありません。takumi が対話のなかで必要なタイミングで説明しますし、分からなくなったら本 README の[用語集](#用語集-はじめての方へ)を引いてください。
 </details>
 
+<details>
+<summary><b>Q. 無料の Core と、商用版 <a href="https://tsugite.toishi.tech">Tsugite</a> のどちらを使えばいいですか?</b></summary>
+
+**やることが自分の中で決まっているなら Core で十分です。** Core は MIT・無料で、実装・テスト・レビューのエンジンはそのまま入っています。
+
+**Tsugite をご検討いただきたいのは次のような場合です:**
+
+- 「何を作るべきか」が固まっていない状態から任せたい (要件定義から伴走する工程が入ります)
+- 観点・手法のアップデートを、手動でリリースを追わずに受け取りたい (署名検証つきの自動更新 + changelog)
+- チーム・組織に配りたい / 稟議に貼れる監査ログ・請求書払いが要る (Team・Business 以上)
+
+エンジンは同じなので、Core で慣れてから移っても学び直しはありません。詳しくは [Core Edition と Enterprise 版 Tsugite](#core-edition-と-enterprise-版-tsugite) を参照してください。
+</details>
+
+<details>
+<summary><b>Q. Tsugite を使うと、コードは外部に送信されますか?</b></summary>
+
+**Tsugite のサーバーへコードは送信されません。** 送るのは認証トークン・スキル識別子・バージョンの 3 点だけです (Claude Code 自体と Anthropic の間の通信は、無料の Core を使う場合と変わりません)。
+
+解約後も、Tsugite と作った仕様・計画・コードはあなたのリポジトリに残ります。消えるのはスキル本体だけで、導入物は uninstall 1 コマンドで除去できます。
+</details>
+
 ---
 
 ## `.takumi/` ディレクトリの中身
@@ -757,23 +793,53 @@ Claude Code を一度でも使ったことがあれば十分です。頂点契�
 
 ---
 
-## Core Edition と Enterprise Edition
+## Core Edition と Enterprise 版 Tsugite
 
-takumi はこの GitHub リポジトリで公開している **Core Edition** と、商用の **Enterprise Edition** の 2 つの形で提供しています。
+takumi はこの GitHub リポジトリで公開している **Core Edition** (MIT・無料) と、商用の **Enterprise 版 = [Tsugite (継手)](https://tsugite.toishi.tech)** の 2 つの形で提供しています。
 
 > [!IMPORTANT]
 > **Core Edition (このリポジトリ) はオープンソース (MIT) で、継続的にメンテナンスしています。**
 > ここで公開しているスキル一式は、そのまま無償でお使いいただけます。バグ修正・改善を継続的に反映し、外部からのコントリビューションも歓迎します。
 
-優先サポート・チーム/組織向けの追加機能をお考えの方は、**Enterprise Edition** をご検討ください。
+> [!TIP]
+> **🏢 Enterprise 版は「Tsugite」として提供中です。**
+> Core が「実装を回す」なら、Tsugite が足すのは **実装の前** — 何を作るべきかを揉む工程です。曖昧な依頼を仕様に固めてから、設計・実装・テスト・レビューまで、**あなたの Claude Code の中で**進みます (エンジンは Core と同じ takumi)。
+
+### 無料の Core で足りなくなったら
+
+|  | takumi Core (無料 / OSS) | **Tsugite (商用版・提供中)** |
+|---|---|---|
+| 実装・テスト・レビュー | ○ | ○ (**同じエンジン**) |
+| **要件定義から伴走** | — | **○ 曖昧な依頼を仕様に固めてから着工** (toishi の要件定義プロセスを同梱) |
+| 観点・手法の更新 | リリースを手動で取得 | **購読で自動反映** (changelog 付き) |
+| 配信の真正性 | — | **すべての配信に署名検証** (改竄は取得段階で拒否) |
+| 導入 | 手動セットアップ | **1 コマンド**・1 ユーザー 3 端末まで |
+| チームでの配布 | — | 席の招待・失効の管理、共有と簡易 version pin (Team 以上) |
+| 組織の統制 | — | **承認後配信 (サイレント更新なし)・監査ログ・利用状況レポート・請求書払い** (Business 以上) |
+| サポート | Issues / Discussions (ベストエフォート) | **優先 SLA・専任サポート** (Enterprise) |
+| やめるとき | — | 解約はポータルで即時・**違約金なし** (契約期間の満了までは利用可) |
+
+### プランと価格
+
+| プラン | 対象 | 価格 (税込) | 申し込み |
+|---|---|---|---|
+| **Personal** | 個人の開発者 (1 ユーザー) | **¥3,278/月** (年払い ¥32,780/年) | カードで即日 |
+| **Team** | 小規模チーム (5〜20 席) | **¥5,478/席/月** | カードで即日・一括請求 |
+| **Business** | 統制が要る組織 (1 口 = 50 席) | お問い合わせ | 年間契約・請求書払い・契約期間中は価格据置 |
+| **Enterprise** | 業界特化の統制供給が要る企業 | 個別見積 | 年間契約・請求書払い |
 
 <div align="center">
 
-### 🏢 Enterprise Edition
-
-商用版のご相談・お問い合わせ窓口は **近日公開予定** です。
+**[🏢 Tsugite のプランと価格を見る →](https://tsugite.toishi.tech/#pricing)** &nbsp;·&nbsp; [無料版との違い (公式)](https://tsugite.toishi.tech/#compare) &nbsp;·&nbsp; [tsugite.toishi.tech](https://tsugite.toishi.tech)
 
 </div>
+
+> [!NOTE]
+> **買う前に気になるところ**
+> - **コードは Tsugite のサーバーへ送信されません。** 送るのは認証トークン・スキル識別子・バージョンの 3 点だけです
+> - **成果物は手元に残ります。** Tsugite と作った仕様・計画・コードはすべてあなたのリポジトリに残り、解約して消えるのはスキル本体だけです (導入物は uninstall 1 コマンドで除去)
+> - **Core を有料化するわけではありません。** このリポジトリは今後も MIT・無料のまま継続メンテナンスします
+> - 表示価格・条件は本 README 更新時点のものです。**最新は [公式サイト](https://tsugite.toishi.tech) をご確認ください**
 
 ---
 
@@ -785,7 +851,7 @@ takumi はこの GitHub リポジトリで公開している **Core Edition** �
 - 🐛 **バグ報告・機能要望** — [Issues](../../issues) / [Discussions](../../discussions) で歓迎します。再現手順・環境・期待される挙動を添えていただけると助かります。
 - 🔧 **Pull Request** — 歓迎します。辞書 (`natural-language.md`) や言語緩和ルール (`strict-refactoring/language-relaxations.md`) の拡充など、改善提案をお待ちしています。大きめの変更は事前に Issue で方向性を相談いただけるとスムーズです。
 - 🍴 **自分用の改造** — MIT ライセンスです。fork して自由に改変・利用してください。
-- 🏢 **チーム利用・優先サポート** — Enterprise Edition をご検討ください (情報は近日公開予定)。
+- 🏢 **要件定義から伴走してほしい / チーム利用・優先サポート** — 商用版 **[Tsugite](https://tsugite.toishi.tech)** を提供中です ([プランと価格](https://tsugite.toishi.tech/#pricing))。
 
 開発者・フォーカー向けの詳しい方針は [`.github/CONTRIBUTING.md`](.github/CONTRIBUTING.md) を参照してください。
 
@@ -798,5 +864,7 @@ takumi はこの GitHub リポジトリで公開している **Core Edition** �
 <div align="center">
 
 まずは `/takumi` と話しかけることから始めてみてください。最初の一問は、きっと短く済むはずです。
+
+<sub>要件を揉むところから任せたい方・チームで使いたい方へ &nbsp;·&nbsp; **[🏢 Enterprise 版 Tsugite (提供中) →](https://tsugite.toishi.tech)**</sub>
 
 </div>

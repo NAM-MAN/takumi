@@ -2,7 +2,7 @@
 
 > [!IMPORTANT]
 > **takumi Core Edition はオープンソース (MIT) で、継続的にメンテナンスしています。**
-> バグ報告・機能要望・Pull Request を歓迎します。継続的な機能追加・優先サポート・チーム/組織向け機能は、商用の **Enterprise Edition** で提供します (窓口・詳細は近日公開予定)。
+> バグ報告・機能要望・Pull Request を歓迎します。要件定義からの伴走・優先サポート・チーム/組織向け機能は、商用の Enterprise 版 **[Tsugite (継手)](https://tsugite.toishi.tech)** で提供中です。
 
 ## できること
 
@@ -20,7 +20,7 @@
 
 ### 🏢 チーム利用・優先サポート
 
-優先サポート・チーム/組織向けの追加機能は **Enterprise Edition** で提供しています。窓口・詳細は **近日公開予定** です。
+要件定義からの伴走・署名検証つき自動更新・組織向けの統制 (承認配信・監査ログ・請求書払い)・優先サポートは、Enterprise 版 **[Tsugite](https://tsugite.toishi.tech)** で提供中です。エンジンは Core と同じ takumi で、個人向けプランから利用できます ([プランと価格](https://tsugite.toishi.tech/#pricing) / [無料版との違い](../README.md#core-edition-と-enterprise-版-tsugite))。
 
 ## メンテナ・開発者向けの開発ドキュメント
 
